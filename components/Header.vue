@@ -8,19 +8,19 @@
       </p>
     </div>
     <nav class="grid grid-cols-5 gap-1">
-      <a href="/snapshot" class="flex items-center bg-primary-600 p-4 mt-8 text-body-2 font-semibold">
+      <a href="/snapshot" class="flex items-center bg-primary-600 hover:bg-primary-200 hover:text-primary-600 p-4 mt-8 text-body-2 font-semibold">
         Snapshot of traffic enforcement in Philadelphia
       </a>
-      <a href="/stops" class="flex items-center bg-primary-600 p-4 mt-8 text-body-2 font-semibold">
+      <a href="/stops" class="flex items-center bg-primary-600 hover:bg-primary-200 hover:text-primary-600 p-4 mt-8 text-body-2 font-semibold">
         How many stops have police made in my neighborhood?
       </a>
-      <a href="/neighborhoods" class="flex items-center bg-primary-600 p-4 mt-8 text-body-2 font-semibold">
+      <a href="/neighborhoods" class="flex items-center bg-primary-600 hover:bg-primary-200 hover:text-primary-600 p-4 mt-8 text-body-2 font-semibold">
         Do police treat people or neighborhoods differently?
       </a>
-      <a href="/safety" class="flex items-center bg-primary-600 p-4 mt-8 text-body-2 font-semibold">
+      <a href="/safety" class="flex items-center bg-primary-600 hover:bg-primary-200 hover:text-primary-600 p-4 mt-8 text-body-2 font-semibold">
         Do traffic stops promote safety?
       </a>
-      <a href="/driving-equality" class="flex items-center bg-primary-600 p-4 mt-8 text-body-2 font-semibold">
+      <a href="/driving-equality" class="flex items-center bg-primary-600 hover:bg-primary-200 hover:text-primary-600 p-4 mt-8 text-body-2 font-semibold">
         Does Driving Equality promote safety?
       </a>
     </nav>

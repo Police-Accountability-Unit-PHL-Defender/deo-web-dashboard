@@ -2,46 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
-@font-face {
-  font-family: 'Poppins';
-  font-style: normal;
-  font-weight: 400;
-  src: url('../fonts/Poppins-Regular.ttf') format('ttf');
-}
-
-@font-face {
-  font-family: 'Poppins';
-  font-style: italic;
-  font-weight: 400;
-  src: url('../fonts/Poppins-Italic.ttf') format('ttf');
-}
-
-@font-face {
-  font-family: 'Poppins';
-  font-style: normal;
-  font-weight: 500;
-  src: url('../fonts/Poppins-Medium.ttf') format('ttf');
-}
-
-@font-face {
-  font-family: 'Poppins';
-  font-style: italic;
-  font-weight: 500;
-  src: url('../fonts/Poppins-MediumItalic.ttf') format('ttf');
-}
-
-@font-face {
-  font-family: 'Poppins';
-  font-style: normal;
-  font-weight: 600;
-  src: url('../fonts/Poppins-Bold.ttf') format('ttf');
-}
-
-@font-face {
-  font-family: 'Poppins';
-  font-style: italic;
-  font-weight: 600;
-  src: url('../fonts/Poppins-BoldItalic.ttf') format('ttf');
+html {
+  font-family: 'Poppins', sans-serif;
 }
 
 .text-heading-1 {

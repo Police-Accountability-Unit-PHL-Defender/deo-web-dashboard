@@ -16,5 +16,8 @@
     "sass": "^1.69.4",
     "vue": "^3.3.6",
     "vue-router": "^4.2.5"
+  },
+  "dependencies": {
+    "@headlessui/vue": "^1.7.16"
   }
 }
