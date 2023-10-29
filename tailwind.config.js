@@ -53,7 +53,11 @@ export default {
       48: "12rem",
       56: "14rem",
     },
-    extend: {},
+    extend: {
+      dropShadow: {
+        'popup': '4px 4px 12px rgba(0, 0, 0, 0.25)'
+      }
+    },
   },
   plugins: [],
 }

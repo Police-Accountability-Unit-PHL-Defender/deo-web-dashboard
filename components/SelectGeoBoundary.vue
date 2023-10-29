@@ -8,7 +8,8 @@
 
 <script setup>
   import SelectOne from '~/components/ui/SelectOne.vue'
-  const items = ['every year', 'every quarter']
+  // TODO: Options for years should be based on available data
+  const items = ['city', 'district', 'division', 'psa']
   const props = defineProps(['modelValue'])
   const emit = defineEmits(['update:modelValue'])
 </script>

@@ -1,6 +1,9 @@
 <template>
-  <Listbox v-model="props.selectedItem">
-    <ListboxButton class="bg-neutral-100 p-2">{{ props.selectedItem }}</ListboxButton>
+  <Listbox
+    :modelValue="modelValue"
+    @update:modelValue="value => emit('update:modelValue', value)"
+  >
+    <ListboxButton class="button-select">{{ props.modelValue }}</ListboxButton>
     <ListboxOptions class="bg-neutral-100">
       <ListboxOption
         v-for="item in props.items"
@@ -21,15 +24,6 @@
     ListboxOptions,
     ListboxOption,
   } from '@headlessui/vue'
-  const props = defineProps({
-    items: {
-      type: Array,
-      required: true,
-    },
-    selectedItem: {
-      required: true,
-    },
-  })
-  // const items = ['stops', 'frisks', 'searches', 'intrusions']
-  // const selectedItem = ref(items[0])
+  const props = defineProps(['modelValue', 'items'])
+  const emit = defineEmits(['update:modelValue'])
 </script>

@@ -1,5 +1,5 @@
 <template>
-  <div class="map" id="map" ref="map"/>
+  <div class="map" id="map"/>
 </template>
 
 <style>
@@ -11,60 +11,66 @@
 
 <script setup>
 
-const geoAggregation = ref('psa');
-const mapObj = ref()
-const mapsLoaded = ref()
-const addressSelection = ref()
-const selectedFeature = ref()
+  const props = defineProps(['geoAggregation', 'modelValue'])
+  const emit = defineEmits(['update:modelValue'])
 
-// Options Setting
-const options = {
-  center: [39.950888, -75.1895386],
-  zoom: 11,
-  selectedFeatureStyle: {
-    weight: 5,
-    color: "#666",
-    dashArray: "",
-    fillOpacity: 0.7,
-  },
-};
-const geoAggregations = {
-  psa: {
-    url: "https://opendata.arcgis.com/datasets/8dc58605f9dd484295c7d065694cdc0f_0.geojson",
-    legendSelectedTextFunction: (obj) =>
-      `<b>District:${obj.PSA_NUM.substr(0, 2)} PSA:${obj.PSA_NUM[2]}</b>`,
-    tooltipFunction: (obj) => obj.PSA_NUM,
-  },
-  district: {
-    url: "https://opendata.arcgis.com/datasets/62ec63afb8824a15953399b1fa819df2_0.geojson",
-    legendSelectedTextFunction: (obj) => `<b>District:${obj.DIST_NUM}</b>`,
-    tooltipFunction: (obj) => obj.DIST_NUMC,
-  },
-  division: {
-    url: "https://opendata.arcgis.com/datasets/4333983fd1e1449ca7fc2d63ad7e0076_0.geojson",
-    legendSelectedTextFunction: (obj) => `<b>Division:${obj.DIV_NAME}</b>`,
-    tooltipFunction: (obj) => obj.DIV_NAME,
-  },
-  city: {
-    url: "https://opendata.arcgis.com/datasets/405ec3da942d4e20869d4e1449a2be48_0.geojson",
-    legendSelectedTextFunction: (obj) => "<b>Philadelphia</b>",
-    tooltipFunction: (obj) => "Philadelphia",
-  },
-};
+  const mapObj = ref()
+  const mapsLoaded = ref()
+  const addressSelection = ref()
+  // const selectedFeature = ref()
 
+  // Options Setting
+  const options = {
+    center: [39.950888, -75.1895386],
+    zoom: 11,
+    selectedFeatureStyle: {
+      weight: 5,
+      color: "#666",
+      dashArray: "",
+      fillOpacity: 0.7,
+    },
+  };
+  const geoAggregations = {
+    psa: {
+      url: "https://opendata.arcgis.com/datasets/8dc58605f9dd484295c7d065694cdc0f_0.geojson",
+      legendSelectedTextFunction: (obj) =>
+        `<b>District:${obj.PSA_NUM.substr(0, 2)} PSA:${obj.PSA_NUM[2]}</b>`,
+      tooltipFunction: (obj) => obj.PSA_NUM,
+    },
+    district: {
+      url: "https://opendata.arcgis.com/datasets/62ec63afb8824a15953399b1fa819df2_0.geojson",
+      legendSelectedTextFunction: (obj) => `<b>District:${obj.DIST_NUM}</b>`,
+      tooltipFunction: (obj) => obj.DIST_NUMC,
+    },
+    division: {
+      url: "https://opendata.arcgis.com/datasets/4333983fd1e1449ca7fc2d63ad7e0076_0.geojson",
+      legendSelectedTextFunction: (obj) => `<b>Division:${obj.DIV_NAME}</b>`,
+      tooltipFunction: (obj) => obj.DIV_NAME,
+    },
+    city: {
+      url: "https://opendata.arcgis.com/datasets/405ec3da942d4e20869d4e1449a2be48_0.geojson",
+      legendSelectedTextFunction: (obj) => "<b>Philadelphia</b>",
+      tooltipFunction: (obj) => "Philadelphia",
+    },
+  };
 
-
+  function updateSelectedFeature(featureProperties) {
+    let featureName = 'citywide';
+    if (featureProperties.DIST_NUM) {
+      featureName = `District ${featureProperties.DIST_NUM}`
+    } else if (featureProperties.DIV_NAME) {
+      featureName = `Division ${featureProperties.DIV_NAME}`
+    } else if (featureProperties.PSA_NUM) {
+      featureName = `PSA ${featureProperties.PSA_NUM}`
+    }
+    emit("update:modelValue", featureName);
+  }
 
   let L = {};
   var selectedInfoControlDiv;
   var getTextFromSelectedFeatureProperties;
   var selectedGeojsonLayer = null;
   let map = "";
-  // const dispatch = createEventDispatcher();
-
-  // export let options;
-  // export let selectedFeature;
-
 
   let {
     zoom = 13,
@@ -92,16 +98,15 @@ const geoAggregations = {
   let icon;
   let markersArray = {};
   let bounds;
-  const getMap = () => {
-    return map;
-  };
+  // const getMap = () => {
+  //   return map;
+  // };
 
   function initialise() {
     setTimeout(async () => {
       L = window["L"];
       createMap();
-      updateGeojsonUrlLayer(geoAggregations[geoAggregation.value]);
-      // dispatch("ready");
+      updateGeojsonUrlLayer(geoAggregations[props.geoAggregation]);
     }, 1);
   }
 
@@ -207,26 +212,23 @@ const geoAggregations = {
     selectedInfoControlDiv.update(
       getTextFromSelectedFeatureProperties(layerFeature.feature.properties)
     );
-    selectedFeature = layerFeature.feature;
+    updateSelectedFeature(layerFeature.feature.properties)
   }
   function updateGeojsonUrlLayer(geojsonLayerProperties) {
-    // delete old layer
     if (selectedGeojsonLayer) {
       map.removeLayer(selectedGeojsonLayer);
     }
-    // add new layer
     addGeojsonUrlLayer(geojsonLayerProperties);
   }
   function addGeojsonUrlLayer(geojsonLayerProperties) {
     const geojsonLayerUrl = geojsonLayerProperties.url;
     // set the function for getting the text in the map legend
-    getTextFromSelectedFeatureProperties =
-      geojsonLayerProperties.legendSelectedTextFunction;
+    getTextFromSelectedFeatureProperties = geojsonLayerProperties.legendSelectedTextFunction;
 
     // add the url layer and set the tooltip function to that layer
     fetch(geojsonLayerUrl)
       .then((response) => response.json())
-      .then(function (geojsonLayer) {
+      .then((geojsonLayer) => {
         let thisGeojsonLayer = L.geoJSON(geojsonLayer, {
           onEachFeature: onEachFeature,
         });
@@ -271,6 +273,13 @@ const geoAggregations = {
       }
     }
   }
+
+  watch(
+    () => props.geoAggregation,
+    (newValue) => {
+      updateGeojsonUrlLayer(geoAggregations[newValue]);
+    }
+  );
 
   onMounted(() => {
     initialise();
