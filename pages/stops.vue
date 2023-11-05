@@ -21,6 +21,8 @@
     a total of
     <SelectedResult>400 vehicles</SelectedResult>.
   </div>
+
+  {{ question1Data }}
 </template>
 
 <script setup>
@@ -34,4 +36,35 @@ const selectedLocation = ref('citywide')
 const selectedTimeGranularity = ref('every year')
 const selectedTime0 = ref(2015)
 const selectedTime1 = ref(2023)
+
+const data = ref([])
+
+watch(selectedLocation, () => {
+  console.log('selected location changed. reloading data')
+  data.value = getDataFromCSV('/data/open_data_philly_psa-091.csv')
+})
+
+const question1Data = computed(() => {
+  console.log('hi')
+  console.log(data)
+  const filteredData = data.value.filter(d => d.year >= selectedTime0 && d.year <= selectedTime1)
+  const groupedData = groupBy(filteredData, 'year')
+  const reducedData = objectMap(groupedData, group => group.length)
+  console.log(reducedData)
+})
+
+onMounted(async () => {
+  // data.value = await getDataFromCSV('/data/open_data_philly_psa-091.csv')
+  const source = '/data/open_data_philly_psa-091.csv'
+  data.value = await fetch(source)
+    .then(response => response.text())
+    .then(text => {
+      const csv = CSVToArrayOfObjects(text);
+      return data;
+    })
+    .catch(error => {
+      console.error(error);
+    });
+  console.log(data.value)
+})
 </script>
