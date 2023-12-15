@@ -5,7 +5,7 @@
         Snapshot of traffic enforcement in Philadelphia
       </template>
       <template #image>
-        <img src="~/assets/images/snapshot.jpg" alt="Snapshot" />
+        <img src="" alt="Snapshot" />
       </template>
     </HomeModule>
 
