@@ -8,7 +8,7 @@
 
 <script setup>
   import SelectOne from '~/components/ui/SelectOne.vue'
-  const items = ['n_stopped', 'n_frisked', 'n_searched', 'n_intruded']
+  const items = ['age_range', 'race', 'gender']
   const props = defineProps(['modelValue'])
   const emit = defineEmits(['update:modelValue'])
 </script>

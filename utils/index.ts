@@ -1,5 +1,28 @@
+export const policeEvent = {
+  n_stopped: {
+    verb: 'stopped',
+    noun: 'stops',
+  },
+  n_searched: {
+    verb: 'searched',
+    noun: 'searches',
+  },
+  n_arrested: {
+    verb: 'arrested',
+    noun: 'arrests',
+  },
+  n_frisked: {
+    verb: 'frisked',
+    noun: 'frisks',
+  },
+  n_intruded: {
+    verb: 'intruded',
+    noun: 'intrusions',
+  },
+}
+
 export function objectMap(obj: any, fn: any): any {
-  Object.fromEntries(
+  return Object.fromEntries(
     Object.entries(obj).map(
       ([k, v], i) => [k, fn(v, k, i)]
     )
