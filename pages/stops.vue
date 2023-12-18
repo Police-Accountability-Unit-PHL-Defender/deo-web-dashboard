@@ -216,7 +216,6 @@ const sortObjectByValues = (obj) => {
 
 
 const calculateQuestion1Data = () => {
-  console.log('sdf')
   const filteredData = data.value.filter(d => Number(d.year) >= selectedTime0.value && Number(d.year) <= selectedTime1.value)
   const groupedData = groupBy(filteredData, 'year')
 

@@ -18,7 +18,6 @@
       acc[item] = policeEvent[item][props.wordForm]
       return acc
     }, {})
-    console.log(obj)
     return obj
   })
 </script>
