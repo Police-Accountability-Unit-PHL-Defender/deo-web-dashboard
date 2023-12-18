@@ -14,6 +14,7 @@ html {
 
 .text-heading-2 {
   font-size: 48px;
+  line-height: 1.25;
   font-family: 'Poppins', sans-serif;
   font-weight: 600;
 }
@@ -92,11 +93,11 @@ html {
 }
 
 .layout-container {
-  @apply max-w-6xl mx-auto px-4;
+  @apply max-w-[1344px] mx-auto px-8;
 }
 
 @layer components {  
   .button-select {
-    @apply bg-neutral-100 hover:bg-neutral-200 p-2;
+    @apply bg-neutral-100 hover:bg-neutral-200;
   }
 }

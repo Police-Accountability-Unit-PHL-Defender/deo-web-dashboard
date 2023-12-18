@@ -1,128 +1,126 @@
 <template>
-  <div class="layout-container">
-    <h2 class="text-heading-1 my-20 mx-auto text-center max-w-4xl">
+  <LayoutPageHeader>
+    <template #header>
       How many stops have police made in my neighborhood?
-    </h2>
-    <div>
-      <div class="w-full max-w-4xl aspect-[8/2]">
-        <img class="w-full h-full object-cover" src="~/assets/images/stops.jpg" alt="Closeup of police lights at night"/>
+    </template>
+    <template #image>
+      <img class="w-full h-full object-cover" src="~/assets/images/stops.jpg" alt="Closeup of police lights at night"/>
+    </template>
+    <template #quote>
+      <Quote author="Carl Day, Pastor" source="https://phillydefenders.org">
+        <template #quoteText>
+          <p>
+            As a Black man, oftentimes I’ve definitely been targeted by police. I’ve watched police make U-turns after just riding by them if there happen to be two Black men in the car. I watched them follow me for periods of time and ultimately, just to finally turn those lights on. As a Black man, you’re just awaiting that moment. You’ll sit in the car and you’re just waiting for that time for the red and blue lights to come on.
+          </p>
+        </template>
+      </Quote>
+    </template>
+  </LayoutPageHeader>
+  <QuestionHeader>
+    <template #content>
+      How many <SelectEvent v-model="selectedEvent" word-form="noun"/> did Philadelphia police make <SelectLocation v-model="selectedLocation"/>, <SelectTimeGranularity v-model="selectedTimeGranularity"/> from <SelectTime v-model="selectedTime0"/> to <SelectTime v-model="selectedTime1"/>?
+    </template>
+  </QuestionHeader>
+  <QuestionHeader>
+    <template #content>
+      <SelectedResult>{{ selectedLocation }}</SelectedResult>, from <SelectedResult>{{ selectedTime0 }}</SelectedResult> to <SelectedResult>{{ selectedTime1 }}</SelectedResult>, Philadelphia police <SelectedResult>{{ policeEvent[selectedEvent].verb_past }}</SelectedResult> a total of <SelectedResult>{{ q1Total }} people</SelectedResult>.
+    </template>
+  </QuestionHeader>
+  <Graph :graph-data="q1GraphData" :axis-properties="{x: 'time', y: 'amount'}">
+    <template #title>
+      <h2>Number of {{ policeEvent[selectedEvent].noun }} {{ selectedLocation }} from {{ selectedTime0 }} to {{ selectedTime1 }}</h2>
+    </template>
+  </Graph>
+  <HorizontalLine class="my-20"/>
+
+  <QuestionHeader>
+    <template #content>
+      What are the ages, genders, and racial identities of people<br/> <SelectEvent v-model="selectedEvent" word-form="verb_past"/>&nbsp; <SelectLocation v-model="selectedLocation"/>, from <SelectTime v-model="selectedTime0"/> to <SelectTime v-model="selectedTime1"/>?
+    </template>
+  </QuestionHeader>
+
+  <div>
+    <div class="text-label-1">Select demographics and compare</div>
+    <div class="grid grid-cols-2">
+      <div>
+        <h4 class="text-label-2">Group 1</h4>
+        <SelectAgeGroup v-model="q2Group1AgeRanges"/>
+        <SelectGenderIdentity v-model="q2Group1Genders"/>
+        <SelectRaces v-model="q2Group1Races"/>
       </div>
-      <div class="flex justify-end -mt-24">
-        <Quote author="Carl Day, Pastor" source="https://phillydefenders.org">
-          <template #quote>
-            <p>
-              As a Black man, oftentimes I’ve definitely been targeted by police. I’ve watched police make U-turns after just riding by them if there happen to be two Black men in the car. I watched them follow me for periods of time and ultimately, just to finally turn those lights on. As a Black man, you’re just awaiting that moment. You’ll sit in the car and you’re just waiting for that time for the red and blue lights to come on.
-            </p>
-          </template>
-        </Quote>
-      </div>
-    </div>
-    <QuestionHeader>
-      <template #content>
-        How many <SelectEvent v-model="selectedEvent"/> did Philadelphia police make <SelectLocation v-model="selectedLocation"/>, <SelectTimeGranularity v-model="selectedTimeGranularity"/> from <SelectTime v-model="selectedTime0"/> to <SelectTime v-model="selectedTime1"/>?
-      </template>
-    </QuestionHeader>
-    <QuestionHeader>
-      <template #content>
-        <SelectedResult>{{ selectedLocation }}</SelectedResult>, from <SelectedResult>{{ selectedTime0 }}</SelectedResult> to <SelectedResult>{{ selectedTime1 }}</SelectedResult>, Philadelphia police <SelectedResult>{{ selectedEvent }}</SelectedResult> a total of <SelectedResult>{{ q1Total }} {{ selectedEvent }}</SelectedResult>.
-      </template>
-    </QuestionHeader>
-    <Graph :graph-data="q1GraphData" :axis-properties="{x: 'time', y: 'amount'}">
-      <template #title>
-        <h2>Number of {{ selectedEvent }} {{ selectedLocation }} from {{ selectedTime0 }} to {{ selectedTime1 }}</h2>
-      </template>
-    </Graph>
-    <HorizontalLine class="my-20"/>
-
-    <QuestionHeader>
-      <template #content>
-        What are the ages, genders, and racial identities of people<br/> <SelectEvent v-model="selectedEvent"/>&nbsp; <SelectLocation v-model="selectedLocation"/>, from <SelectTime v-model="selectedTime0"/> to <SelectTime v-model="selectedTime1"/>?
-      </template>
-    </QuestionHeader>
-
-    <div>
-      <div class="text-label-1">Select demographics and compare</div>
-      <div class="grid grid-cols-2">
-        <div>
-          <h4 class="text-label-2">Group 1</h4>
-          <SelectAgeGroup v-model="q2Group1AgeRanges"/>
-          <SelectGenderIdentity v-model="q2Group1Genders"/>
-          <SelectRaces v-model="q2Group1Races"/>
-        </div>
-        <div>
-          <h4 class="text-label-2">Group 2</h4>
-          <SelectAgeGroup v-model="q2Group2AgeRanges"/>
-          <SelectGenderIdentity v-model="q2Group2Genders"/>
-          <SelectRaces v-model="q2Group2Races"/>
-        </div>
-      </div>
-      <!-- <div class="text-body-4">
-        <p>
-          <strong>Why the quotes?</strong>
-          The quotes are meant to highlight that police record data is created by police officers. During an incident, the police officer records a person's age group, sex, and race, often without actually asking them. These categories and their names come directly from the system that Philadelphia Police have designed for recording their interactions with people.
-        </p>
-      </div> -->
-    </div>
-
-    <Graph :graph-data="q2GraphData" :axis-properties="{x: 'time', y: 'amount'}" group-name="group" :group-classes="{'group1': 'fill-primary-600', 'group2': 'fill-red'}">
-      <template #title>
-        <h2>Number of {{ selectedEvent }} of vehicles driven by <span class="text-label-1">Group 1</span> and <span class="text-label-1">Group 2</span> {{ selectedLocation }} from {{ selectedTime0 }} to {{ selectedTime1 }}</h2>
-      </template>
-    </Graph>
-
-    <HorizontalLine class="my-20"/>
-
-    <QuestionHeader>
-      <template #content>
-        <SelectLocation v-model="selectedLocation"/>, from <SelectTime v-model="selectedTime0"/> to <SelectTime v-model="selectedTime1"/> which demographic groups did Philadelphia police most frequently <SelectEvent v-model="selectedEvent"/>?
-      </template>
-    </QuestionHeader>
-
-    <QuestionHeader>
-      <template #content>
-        <SelectedResult>{{ selectedLocation }}</SelectedResult>, from <SelectedResult>{{ selectedTime0 }}</SelectedResult> to <SelectedResult>{{ selectedTime1 }}</SelectedResult>, Philadelphia police most frequently <SelectedResult>{{ selectedEvent }}</SelectedResult> people who they identified as <SelectedResult>{{ sortedSummedDataTopDemographic[0] }}, {{ sortedSummedDataTopDemographic[1] }}, and {{ sortedSummedDataTopDemographic[2] }} years old</SelectedResult>.
-      </template>
-    </QuestionHeader>
-
-    <div>
-      <div class="max-h-[400px] overflow-y-hidden">
-        <table>
-          <thead>
-            <tr>
-              <th>Race</th>
-              <th>Gender</th>
-              <th>Age Range</th>
-              <th>Percentage of {{ selectedEvent }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="(value, key) in sortedSummedData">
-              <td>{{ key.split(':')[0] }}</td>
-              <td>{{ key.split(':')[1] }}</td>
-              <td>{{ key.split(':')[2] }}</td>
-              <td>{{ (value / q1Total * 100).toFixed(2) }}%</td>
-            </tr>
-          </tbody>
-        </table>
+      <div>
+        <h4 class="text-label-2">Group 2</h4>
+        <SelectAgeGroup v-model="q2Group2AgeRanges"/>
+        <SelectGenderIdentity v-model="q2Group2Genders"/>
+        <SelectRaces v-model="q2Group2Races"/>
       </div>
     </div>
-
-    <HorizontalLine class="my-20"/>
-
-    <QuestionHeader>
-      <template #content>
-        How often did Philadelphia police <SelectEvent v-model="selectedEvent"/> vehicles, passengers, and/or drivers of different <SelectDemographicCategory v-model="selectedDemographic"></SelectDemographicCategory> from <SelectTime v-model="selectedTime0"/> to <SelectTime v-model="selectedTime1"/>, <SelectLocation v-model="selectedLocation"/>?
-      </template>
-    </QuestionHeader>
-
-    <QuestionHeader>
-      <template #content>
-        Number of Philadelphia police <SelectedResult>{{ selectedEvent }}</SelectedResult> of vehicles driven by different <SelectedResult>{{ selectedDemographic }}</SelectedResult>, <SelectedResult>{{ selectedLocation }}</SelectedResult>, from <SelectedResult>{{ selectedTime0 }}</SelectedResult> to <SelectedResult>{{ selectedTime1 }}</SelectedResult>.
-      </template>
-    </QuestionHeader>
-
-    <Graph :graph-data="summedDataByDemographic" :axis-properties="{x: selectedDemographic, y: selectedEvent}"></Graph>
+    <!-- <div class="text-body-4">
+      <p>
+        <strong>Why the quotes?</strong>
+        The quotes are meant to highlight that police record data is created by police officers. During an incident, the police officer records a person's age group, sex, and race, often without actually asking them. These categories and their names come directly from the system that Philadelphia Police have designed for recording their interactions with people.
+      </p>
+    </div> -->
   </div>
+
+  <Graph :graph-data="q2GraphData" :axis-properties="{x: 'time', y: 'amount'}" group-name="group" :group-classes="{'group1': 'fill-primary-600', 'group2': 'fill-red'}">
+    <template #title>
+      <h2>Number of {{ policeEvent[selectedEvent].noun }} of vehicles driven by <span class="text-label-1">Group 1</span> and <span class="text-label-1">Group 2</span> {{ selectedLocation }} from {{ selectedTime0 }} to {{ selectedTime1 }}</h2>
+    </template>
+  </Graph>
+
+  <HorizontalLine class="my-20"/>
+
+  <QuestionHeader>
+    <template #content>
+      <SelectLocation v-model="selectedLocation"/>, from <SelectTime v-model="selectedTime0"/> to <SelectTime v-model="selectedTime1"/> which demographic groups did Philadelphia police most frequently <SelectEvent v-model="selectedEvent" word-form="verb_past"/>?
+    </template>
+  </QuestionHeader>
+
+  <QuestionHeader>
+    <template #content>
+      <SelectedResult>{{ selectedLocation }}</SelectedResult>, from <SelectedResult>{{ selectedTime0 }}</SelectedResult> to <SelectedResult>{{ selectedTime1 }}</SelectedResult>, Philadelphia police most frequently <SelectedResult>{{ policeEvent[selectedEvent].verb_past }}</SelectedResult> people who they identified as <SelectedResult>{{ sortedSummedDataTopDemographic[0] }}, {{ sortedSummedDataTopDemographic[1] }}, and {{ sortedSummedDataTopDemographic[2] }} years old</SelectedResult>.
+    </template>
+  </QuestionHeader>
+
+  <div>
+    <div class="max-h-[400px] overflow-y-hidden">
+      <table>
+        <thead>
+          <tr>
+            <th>Race</th>
+            <th>Gender</th>
+            <th>Age Range</th>
+            <th>Percentage of {{ selectedEvent }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(value, key) in sortedSummedData">
+            <td>{{ key.split(':')[0] }}</td>
+            <td>{{ key.split(':')[1] }}</td>
+            <td>{{ key.split(':')[2] }}</td>
+            <td>{{ (value / q1Total * 100).toFixed(2) }}%</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <HorizontalLine class="my-20"/>
+
+  <QuestionHeader>
+    <template #content>
+      How often did Philadelphia police <SelectEvent v-model="selectedEvent" word-form="verb_present"/> vehicles, passengers, and/or drivers of different <SelectDemographicCategory v-model="selectedDemographic"></SelectDemographicCategory> from <SelectTime v-model="selectedTime0"/> to <SelectTime v-model="selectedTime1"/>, <SelectLocation v-model="selectedLocation"/>?
+    </template>
+  </QuestionHeader>
+
+  <QuestionHeader>
+    <template #content>
+      Number of Philadelphia police <SelectedResult>{{ policeEvent[selectedEvent].noun }}</SelectedResult> of vehicles driven by different <SelectedResult>{{ selectedDemographic }}</SelectedResult>, <SelectedResult>{{ selectedLocation }}</SelectedResult>, from <SelectedResult>{{ selectedTime0 }}</SelectedResult> to <SelectedResult>{{ selectedTime1 }}</SelectedResult>.
+    </template>
+  </QuestionHeader>
+
+  <Graph :graph-data="summedDataByDemographic" :axis-properties="{x: selectedDemographic, y: selectedEvent}"></Graph>
 </template>
 
 <script setup>

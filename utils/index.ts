@@ -1,22 +1,27 @@
 export const policeEvent = {
   n_stopped: {
-    verb: 'stopped',
+    verb_past: 'stopped',
+    verb_present: 'stop',
     noun: 'stops',
   },
   n_searched: {
-    verb: 'searched',
+    verb_past: 'searched',
+    verb_present: 'search',
     noun: 'searches',
   },
   n_arrested: {
-    verb: 'arrested',
+    verb_past: 'arrested',
+    verb_present: 'arrest',
     noun: 'arrests',
   },
   n_frisked: {
-    verb: 'frisked',
+    verb_past: 'frisked',
+    verb_present: 'frisk',
     noun: 'frisks',
   },
   n_intruded: {
-    verb: 'intruded',
+    verb_past: 'intruded',
+    verb_present: 'intrude',
     noun: 'intrusions',
   },
 }
