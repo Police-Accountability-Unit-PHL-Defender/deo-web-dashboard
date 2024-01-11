@@ -10,7 +10,7 @@
       <span class="text-primary-800 leading-6">{{ getDisplayText(props.modelValue) }}</span>
       <IconsChevron classes="fill-black"></IconsChevron>
     </ListboxButton>
-    <ListboxOptions class="bg-neutral-100 absolute z-[100] top-full w-auto mt-2 leading-6">
+    <ListboxOptions class="bg-neutral-100 absolute z-[1] top-full w-auto mt-2 leading-6">
       <ListboxOption
         v-for="item in props.items"
         :key="item"

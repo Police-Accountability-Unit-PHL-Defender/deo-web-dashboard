@@ -1,5 +1,5 @@
 <template>
-  <label class="block text-body-3">"Race"</label>
+  <label class="block text-body-3">Race</label>
   <SelectOne
     :items="items"
     :modelValue="modelValue"

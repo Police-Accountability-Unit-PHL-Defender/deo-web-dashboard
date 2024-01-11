@@ -1,3 +1,15 @@
+export function formatLocationForSentence(locationValue: string, capitalize=false) {
+  if (locationValue === 'citywide') {
+    return capitalize ? capitalizeFirstLetter(locationValue) : locationValue
+  } else {
+    return `${capitalize ? 'In' : 'in'} ${locationValue}`
+  }
+}
+
+function capitalizeFirstLetter(str: string) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
 export const policeEvent = {
   n_stopped: {
     verb_past: 'stopped',

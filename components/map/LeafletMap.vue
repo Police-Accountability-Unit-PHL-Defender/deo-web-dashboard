@@ -21,7 +21,7 @@
 
   // Options Setting
   const options = {
-    center: [39.950888, -75.1895386],
+    center: [40.0, -75.12],
     zoom: 11,
     selectedFeatureStyle: {
       weight: 5,
@@ -75,7 +75,7 @@
   let {
     zoom = 13,
     maxZoom = 19,
-    minZoom = 1,
+    minZoom = 11,
     mapID = "map",
     attributionControl = true,
     center = [0, 0],
@@ -141,7 +141,7 @@
     selectedInfoControlDiv.onAdd = function (map) {
       this._div = L.DomUtil.create("div", "info"); // create a div with a class "info"
       this._div.style = "color:black";
-      this.update("Hover over a geography");
+      // this.update("Hover over a geography");
       return this._div;
     };
 
@@ -153,7 +153,7 @@
     selectedInfoControlDiv.onAdd = function (map) {
       this._div = L.DomUtil.create("div", "info"); // create a div with a class "info"
       this._div.style = "color:black";
-      this.update("Hover over a geography");
+      // this.update("Hover over a geography");
       return this._div;
     };
 
