@@ -25,7 +25,7 @@
   </QuestionHeader>
   <QuestionHeader>
     <template #content>
-      <SelectedResult>{{ formatLocationForSentence(selectedLocation, capitalize=true) }}</SelectedResult>, from <SelectedResult>{{ selectedTime0 }}</SelectedResult> to <SelectedResult>{{ selectedTime1 }}</SelectedResult>, Philadelphia police <SelectedResult>{{ policeEvent[selectedEvent].verb_past }}</SelectedResult> a total of <SelectedResult>{{ q1Total.toLocaleString() }} people</SelectedResult>.
+      <SelectedResult>{{ formatLocationForSentence(selectedLocation, true) }}</SelectedResult>, from <SelectedResult>{{ selectedTime0 }}</SelectedResult> to <SelectedResult>{{ selectedTime1 }}</SelectedResult>, Philadelphia police <SelectedResult>{{ policeEvent[selectedEvent].verb_past }}</SelectedResult> a total of <SelectedResult>{{ q1Total.toLocaleString() }} people</SelectedResult>.
     </template>
   </QuestionHeader>
   <Graph :graph-data="q1GraphData" :axis-properties="{x: 'time', y: 'amount'}">
@@ -99,7 +99,7 @@
 
   <QuestionHeader>
     <template #content>
-      <SelectedResult>{{ formatLocationForSentence(selectedLocation, capitalize=true) }}</SelectedResult>, from <SelectedResult>{{ selectedTime0 }}</SelectedResult> to <SelectedResult>{{ selectedTime1 }}</SelectedResult>, Philadelphia police most frequently
+      <SelectedResult>{{ formatLocationForSentence(selectedLocation, true) }}</SelectedResult>, from <SelectedResult>{{ selectedTime0 }}</SelectedResult> to <SelectedResult>{{ selectedTime1 }}</SelectedResult>, Philadelphia police most frequently
       stopped
       <!-- <SelectedResult>{{ policeEvent[selectedEvent].verb_past }}</SelectedResult> -->
       people who they identified as <SelectedResult>{{ sortedSummedDataTopDemographic[0] }}, {{ sortedSummedDataTopDemographic[1] }}, and {{ sortedSummedDataTopDemographic[2] }} years old</SelectedResult>.
