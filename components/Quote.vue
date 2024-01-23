@@ -1,6 +1,6 @@
 <template>
-  <div class="relative max-w-[630px] px-14 pt-24 pb-16 font-medium rounded-bl-[100px] rounded-tr-[100px] text-center" :class="backgroundClass">
-    <IconsQuoteMark class="absolute -top-6 right-10" :classes="quoteMarkClass" />
+  <div class="relative w-5/6 max-w-[630px] px-6 md:px-14 pt-18 md:pt-24 pb-12 md:pb-16 font-medium rounded-bl-[100px] rounded-tr-[100px] text-center" :class="backgroundClass">
+    <IconsQuoteMark class="absolute -top-7 md:-top-6 right-10 scale-75 md:scale-100" :classes="quoteMarkClass" />
     <slot name="quoteText"></slot>
     <div class="text-center text-body-2 font-bold mt-6">{{ props.author }}</div>
     <div class="flex justify-end mt-6">

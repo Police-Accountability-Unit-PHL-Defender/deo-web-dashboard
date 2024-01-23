@@ -1,6 +1,6 @@
 <template>
-  <div class="border">
-    <div class="w-full text-center mt-12 mb-4 text-heading-5">
+  <div class="border my-10 p-4">
+    <div class="w-full text-center mt-4 mb-8 text-heading-5 text-primary-800">
       <slot name="title"></slot>
     </div>
     <svg class="mx-auto text-body-4" ref="graphSvg"></svg>
