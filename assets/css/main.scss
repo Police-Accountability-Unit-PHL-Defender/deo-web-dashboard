@@ -7,60 +7,65 @@ html {
 }
 
 .text-heading-1 {
-  font-size: 60px;
   font-family: 'Poppins', sans-serif;
   font-weight: 600;
+  @apply text-[36px] md:text-[60px];
 }
 
 .text-heading-2 {
-  font-size: 48px;
   line-height: 1.25;
   font-family: 'Poppins', sans-serif;
   font-weight: 600;
+  @apply text-[30px] md:text-[48px];
 }
 
 .text-heading-3 {
-  font-size: 40px;
   font-family: 'Poppins', sans-serif;
   font-weight: 600;
+  @apply text-[24px] md:text-[40px];
 }
 
 .text-heading-4 {
-  font-size: 28px;
   font-family: 'Poppins', sans-serif;
   font-weight: 600;
+  @apply text-[20px] md:text-[28px];
 }
 
 .text-heading-5 {
-  font-size: 24px;
   font-family: 'Poppins', sans-serif;
   font-weight: 600;
+  @apply text-[18px] md:text-[24px];
 }
 
 .text-heading-6 {
   font-size: 21px;
   font-family: 'Poppins', sans-serif;
   font-weight: 600;
+  @apply text-[15px] md:text-[21px];
 }
 
 .text-body-1 {
   font-size: 20px;
   font-family: 'Poppins', sans-serif;
+  @apply text-[18px] md:text-[20px];
 }
 
 .text-body-2 {
   font-size: 18px;
   font-family: 'Poppins', sans-serif;
+  @apply text-[16px] md:text-[18px];
 }
 
 .text-body-3 {
   font-size: 16px;
   font-family: 'Poppins', sans-serif;
+  @apply text-[14px] md:text-[16px];
 }
 
 .text-body-4 {
   font-size: 14px;
   font-family: 'Poppins', sans-serif;
+  @apply text-[12px] md:text-[14px];
 }
 
 .text-label-1 {
@@ -95,7 +100,7 @@ html {
 }
 
 .layout-container {
-  @apply max-w-[1344px] mx-auto px-8;
+  @apply max-w-[1344px] mx-auto px-3 md:px-8;
 }
 
 @layer components {  

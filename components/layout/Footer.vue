@@ -7,7 +7,7 @@
   </div>
   <div class="w-full bg-primary-800 pt-10">
     <div class="layout-container">
-      <div class="grid grid-cols-3">
+      <div class="grid md:grid-cols-3 gap-6">
         <div class="flex justify-start items-start">
           <a href="/">
             <img src="~/assets/images/defender-logo-white.png" alt="Defender Association of Philadelphia" class="w-[182px] mx-auto" />
@@ -36,7 +36,7 @@
           </li>
         </ul>
       </div>
-      <div class="py-18 text-caption text-white">
+      <div class="py-10 md:py-18 text-caption text-white">
         Copyright © 2023 Defender Association of Philadelphia. All rights reserved.
       </div>
     </div>

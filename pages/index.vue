@@ -1,5 +1,5 @@
 <template>
-  <div class="layout-container">
+  <div>
     <HomeModule ctaLink="/snapshot">
       <template #title>
         Snapshot of traffic enforcement in Philadelphia
@@ -46,7 +46,7 @@
       </template>
       <template #image>
         <div class="absolute right-0 top-0 bg-yellow h-2/3 aspect-[251/283]"></div>
-        <img class="absolute right-[16%] w-5/6" src="~/assets/images/neighborhoods.jpg" alt="A police car" />
+        <img class="absolute right-[16%] bottom-0 md:bottom-auto w-5/6" src="~/assets/images/neighborhoods.jpg" alt="A police car" />
       </template>
     </HomeModule>
 
