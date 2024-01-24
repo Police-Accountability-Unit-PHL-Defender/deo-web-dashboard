@@ -3,17 +3,19 @@
     <div class="layout-container relative max-w-4xl mx-auto pt-12 pb-8">
       <div class="w-full flex justify-between">
         <button id="header-menu-button" class="-mt-4 -ml-4" title="Open full menu" @click="openPopupMenu"></button>
-        <Button class="hidden lg:block">Contact us</Button>
+        <Button class="hidden md:block">Contact us</Button>
       </div>
-      <div class="flex justify-center -mt-8 lg:-mt-20">
+      <div class="flex justify-center -mt-8 md:-mt-20">
         <a href="/" class="order-2">
           <img src="~/assets/images/defender-logo-white.png" alt="Defender Association of Philadelphia" class="w-[182px] mx-auto" />
         </a>
       </div>
-      <h1 class="text-heading-4 mt-14">Driving Equality Act, 2 Years Later</h1>
-      <p class="text-body-3 mt-4">
-        March 2024 marks the second anniversary of the Driving Equality Act in Philadelphia. This landmark policy changed the way that police make stops in the city, and was the first in the country. This project surfaces public data to show the law’s impact on the people of Philadelphia since it was passed.
-      </p>
+      <div v-if="isIndex">
+        <h1 class="text-heading-4 mt-14">Driving Equality Act, 2 Years Later</h1>
+        <p class="text-body-3 mt-4">
+          March 2024 marks the second anniversary of the Driving Equality Act in Philadelphia. This landmark policy changed the way that police make stops in the city, and was the first in the country. This project surfaces public data to show the law’s impact on the people of Philadelphia since it was passed.
+        </p>
+      </div>
     </div>
     <nav class="hidden md:grid grid-cols-5 gap-1">
       <a href="/snapshot" class="flex items-center bg-primary-600 hover:bg-primary-200 hover:text-primary-600 p-4 text-body-3 font-medium">
@@ -103,6 +105,7 @@ button#header-menu-close-button {
 
 <script setup lang="ts">
 import { ref } from 'vue';
+import { useRouter } from 'vue-router';
 import Button from '@/components/ui/Button.vue';
 const isMenuOpen = ref(false);
 const menu = ref();
@@ -113,4 +116,9 @@ const openPopupMenu = () => {
 const closePopupMenu = () => {
   isMenuOpen.value = false;
 }
+
+// Get current route
+const router = useRouter();
+const currentRoute = ref(router.currentRoute.value.path);
+const isIndex = computed(() => currentRoute.value === '/');
 </script>

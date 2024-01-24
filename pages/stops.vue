@@ -16,143 +16,159 @@
       </Quote>
     </template>
   </LayoutPageHeader>
-  <QuestionHeader>
-    <template #content>
-      How many stops
-      <!-- <SelectEvent v-model="selectedEvent" word-form="noun"/> -->
-      did Philadelphia police make <SelectLocation v-model="selectedLocation"/>, <SelectTimeGranularity v-model="selectedTimeGranularity"/> from <SelectTime v-model="selectedTime0"/> to <SelectTime v-model="selectedTime1"/>?
-    </template>
-  </QuestionHeader>
-  <QuestionHeader>
-    <template #content>
-      <SelectedResult>{{ formatLocationForSentence(selectedLocation, true) }}</SelectedResult>, from <SelectedResult>{{ selectedTime0 }}</SelectedResult> to <SelectedResult>{{ selectedTime1 }}</SelectedResult>, Philadelphia police <SelectedResult>{{ policeEvent[selectedEvent].verb_past }}</SelectedResult> a total of <SelectedResult>{{ q1Total.toLocaleString() }} people</SelectedResult>.
-    </template>
-  </QuestionHeader>
-  <Graph :graph-data="q1GraphData" :axis-properties="{x: 'time', y: 'amount'}">
-    <template #title>
-      <h2>
-        Number of stops
-        <!-- {{ policeEvent[selectedEvent].noun }} -->
-        {{ formatLocationForSentence(selectedLocation) }} from {{ selectedTime0 }} to {{ selectedTime1 }}</h2>
-    </template>
-  </Graph>
+
+  <section>
+    <QuestionHeader>
+      <template #content>
+        How many stops
+        <!-- <SelectEvent v-model="selectedEvent" word-form="noun"/> -->
+        did Philadelphia police make <SelectLocation v-model="selectedLocation"/>, <SelectTimeGranularity v-model="selectedTimeGranularity"/> from <SelectTime v-model="selectedTime0"/> to <SelectTime v-model="selectedTime1"/>?
+      </template>
+    </QuestionHeader>
+    <IconsArrow class="text-neutral-200 rotate-180 mx-auto my-10"/>
+    <QuestionHeader>
+      <template #content>
+        <SelectedResult>{{ formatLocationForSentence(selectedLocation, true) }}</SelectedResult>, from <SelectedResult>{{ selectedTime0 }}</SelectedResult> to <SelectedResult>{{ selectedTime1 }}</SelectedResult>, Philadelphia police <SelectedResult>{{ policeEvent[selectedEvent].verb_past }}</SelectedResult> a total of <SelectedResult>{{ q1Total.toLocaleString() }} people</SelectedResult>.
+      </template>
+    </QuestionHeader>
+    <Graph :graph-data="q1GraphData" :axis-properties="{x: 'time', y: 'amount'}">
+      <template #title>
+        <h2>
+          Number of stops
+          <!-- {{ policeEvent[selectedEvent].noun }} -->
+          {{ formatLocationForSentence(selectedLocation) }} from {{ selectedTime0 }} to {{ selectedTime1 }}</h2>
+      </template>
+    </Graph>
+  </section>
+
   <HorizontalLine class="my-20"/>
 
-  <QuestionHeader>
-    <template #content>
-      What are the ages, genders, and racial identities of people stopped 
-      <!-- <SelectEvent v-model="selectedEvent" word-form="verb_past"/>&nbsp; -->
-      <SelectLocation v-model="selectedLocation"/>, from <SelectTime v-model="selectedTime0"/> to <SelectTime v-model="selectedTime1"/>?
-    </template>
-  </QuestionHeader>
-
-  <div>
-    <div class="text-label-1">Select demographics and compare</div>
-    <div class="grid grid-cols-2">
-      <div>
-        <h4 class="text-label-2">Group 1</h4>
-        <SelectAgeGroup v-model="q2Group1AgeRanges"/>
-        <SelectGenderIdentity v-model="q2Group1Genders"/>
-        <SelectRaces v-model="q2Group1Races"/>
+  <section>
+    <QuestionHeader>
+      <template #content>
+        What are the ages, genders, and racial identities of people stopped 
+        <!-- <SelectEvent v-model="selectedEvent" word-form="verb_past"/>&nbsp; -->
+        <SelectLocation v-model="selectedLocation"/>, from <SelectTime v-model="selectedTime0"/> to <SelectTime v-model="selectedTime1"/>?
+      </template>
+    </QuestionHeader>
+    <div class="mx-auto max-w-2xl mt-16">
+      <div class="text-label-1 text-center">Select demographics and compare</div>
+      <div class="grid grid-cols-2 gap-4 mt-6">
+        <div class="col-span-1 flex flex-col gap-6 text-body-1 font-medium">
+          <h4 class="text-label-2 flex gap-2 items-center">
+            Group 1
+            <div class="demographic-group-square bg-primary-600"></div>
+          </h4>
+          <SelectAgeGroup v-model="q2Group1AgeRanges"/>
+          <SelectGenderIdentity v-model="q2Group1Genders"/>
+          <SelectRaces v-model="q2Group1Races"/>
+        </div>
+        <div class="col-span-1 flex flex-col gap-6 text-body-1 font-medium">
+          <h4 class="text-label-2 flex gap-2 items-center">
+            Group 2
+            <div class="demographic-group-square bg-red"></div>
+          </h4>
+          <SelectAgeGroup v-model="q2Group2AgeRanges"/>
+          <SelectGenderIdentity v-model="q2Group2Genders"/>
+          <SelectRaces v-model="q2Group2Races"/>
+        </div>
       </div>
-      <div>
-        <h4 class="text-label-2">Group 2</h4>
-        <SelectAgeGroup v-model="q2Group2AgeRanges"/>
-        <SelectGenderIdentity v-model="q2Group2Genders"/>
-        <SelectRaces v-model="q2Group2Races"/>
+    </div>
+    <IconsArrow class="text-neutral-200 rotate-180 mx-auto my-10"/>
+    <Graph :graph-data="q2GraphData" :axis-properties="{x: 'time', y: 'amount'}" group-name="group" :group-classes="{'group1': 'fill-primary-600', 'group2': 'fill-red'}">
+      <template #title>
+        <h2 class="max-w-[500px] mx-auto">
+          Number of stops
+          <!-- {{ policeEvent[selectedEvent].noun }} -->
+          of vehicles driven by
+          <SelectedResult>
+            <span class="text-label-1">Group 1</span> <div class="demographic-group-square bg-primary-600"></div>
+          </SelectedResult>
+          and
+          <SelectedResult>
+            <span class="text-label-1">Group 2</span> <div class="demographic-group-square bg-red"></div>
+          </SelectedResult>
+          {{ formatLocationForSentence(selectedLocation) }} from {{ selectedTime0 }} to {{ selectedTime1 }}
+        </h2>
+      </template>
+    </Graph>
+  </section>
+
+  <HorizontalLine class="my-20"/>
+
+  <section>
+    <QuestionHeader>
+      <template #content>
+        <SelectLocation v-model="selectedLocation" :capitalize="true"/>, from <SelectTime v-model="selectedTime0"/> to <SelectTime v-model="selectedTime1"/> which demographic groups did Philadelphia police most frequently stop?
+        <!-- <SelectEvent v-model="selectedEvent" word-form="verb_past"/> -->
+      </template>
+    </QuestionHeader>
+    <IconsArrow class="text-neutral-200 rotate-180 mx-auto my-10"/>
+    <QuestionHeader>
+      <template #content>
+        <SelectedResult>{{ formatLocationForSentence(selectedLocation, true) }}</SelectedResult>, from <SelectedResult>{{ selectedTime0 }}</SelectedResult> to <SelectedResult>{{ selectedTime1 }}</SelectedResult>, Philadelphia police most frequently
+        stopped
+        <!-- <SelectedResult>{{ policeEvent[selectedEvent].verb_past }}</SelectedResult> -->
+        people who they identified as <SelectedResult>{{ sortedSummedDataTopDemographic[0] }}, {{ sortedSummedDataTopDemographic[1] }}, and {{ sortedSummedDataTopDemographic[2] }} years old</SelectedResult>.
+      </template>
+    </QuestionHeader>
+    <div class="deo-table mt-10">
+      <div class="relative w-full">
+        <table class="w-full">
+          <thead class="w-full">
+            <tr>
+              <th class="w-1/4">Race</th>
+              <th class="w-1/4">Gender</th>
+              <th class="w-1/4">Age Range</th>
+              <th class="w-1/4">% of Stops</th>
+            </tr>
+          </thead>
+        </table>
+      </div>
+      <div class="w-full h-[400px] overflow-y-scroll">
+        <table class="text-body-3 relative w-full">
+          <tbody class="w-full">
+            <tr v-for="(value, key) in sortedSummedData">
+              <td class="w-1/4">{{ key.split(':')[0] }}</td>
+              <td class="w-1/4">{{ key.split(':')[1] }}</td>
+              <td class="w-1/4">{{ key.split(':')[2] }}</td>
+              <td class="w-1/4">{{ (value / q1Total * 100).toFixed(2) }}%</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
-    <!-- <div class="text-body-4">
-      <p>
-        <strong>Why the quotes?</strong>
-        The quotes are meant to highlight that police record data is created by police officers. During an incident, the police officer records a person's age group, sex, and race, often without actually asking them. These categories and their names come directly from the system that Philadelphia Police have designed for recording their interactions with people.
-      </p>
-    </div> -->
-  </div>
+  </section>
 
-  <Graph :graph-data="q2GraphData" :axis-properties="{x: 'time', y: 'amount'}" group-name="group" :group-classes="{'group1': 'fill-primary-600', 'group2': 'fill-red'}">
-    <template #title>
-      <h2>
-        Number of stops
-        <!-- {{ policeEvent[selectedEvent].noun }} -->
-        of vehicles driven by
-        <SelectedResult>
-          <span class="text-label-1">Group 1</span> <div class="inline-block w-6 h-6 bg-primary-600"></div>
-        </SelectedResult>
-        and
-        <SelectedResult>
-          <span class="text-label-1">Group 2</span> <div class="inline-block w-6 h-6 bg-red"></div>
-        </SelectedResult>
-        {{ formatLocationForSentence(selectedLocation) }} from {{ selectedTime0 }} to {{ selectedTime1 }}</h2>
-    </template>
-  </Graph>
 
   <HorizontalLine class="my-20"/>
 
-  <QuestionHeader>
-    <template #content>
-      <SelectLocation v-model="selectedLocation" :capitalize="true"/>, from <SelectTime v-model="selectedTime0"/> to <SelectTime v-model="selectedTime1"/> which demographic groups did Philadelphia police most frequently stop
-      <!-- <SelectEvent v-model="selectedEvent" word-form="verb_past"/> -->
-      ?
-    </template>
-  </QuestionHeader>
-
-  <QuestionHeader>
-    <template #content>
-      <SelectedResult>{{ formatLocationForSentence(selectedLocation, true) }}</SelectedResult>, from <SelectedResult>{{ selectedTime0 }}</SelectedResult> to <SelectedResult>{{ selectedTime1 }}</SelectedResult>, Philadelphia police most frequently
-      stopped
-      <!-- <SelectedResult>{{ policeEvent[selectedEvent].verb_past }}</SelectedResult> -->
-      people who they identified as <SelectedResult>{{ sortedSummedDataTopDemographic[0] }}, {{ sortedSummedDataTopDemographic[1] }}, and {{ sortedSummedDataTopDemographic[2] }} years old</SelectedResult>.
-    </template>
-  </QuestionHeader>
-
-  <div class="deo-table mt-10">
-    <div class="relative w-full">
-      <table class="w-full">
-        <thead class="w-full">
-          <tr>
-            <th class="w-1/4">Race</th>
-            <th class="w-1/4">Gender</th>
-            <th class="w-1/4">Age Range</th>
-            <th class="w-1/4">% of Stops</th>
-          </tr>
-        </thead>
-      </table>
-    </div>
-    <div class="w-full h-[400px] overflow-y-scroll">
-      <table class="text-body-3 relative w-full">
-        <tbody class="w-full">
-          <tr v-for="(value, key) in sortedSummedData">
-            <td class="w-1/4">{{ key.split(':')[0] }}</td>
-            <td class="w-1/4">{{ key.split(':')[1] }}</td>
-            <td class="w-1/4">{{ key.split(':')[2] }}</td>
-            <td class="w-1/4">{{ (value / q1Total * 100).toFixed(2) }}%</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <HorizontalLine class="my-20"/>
-
-  <QuestionHeader>
-    <template #content>
-      How often did Philadelphia police stop
-      <!-- <SelectEvent v-model="selectedEvent" word-form="verb_present"/> -->
-      vehicles, passengers, and/or drivers of different <SelectDemographicCategory v-model="selectedDemographic"></SelectDemographicCategory> from <SelectTime v-model="selectedTime0"/> to <SelectTime v-model="selectedTime1"/>, <SelectLocation v-model="selectedLocation"/>?
-    </template>
-  </QuestionHeader>
-
-  <QuestionHeader>
-    <template #content>
-      Number of Philadelphia police stops
-      <!-- <SelectedResult>{{ policeEvent[selectedEvent].noun }}</SelectedResult> -->
-      of vehicles driven by different <SelectedResult>{{ selectedDemographic }}</SelectedResult>, <SelectedResult>{{ selectedLocation }}</SelectedResult>, from <SelectedResult>{{ selectedTime0 }}</SelectedResult> to <SelectedResult>{{ selectedTime1 }}</SelectedResult>.
-    </template>
-  </QuestionHeader>
-
-  <Graph :graph-data="summedDataByDemographic" :axis-properties="{x: selectedDemographic, y: selectedEvent}"></Graph>
+  <section>
+    <QuestionHeader>
+      <template #content>
+        How often did Philadelphia police stop
+        <!-- <SelectEvent v-model="selectedEvent" word-form="verb_present"/> -->
+        vehicles, passengers, and/or drivers of different <SelectDemographicCategory v-model="selectedDemographic"></SelectDemographicCategory> from <SelectTime v-model="selectedTime0"/> to <SelectTime v-model="selectedTime1"/>, <SelectLocation v-model="selectedLocation"/>?
+      </template>
+    </QuestionHeader>
+    <IconsArrow class="text-neutral-200 rotate-180 mx-auto my-10"/>
+    <Graph :graph-data="summedDataByDemographic" :axis-properties="{x: selectedDemographic, y: selectedEvent}">
+      <template #title>
+        <h2 class="max-w-[500px] mx-auto">
+          Number of Philadelphia police stops
+          <!-- {{ policeEvent[selectedEvent].noun }} -->
+          of vehicles driven by different {{ selectedDemographic }}, {{ selectedLocation }}, from {{ selectedTime0 }} to {{ selectedTime1 }}.
+        </h2>
+      </template>
+    </Graph>
+  </section>
 </template>
+
+<style>
+.demographic-group-square {
+  @apply inline-block w-6 h-6 align-middle;
+}
+</style>
 
 <script setup>
 import QuestionHeader from '~/components/QuestionHeader.vue';

@@ -1,11 +1,13 @@
 <template>
-  <label class="block text-body-3">Gender</label>
-  <SelectOne
-    :items="items"
-    :modelValue="modelValue"
-    :multiple="true"
-    @update:modelValue="value => emit('update:modelValue', value)"
-  />
+  <div>
+    <label class="block text-body-3 mb-2 font-normal">Gender</label>
+    <SelectOne
+      :items="items"
+      :modelValue="modelValue"
+      :multiple="true"
+      @update:modelValue="value => emit('update:modelValue', value)"
+    />
+  </div>
 </template>
 
 <script setup>

@@ -5,9 +5,15 @@
     @update:modelValue="value => emit('update:modelValue', value)"
     :multiple="props.multiple"
     class="relative inline-block text-left"
+    :class="{'w-full': props.multiple}"
   >
-    <ListboxButton class="button-select flex gap-6 items-center h-12 px-2">
-      <span class="text-primary-800 leading-6">{{ getDisplayText(props.modelValue) }}</span>
+    <ListboxButton class="button-select flex gap-6 items-center justify-between h-12 px-2" :class="{'w-full': props.multiple}">
+      <div v-if="props.multiple" class="flex gap-2">
+        <div v-for="item in props.modelValue" class="bg-white text-primary-800 px-1">
+          {{ item }}
+        </div>
+      </div>
+      <span v-else class="text-primary-800 leading-6">{{ getDisplayText(props.modelValue) }}</span>
       <IconsChevron classes="fill-black"></IconsChevron>
     </ListboxButton>
     <ListboxOptions class="bg-neutral-100 absolute z-[1] top-full w-auto mt-2 leading-6">
