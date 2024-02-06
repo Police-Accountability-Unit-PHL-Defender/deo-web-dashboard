@@ -1,9 +1,18 @@
+export function grammaticalJoin(arr: string[], conjunction: string = 'and') {
+  if (arr.length === 1) return arr[0];
+  if (arr.length === 2) return arr.join(` ${conjunction} `);
+  return `${arr.slice(0, -1).join(', ')}, ${conjunction} ${arr.slice(-1)}`;
+}
+
+export enum QuarterMonths {
+  'Jan-Mar' = 1,
+  'Apr-Jun' = 2,
+  'Jul-Sep' = 3,
+  'Oct-Dec' = 4
+}
+
 export function formatLocationForSentence(locationValue: string, capitalize=false) {
-  if (locationValue === 'citywide') {
-    return capitalize ? capitalizeFirstLetter(locationValue) : locationValue
-  } else {
-    return `${capitalize ? 'In' : 'in'} ${locationValue}`
-  }
+  return `${locationValue}`
 }
 
 function capitalizeFirstLetter(str: string) {

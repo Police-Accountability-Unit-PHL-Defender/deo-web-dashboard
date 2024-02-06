@@ -1,5 +1,5 @@
 <template>
-  <h2 class="text-heading-1 my-12 md:my-20 mx-auto text-center max-w-4xl">
+  <h2 class="text-heading-1 my-12 md:my-20 mx-auto text-center max-w-5xl">
     <slot name="header"></slot>
   </h2>
   <div>

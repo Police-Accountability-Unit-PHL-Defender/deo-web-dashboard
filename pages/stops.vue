@@ -1,16 +1,16 @@
 <template>
   <LayoutPageHeader>
     <template #header>
-      How many stops have police made in my neighborhood?
+      How many stops do police make, and who do they stop?
     </template>
     <template #image>
       <img class="w-full h-full object-cover" src="~/assets/images/stops.jpg" alt="Closeup of police lights at night"/>
     </template>
     <template #quote>
-      <Quote author="Carl Day, Pastor" source="https://phillydefenders.org">
+      <Quote author="Carl Day, Pastor" source="https://www.facebook.com/CMThomasPHL/videos/578497320999248">
         <template #quoteText>
           <p>
-            As a Black man, oftentimes I’ve definitely been targeted by police. I’ve watched police make U-turns after just riding by them if there happen to be two Black men in the car. I watched them follow me for periods of time and ultimately, just to finally turn those lights on. As a Black man, you’re just awaiting that moment. You’ll sit in the car and you’re just waiting for that time for the red and blue lights to come on.
+            As a Black man, you’re just awaiting that moment. You’ll sit in the car and you’re just waiting for that time for the red and blue lights to come on.
           </p>
         </template>
       </Quote>
@@ -20,25 +20,45 @@
   <section>
     <QuestionHeader>
       <template #content>
-        How many stops
-        <!-- <SelectEvent v-model="selectedEvent" word-form="noun"/> -->
-        did Philadelphia police make <SelectLocation v-model="selectedLocation"/>, <SelectTimeGranularity v-model="selectedTimeGranularity"/> from <SelectTime v-model="selectedTime0"/> to <SelectTime v-model="selectedTime1"/>?
+        <h3>
+          How many stops
+          <!-- <SelectEvent v-model="selectedEvent" word-form="noun"/> -->
+          did Philadelphia police make in <SelectLocation v-model="selectedLocation"/>, by <SelectTimeGranularity v-model="selectedTimeGranularity"/>
+          <!-- from <SelectTime v-model="selectedTime0"/> to <SelectTime v-model="selectedTime1"/> -->
+          ?
+        </h3>
       </template>
     </QuestionHeader>
-    <IconsArrow class="text-neutral-200 rotate-180 mx-auto my-10"/>
+    <IconsArrow class="text-primary-800 rotate-180 mx-auto my-10 h-6"/>
     <QuestionHeader>
       <template #content>
-        <SelectedResult>{{ formatLocationForSentence(selectedLocation, true) }}</SelectedResult>, from <SelectedResult>{{ selectedTime0 }}</SelectedResult> to <SelectedResult>{{ selectedTime1 }}</SelectedResult>, Philadelphia police <SelectedResult>{{ policeEvent[selectedEvent].verb_past }}</SelectedResult> a total of <SelectedResult>{{ q1Total.toLocaleString() }} people</SelectedResult>.
+        From the start of 2014 to the present, Philadelphia police made a total of <SelectedResult>{{ q1Total.toLocaleString() }} traffic stops</SelectedResult> in <SelectedResult>{{ formatLocationForSentence(selectedLocation) }}</SelectedResult>.
+        <!-- <SelectedResult>{{ formatLocationForSentence(selectedLocation, true) }}</SelectedResult>, from <SelectedResult>{{ selectedTime0 }}</SelectedResult> to <SelectedResult>{{ selectedTime1 }}</SelectedResult>, Philadelphia police <SelectedResult>{{ policeEvent[selectedEvent].verb_past }}</SelectedResult> a total of <SelectedResult>{{ q1Total.toLocaleString() }} people</SelectedResult>. -->
       </template>
     </QuestionHeader>
     <Graph :graph-data="q1GraphData" :axis-properties="{x: 'time', y: 'amount'}">
       <template #title>
-        <h2>
-          Number of stops
-          <!-- {{ policeEvent[selectedEvent].noun }} -->
-          {{ formatLocationForSentence(selectedLocation) }} from {{ selectedTime0 }} to {{ selectedTime1 }}</h2>
+        <h3 class="max-w-[500px] mx-auto">Number of PPD Traffic Stops in {{ selectedLocation }} from 2014 through 2023</h3>
       </template>
     </Graph>
+    <QuestionHeader>
+      <template #content>
+        <div class="text-body-3 leading-6 text-left">
+          <p class="my-4">
+            From the start of 2014 to the end of 2018, Philadelphia police made an average of 18,788 traffic stops per month in Philadelphia.
+          </p>
+          <p class="my-4">
+            During a surge in stops in 2019, Philadelphia police made an average of 28,857 traffic stops per month in Philadelphia.
+          </p>
+          <p class="my-4">
+            From the start of April 2020 through the end of March 2021 (pandemic), Philadelphia police made an average of 8,498 traffic stops per month in Philadelphia.
+          </p>
+          <p class="my-4">
+            From the start of April 2021 to the end of December 2023, Philadelphia police made an average of 8,573 traffic stops per month in Philadelphia.
+          </p>
+        </div>
+      </template>
+    </QuestionHeader>
   </section>
 
   <HorizontalLine class="my-20"/>
@@ -46,49 +66,45 @@
   <section>
     <QuestionHeader>
       <template #content>
-        What are the ages, genders, and racial identities of people stopped 
-        <!-- <SelectEvent v-model="selectedEvent" word-form="verb_past"/>&nbsp; -->
-        <SelectLocation v-model="selectedLocation"/>, from <SelectTime v-model="selectedTime0"/> to <SelectTime v-model="selectedTime1"/>?
+        <h3>
+          Does traffic enforcement change depending on the time of year?
+          How many traffic stops do Philadelphia police make in certain times of the year in
+          <SelectLocation v-model="selectedLocation"/>?
+        </h3>
       </template>
     </QuestionHeader>
-    <div class="mx-auto max-w-2xl mt-16">
-      <div class="text-label-1 text-center">Select demographics and compare</div>
-      <div class="grid grid-cols-2 gap-4 mt-6">
-        <div class="col-span-1 flex flex-col gap-6 text-body-1 font-medium">
-          <h4 class="text-label-2 flex gap-2 items-center">
-            Group 1
-            <div class="demographic-group-square bg-primary-600"></div>
-          </h4>
-          <SelectAgeGroup v-model="q2Group1AgeRanges"/>
-          <SelectGenderIdentity v-model="q2Group1Genders"/>
-          <SelectRaces v-model="q2Group1Races"/>
-        </div>
-        <div class="col-span-1 flex flex-col gap-6 text-body-1 font-medium">
-          <h4 class="text-label-2 flex gap-2 items-center">
-            Group 2
-            <div class="demographic-group-square bg-red"></div>
-          </h4>
-          <SelectAgeGroup v-model="q2Group2AgeRanges"/>
-          <SelectGenderIdentity v-model="q2Group2Genders"/>
-          <SelectRaces v-model="q2Group2Races"/>
-        </div>
-      </div>
+    <div class="mx-auto max-w-2xl mt-8">
+      <div class="text-label-1 text-center">Select time(s) of year</div>
+      <SelectTimeOfYear class="mt-2 max-w-[390px] mx-auto" v-model="q12TimeOfYear"/>
     </div>
-    <IconsArrow class="text-neutral-200 rotate-180 mx-auto my-10"/>
-    <Graph :graph-data="q2GraphData" :axis-properties="{x: 'time', y: 'amount'}" group-name="group" :group-classes="{'group1': 'fill-primary-600', 'group2': 'fill-red'}">
+    <IconsArrow class="text-primary-800 rotate-180 mx-auto my-10 h-6"/>
+    <Graph :graph-data="q12GraphData" :axis-properties="{x: 'time', y: 'amount'}">
+      <template #title>
+        <h3 class="max-w-[550px] mx-auto">Number of PPD Traffic Stops in {{ selectedLocation }} for {{ grammaticalJoin(q12TimeOfYear) }}</h3>
+      </template>
+    </Graph>
+  </section>
+
+  <HorizontalLine class="my-20"/>
+  <h2 class="text-heading-2 text-center my-16">Who are police stopping in traffic stops?</h2>
+  <section>
+    <QuestionHeader>
+      <template #content>
+        How often did Philadelphia police stop
+        <!-- <SelectEvent v-model="selectedEvent" word-form="verb_present"/> -->
+        people of different
+        <SelectDemographicCategory v-model="selectedDemographic"></SelectDemographicCategory>
+        from the start of <SelectQuarter v-model="selectedTime0"/> to the end of <SelectQuarter v-model="selectedTime1"/>,
+        in <SelectLocation v-model="selectedLocation"/>?
+      </template>
+    </QuestionHeader>
+    <IconsArrow class="text-primary-800 rotate-180 mx-auto my-10 h-6"/>
+    <Graph :graph-data="summedDataByDemographic" :axis-properties="{x: selectedDemographic, y: selectedEvent}">
       <template #title>
         <h2 class="max-w-[500px] mx-auto">
-          Number of stops
+          Number of Philadelphia police stops
           <!-- {{ policeEvent[selectedEvent].noun }} -->
-          of vehicles driven by
-          <SelectedResult>
-            <span class="text-label-1">Group 1</span> <div class="demographic-group-square bg-primary-600"></div>
-          </SelectedResult>
-          and
-          <SelectedResult>
-            <span class="text-label-1">Group 2</span> <div class="demographic-group-square bg-red"></div>
-          </SelectedResult>
-          {{ formatLocationForSentence(selectedLocation) }} from {{ selectedTime0 }} to {{ selectedTime1 }}
+          of vehicles driven by different {{ selectedDemographic }}, {{ selectedLocation }},from {{ selectedTime0 }} to {{ selectedTime1 }}.
         </h2>
       </template>
     </Graph>
@@ -99,17 +115,20 @@
   <section>
     <QuestionHeader>
       <template #content>
-        <SelectLocation v-model="selectedLocation" :capitalize="true"/>, from <SelectTime v-model="selectedTime0"/> to <SelectTime v-model="selectedTime1"/> which demographic groups did Philadelphia police most frequently stop?
+        Which demographic groups did Philadelphia police most frequently stop in
+        <SelectLocation v-model="selectedLocation" :capitalize="true"/>
+        from the start of <SelectTime v-model="selectedTime0"/> to the end of <SelectTime v-model="selectedTime1"/>?
         <!-- <SelectEvent v-model="selectedEvent" word-form="verb_past"/> -->
       </template>
     </QuestionHeader>
-    <IconsArrow class="text-neutral-200 rotate-180 mx-auto my-10"/>
+    <IconsArrow class="text-primary-800 rotate-180 mx-auto my-10 h-6"/>
     <QuestionHeader>
       <template #content>
-        <SelectedResult>{{ formatLocationForSentence(selectedLocation, true) }}</SelectedResult>, from <SelectedResult>{{ selectedTime0 }}</SelectedResult> to <SelectedResult>{{ selectedTime1 }}</SelectedResult>, Philadelphia police most frequently
-        stopped
-        <!-- <SelectedResult>{{ policeEvent[selectedEvent].verb_past }}</SelectedResult> -->
-        people who they identified as <SelectedResult>{{ sortedSummedDataTopDemographic[0] }}, {{ sortedSummedDataTopDemographic[1] }}, and {{ sortedSummedDataTopDemographic[2] }} years old</SelectedResult>.
+        Philadelphia police most frequently stopped
+        <SelectedResult>{{ sortedSummedDataTopDemographic[0] }}, {{ sortedSummedDataTopDemographic[1] }}, {{ sortedSummedDataTopDemographic[2] }} year old</SelectedResult>
+        drivers in <SelectedResult>{{ formatLocationForSentence(selectedLocation) }}</SelectedResult>
+        from <SelectedResult>{{ selectedTime0 }}</SelectedResult> to <SelectedResult>{{ selectedTime1 }}</SelectedResult>,
+        making up <SelectedResult>{{ (Object.values(sortedSummedData)[0] / q1Total * 100).toFixed(2) }}%</SelectedResult> of all stops.
       </template>
     </QuestionHeader>
     <div class="deo-table mt-10">
@@ -140,28 +159,64 @@
     </div>
   </section>
 
-
   <HorizontalLine class="my-20"/>
 
   <section>
     <QuestionHeader>
       <template #content>
-        How often did Philadelphia police stop
-        <!-- <SelectEvent v-model="selectedEvent" word-form="verb_present"/> -->
-        vehicles, passengers, and/or drivers of different <SelectDemographicCategory v-model="selectedDemographic"></SelectDemographicCategory> from <SelectTime v-model="selectedTime0"/> to <SelectTime v-model="selectedTime1"/>, <SelectLocation v-model="selectedLocation"/>?
+        <h3>
+          How many times did Philadelphia police stop one demographic group compared to another in
+          <SelectLocation v-model="selectedLocation"/>, from <SelectTime v-model="selectedTime0"/> to <SelectTime v-model="selectedTime1"/>?
+        </h3>
       </template>
     </QuestionHeader>
-    <IconsArrow class="text-neutral-200 rotate-180 mx-auto my-10"/>
-    <Graph :graph-data="summedDataByDemographic" :axis-properties="{x: selectedDemographic, y: selectedEvent}">
+    <div class="mx-auto max-w-2xl mt-16">
+      <div class="text-label-1 text-center">Select two demographic groups and compare</div>
+      <div class="grid grid-cols-2 gap-4 mt-6">
+        <div class="col-span-1 flex flex-col gap-6 text-body-1 font-medium">
+          <h4 class="text-label-2 flex gap-2 items-center">
+            Group 1
+            <div class="demographic-group-square bg-primary-600"></div>
+          </h4>
+          <SelectAgeGroup v-model="q2Group1AgeRanges"/>
+          <SelectGenderIdentity v-model="q2Group1Genders"/>
+          <SelectRaces v-model="q2Group1Races"/>
+        </div>
+        <div class="col-span-1 flex flex-col gap-6 text-body-1 font-medium">
+          <h4 class="text-label-2 flex gap-2 items-center">
+            Group 2
+            <div class="demographic-group-square bg-red"></div>
+          </h4>
+          <SelectAgeGroup v-model="q2Group2AgeRanges"/>
+          <SelectGenderIdentity v-model="q2Group2Genders"/>
+          <SelectRaces v-model="q2Group2Races"/>
+        </div>
+      </div>
+    </div>
+    <IconsArrow class="text-primary-800 rotate-180 mx-auto my-10 h-6"/>
+    <Graph :graph-data="q2GraphData" :axis-properties="{x: 'time', y: 'amount'}" group-name="group" :group-classes="{'group1': 'fill-primary-600', 'group2': 'fill-red'}">
       <template #title>
         <h2 class="max-w-[500px] mx-auto">
-          Number of Philadelphia police stops
-          <!-- {{ policeEvent[selectedEvent].noun }} -->
-          of vehicles driven by different {{ selectedDemographic }}, {{ selectedLocation }}, from {{ selectedTime0 }} to {{ selectedTime1 }}.
+          Number of PPD Traffic Stops in
+          {{ formatLocationForSentence(selectedLocation) }} from {{ selectedTime0 }} through {{ selectedTime1 }}
+          Comparing
+          <SelectedResult>
+            <span class="text-label-1">Group 1</span> <div class="demographic-group-square bg-primary-600"></div>
+          </SelectedResult>
+          and
+          <SelectedResult>
+            <span class="text-label-1">Group 2</span> <div class="demographic-group-square bg-red"></div>
+          </SelectedResult>
+         
         </h2>
       </template>
     </Graph>
   </section>
+
+  
+
+
+  <HorizontalLine class="my-20"/>
 </template>
 
 <style>
@@ -181,15 +236,18 @@ import SelectedResult from '~/components/ui/SelectedResult.vue';
 import HorizontalLine from '~/components/ui/HorizontalLine.vue';
 import * as d3 from 'd3'
 import { capitalize } from 'vue';
+import { QuarterMonths } from '~/utils/index'
 
 const selectedEvent = ref('n_stopped')
-const selectedLocation = ref('citywide')
-const selectedTimeGranularity = ref('every year')
+const selectedLocation = ref('Philadelphia')
+const selectedTimeGranularity = ref('year')
 const selectedTime0 = ref(2015)
 const selectedTime1 = ref(2023)
 const selectedDemographic = ref('age_range')
 const q1GraphData = ref([])
 const q1Total = ref(0)
+const q12TimeOfYear = ref(['Jan-Mar'])
+const q12GraphData = ref([])
 const q2Group1AgeRanges = ref(['25-34'])
 const q2Group2AgeRanges = ref(['25-34'])
 const q2Group1Genders = ref(['Male'])
@@ -201,7 +259,7 @@ const sortedSummedData = ref([])
 const sortedSummedDataTopDemographic = ref([])
 const summedDataByDemographic = ref([])
 
-const watchedParameters = ref([selectedEvent, selectedLocation, selectedTimeGranularity, selectedTime0, selectedTime1, selectedDemographic, q2Group1AgeRanges, q2Group2AgeRanges, q2Group1Genders, q2Group2Genders, q2Group1Races, q2Group2Races])
+const watchedParameters = ref([selectedEvent, selectedLocation, selectedTimeGranularity, q12TimeOfYear, selectedTime0, selectedTime1, selectedDemographic, q2Group1AgeRanges, q2Group2AgeRanges, q2Group1Genders, q2Group2Genders, q2Group1Races, q2Group2Races])
 
 const data = ref([])
 
@@ -224,14 +282,13 @@ onMounted(async () => {
     .catch(error => {
       console.error(error);
     });
-    console.log(data.value)
   calculateQuestion1Data()
 })
 
 const sumGroupedDataByKey = (groupedData, key) => {
   return Object.values(objectMap(groupedData, (group, year) => { 
     return {
-      time: Number(year),
+      time: year,
       amount: group.reduce((acc, cur) => {
         return acc + Number(cur[key])
       }, 0)
@@ -293,10 +350,17 @@ const filterByLocationValue = (inputData) => {
 const calculateQuestion1Data = () => {
   let filteredData = filterByLocationValue(data)
   filteredData = filteredData.filter(d => Number(d.year) >= selectedTime0.value && Number(d.year) <= selectedTime1.value)
-  const groupedData = groupBy(filteredData, 'year')
+  const groupedData = groupBy(filteredData, selectedTimeGranularity.value)
+  console.log(groupedData)
 
   q1GraphData.value = sumGroupedDataByKey(groupedData, selectedEvent.value)
   q1Total.value = q1GraphData.value.reduce((acc, cur) => acc + cur.amount, 0)
+  console.log(q1GraphData)
+
+  const q12QuarterNames = q12TimeOfYear.value.map(monthRange => `Q${QuarterMonths[monthRange]}`)
+  const q12FilteredData = filteredData.filter(d => q12QuarterNames.includes(d.q_str))
+  const q12GroupedData = groupBy(q12FilteredData, 'year')
+  q12GraphData.value = sumGroupedDataByKey(q12GroupedData, selectedEvent.value)
 
   const q2Group1Filtered = objectMap(groupedData, group => group.filter(d => q2Group1AgeRanges.value.includes(d.age_range) && q2Group1Genders.value.includes(d.gender) && q2Group1Races.value.includes(d.race)))
   const q2Group2Filtered = objectMap(groupedData, group => group.filter(d => q2Group2AgeRanges.value.includes(d.age_range) && q2Group2Genders.value.includes(d.gender) && q2Group2Races.value.includes(d.race)))

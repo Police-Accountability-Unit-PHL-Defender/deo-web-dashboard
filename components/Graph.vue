@@ -4,6 +4,7 @@
       <slot name="title"></slot>
     </div>
     <svg class="mx-auto text-body-4" ref="graphSvg"></svg>
+    <slot></slot>
   </div>
 </template>
 <style scope lang="scss">

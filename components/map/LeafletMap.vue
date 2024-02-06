@@ -55,7 +55,7 @@
   };
 
   function updateSelectedFeature(featureProperties) {
-    let featureName = 'citywide';
+    let featureName = 'Philadelphia';
     if (featureProperties.DIST_NUM) {
       featureName = `District ${featureProperties.DIST_NUM}`
     } else if (featureProperties.DIV_NAME) {
