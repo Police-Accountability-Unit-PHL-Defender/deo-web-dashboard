@@ -11,10 +11,12 @@
         </a>
       </div>
       <div v-if="isIndex">
-        <h1 class="text-heading-4 mt-14">Driving Equality Act, 2 Years Later</h1>
-        <p class="text-body-3 mt-4">
-          March 2024 marks the second anniversary of the Driving Equality Act in Philadelphia. This landmark policy changed the way that police make stops in the city, and was the first in the country. This project surfaces public data to show the law’s impact on the people of Philadelphia since it was passed.
-        </p>
+        <h1 class="text-heading-4 mt-14">Traffic Stops in Philadelphia</h1>
+        <div class="grid-container justify-center">
+          <p class="col-span-6 md:col-start-4 text-body-3 mt-4 text-left">
+            Traffic enforcement has consistently been used by police as a pretext to stop, frisk, and/or search Black drivers, contributing to unnecessary, harmful, and too often deadly police interactions. Philadelphia’s Driving Equality law is one step towards reducing unnecessary interactions between police and drivers. In this dashboard, learn more about racial disparities in the Philadelphia Police Department’s traffic enforcement, how traffic stops have changed over time, and the history of Driving Equality.
+          </p>
+        </div>
       </div>
     </div>
     <nav class="hidden md:grid grid-cols-5 gap-1">

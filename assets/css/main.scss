@@ -102,6 +102,10 @@ html {
   font-size: 12px;
 }
 
+.text-hyperlink {
+  @apply hover:underline;
+}
+
 .layout-container {
   @apply max-w-[1344px] mx-auto px-3 md:px-8;
 }
@@ -132,4 +136,8 @@ html {
       @apply p-4;
     }
   }
+}
+
+.grid-container {
+  @apply grid grid-cols-6 gap-5 md:grid-cols-12;
 }

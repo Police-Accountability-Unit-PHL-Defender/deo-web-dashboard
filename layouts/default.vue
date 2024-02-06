@@ -1,7 +1,7 @@
 <template>
   <div>
     <Header></Header>
-    <div class="layout-container">
+    <div>
       <slot />
     </div>
     <BackToTop></BackToTop>

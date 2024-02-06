@@ -72,6 +72,9 @@ export default {
       borderRadius: {
         super: "100px"
       },
+      boxShadow: {
+        quote: "12px 12px 0px currentColor",
+      },
     },
   },
   plugins: [],

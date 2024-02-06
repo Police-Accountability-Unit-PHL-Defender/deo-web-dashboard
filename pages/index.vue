@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <main class="layout-container">
     <HomeModule ctaLink="/snapshot">
       <template #title>
         Snapshot of traffic enforcement in Philadelphia
@@ -59,7 +59,7 @@
         <img class="absolute left-[16%] w-5/6" src="~/assets/images/about-driving-equality.jpg" alt="A police car" />
       </template>
     </HomeModule>
-  </div>
+  </main>
 </template>
 
 <script setup lang="ts">
