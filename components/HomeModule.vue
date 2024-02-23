@@ -1,6 +1,6 @@
 <template>
-  <div class="md:my-20 grid md:grid-cols-2 gap-4 md:gap-10 items-center relative">
-    <div class="order-2 md:order-1" :class="{'md:order-2': props.reverse}">
+  <div class="md:my-40 grid md:grid-cols-2 gap-4 items-center relative">
+    <div class="order-2 md:order-1" :class="{'md:order-2 md:pl-[8.333%]': props.reverse}">
       <div class="text-heading-2">
         <slot name="title"></slot>
       </div>
@@ -8,7 +8,7 @@
         <Button :href="props.ctaLink" class="w-full md:w-auto">Learn more</Button>
       </div>
     </div>
-    <div class="relative flex items-center md:h-[430px] order-1 -mx-4 md:mx-0">
+    <div class="relative flex items-center order-1 -mx-4 md:mx-0">
       <slot name="image"></slot>
     </div>
   </div>
