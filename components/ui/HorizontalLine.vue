@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full h-1 flex">
+  <div class="w-full h-[1px] flex">
     <div class="bg-purple basis-[20%]"></div>
     <div class="bg-yellow basis-[10%]"></div>
     <div class="bg-yellowgreen basis-[20%]"></div>

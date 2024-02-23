@@ -1,6 +1,6 @@
 <template>
-  <div class="border my-10 p-4">
-    <div class="w-full text-center max-w-[720px] mx-auto mt-4 mb-8 text-heading-5 text-primary-800">
+  <div class="border border-neutral-400 my-6 p-4">
+    <div class="w-full text-center mt-1 mb-6 text-body-2 font-semibold text-primary-800">
       <slot></slot>
     </div>
     <svg class="mx-auto text-body-4" ref="graphSvg"></svg>

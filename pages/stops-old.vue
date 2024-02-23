@@ -161,7 +161,7 @@
         <div class="text-label-1 text-center">Select two demographic groups and compare</div>
         <div class="grid grid-cols-2 gap-4 mt-6">
           <div class="col-span-1 flex flex-col gap-6 text-body-1 font-medium">
-            <h4 class="text-label-2 flex gap-2 items-center">
+            <h4 class="text-label-1 flex gap-2 items-center">
               Group 1
               <div class="demographic-group-square bg-primary-600"></div>
             </h4>
@@ -170,7 +170,7 @@
             <SelectRaces v-model="q2Group1Races"/>
           </div>
           <div class="col-span-1 flex flex-col gap-6 text-body-1 font-medium">
-            <h4 class="text-label-2 flex gap-2 items-center">
+            <h4 class="text-label-1 flex gap-2 items-center">
               Group 2
               <div class="demographic-group-square bg-red"></div>
             </h4>

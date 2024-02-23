@@ -1,39 +1,51 @@
 <template>
-  <header class="w-full bg-primary-800 text-white text-center">
-    <div class="layout-container relative max-w-4xl mx-auto pt-12 pb-8">
-      <div class="w-full flex justify-between">
-        <button id="header-menu-button" class="-mt-4 -ml-4" title="Open full menu" @click="openPopupMenu"></button>
-        <Button class="hidden md:block">Contact us</Button>
+  <header class="w-full bg-primary-600 text-white text-center">
+    <div class="layout-container relative">
+      <div v-if="!isIndex">
+        <div class="absolute inset-0 flex justify-center items-center pointer-events-none">
+          <a href="/" class="pointer-events-auto">
+            <h1 class="text-heading-3 mt-1">Traffic Stops in Philadelphia</h1>
+          </a>
+        </div>
+        <div class="h-32 flex justify-between items-center">
+          <a href="/">
+            <img src="~/assets/images/defender-logo-white.png" alt="Defender Association of Philadelphia" class="h-20 mx-auto" />
+          </a>
+          <button id="header-menu-button" title="Open full menu" @click="openPopupMenu"></button>
+        </div>
       </div>
-      <div class="flex justify-center -mt-8 md:-mt-20">
-        <a href="/" class="order-2">
-          <img src="~/assets/images/defender-logo-white.png" alt="Defender Association of Philadelphia" class="w-[182px] mx-auto" />
-        </a>
-      </div>
-      <div v-if="isIndex">
-        <h1 class="text-heading-4 mt-14">Traffic Stops in Philadelphia</h1>
-        <div class="grid-container justify-center">
-          <p class="col-span-6 md:col-start-4 text-body-3 mt-4 text-left">
-            Traffic enforcement has consistently been used by police as a pretext to stop, frisk, and/or search Black drivers, contributing to unnecessary, harmful, and too often deadly police interactions. Philadelphia’s Driving Equality law is one step towards reducing unnecessary interactions between police and drivers. In this dashboard, learn more about racial disparities in the Philadelphia Police Department’s traffic enforcement, how traffic stops have changed over time, and the history of Driving Equality.
-          </p>
+      <div v-else>
+        <button id="header-menu-button" class="absolute top-12 right-12" title="Open full menu" @click="openPopupMenu"></button>
+        <div class="absolute top-12 left-12">
+          <a href="/" class="order-2">
+            <img src="~/assets/images/defender-logo-white.png" alt="Defender Association of Philadelphia" class="w-[182px] mx-auto" />
+          </a>
+        </div>
+        <div class="pt-[98px] pb-18">
+          <h1 class="text-heading-1">Traffic Stops in<br/>Philadelphia</h1>
+          <div class="grid-container justify-center">
+            <p class="col-span-6 md:col-start-4 text-body-4 mt-4 text-center">
+              Explore this dashboard to learn more about racial disparities in the Philadelphia Police Department’s traffic enforcement, how traffic stops have changed over time, and the history of Driving Equality.
+            </p>
+          </div>
         </div>
       </div>
     </div>
-    <nav class="hidden md:grid grid-cols-5 gap-1">
-      <a href="/snapshot" class="flex items-center bg-primary-600 hover:bg-primary-200 hover:text-primary-600 p-4 text-body-3 font-medium">
-        <span class="block max-w-[252px] mx-auto">Snapshot of traffic enforcement in Philadelphia</span>
+    <nav v-if="!isIndex" class="hidden md:grid grid-cols-5 gap-[1px]">
+      <a href="/snapshot" class="flex items-center bg-primary-800 hover:bg-primary-400 hover:text-primary-800 py-6 px-4 text-body-3 font-medium">
+        <span class="block max-w-[252px] mx-auto text-label-1">Snapshot</span>
       </a>
-      <a href="/stops" class="flex items-center bg-primary-600 hover:bg-primary-200 hover:text-primary-600 p-4 text-body-3 font-medium">
-        <span class="block max-w-[252px] mx-auto">How many stops have police made in my neighborhood?</span>
+      <a href="/stops" class="flex items-center bg-primary-800 hover:bg-primary-400 hover:text-primary-800 py-6 px-4 text-body-3 font-medium">
+        <span class="block max-w-[252px] mx-auto text-label-1">Traffic stops</span>
       </a>
-      <a href="/neighborhoods" class="flex items-center bg-primary-600 hover:bg-primary-200 hover:text-primary-600 p-4 text-body-3 font-medium">
-        <span class="block max-w-[252px] mx-auto">Do police treat people or neighborhoods differently?</span>
+      <a href="/neighborhoods" class="flex items-center bg-primary-800 hover:bg-primary-400 hover:text-primary-800 py-6 px-4 text-body-3 font-medium">
+        <span class="block max-w-[252px] mx-auto text-label-1">Neighbor&shy;hoods</span>
       </a>
-      <a href="/safety" class="flex items-center bg-primary-600 hover:bg-primary-200 hover:text-primary-600 p-4 text-body-3 font-medium">
-        <span class="block max-w-[252px] mx-auto">Do traffic stops promote safety?</span>
+      <a href="/safety" class="flex items-center bg-primary-800 hover:bg-primary-400 hover:text-primary-800 py-6 px-4 text-body-3 font-medium">
+        <span class="block max-w-[252px] mx-auto text-label-1">Safety</span>
       </a>
-      <a href="/driving-equality" class="flex items-center bg-primary-600 hover:bg-primary-200 hover:text-primary-600 p-4 text-body-3 font-medium">
-        <span class="block max-w-[252px] mx-auto">Does Driving Equality promote safety?</span>
+      <a href="/driving-equality" class="flex items-center bg-primary-800 hover:bg-primary-400 hover:text-primary-800 py-6 px-4 text-body-3 font-medium">
+        <span class="block max-w-[252px] mx-auto text-label-1">Reasons for stops</span>
       </a>
     </nav>
     <menu class="fixed z-[999] w-screen h-screen top-0 left-0 bg-primary-800 py-8 text-left layout-container flex flex-col justify-between items-start" :class="{'block': isMenuOpen, 'hidden': !isMenuOpen}" ref="menu">
@@ -87,11 +99,11 @@ button#header-menu-button {
   background-image: url('~/assets/icons/menu.svg');
   background-repeat: no-repeat;
   background-position: center;
-  background-size: 24px;
+  background-size: 30px;
   border: none;
   cursor: pointer;
-  height: 48px;
-  width: 48px;
+  height: 40px;
+  width: 40px;
 }
 button#header-menu-close-button {
   background-image: url('~/assets/icons/close.svg');
@@ -100,8 +112,8 @@ button#header-menu-close-button {
   background-size: 24px;
   border: none;
   cursor: pointer;
-  height: 48px;
-  width: 48px;
+  height: 40px;
+  width: 40px;
 }
 </style>
 

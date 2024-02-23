@@ -1,6 +1,6 @@
 <template>
   <div>
-    <label class="block text-body-3 mb-2 font-normal">Gender</label>
+    <label class="block text-body-4 mb-2 font-normal">Gender</label>
     <SelectOne
       :items="items"
       :modelValue="modelValue"

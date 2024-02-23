@@ -7,7 +7,7 @@
       <img class="w-full h-full object-cover object-[0%_20%]" src="~/assets/images/stops.jpg" alt="Closeup of police lights at night"/>
     </template>
     <template #quote>
-      <Quote author="Carl Day, Pastor" source="https://www.facebook.com/CMThomasPHL/videos/578497320999248">
+      <Quote author="Pastor Carl Day" source="https://www.facebook.com/CMThomasPHL/videos/578497320999248">
         <template #quoteText>
           <p>
             As a Black man, you’re just awaiting that moment. You’ll sit in the car and you’re just waiting for that time for the red and blue lights to come on.
@@ -15,160 +15,166 @@
         </template>
       </Quote>
     </template>
-    <template #jumplinks>
-      <nav class="flex flex-col gap-3">
-        <h2>Jump to:</h2>
-        <ul class="flex flex-col gap-3">
-          <li>
-            <a href="#part1" class="deo_scroll text-hyperlink flex">
-              <IconsChevron class="fill-white -rotate-90"/>
-              How many stops do police make?
-            </a>
-          </li>
-          <li>
-            <a href="#part2" class="deo_scroll text-hyperlink flex">
-              <IconsChevron class="fill-white -rotate-90"/>
-              Who are police stopping in traffic stops?
-            </a>
-          </li>
-        </ul>
-      </nav>
-    </template>
   </LayoutPageHeader>
 
-  <main class="layout-container mt-4">
-    <section>
-      <h2 id="part1" class="text-heading-2 text-center pt-16 mb-16">How many stops do police make?</h2>
-      <QuestionHeader>
-        <h3>How many stops did Philadelphia police make in <SelectLocation v-model="selectedLocation"/>, by <SelectTimeGranularity v-model="selectedTimeGranularity"/> ?</h3>
-      </QuestionHeader>
-      <IconsArrow class="text-primary-800 rotate-180 mx-auto my-8 h-6"/>
-      <div v-if="q1A">
-        <QuestionHeader>
-          <div v-html="q1A.text[0]" class="result-text"></div>
-        </QuestionHeader>
-        <Graph :graph-data="q1A.figures.barplot.data" :axis-properties="{x: q1A.figures.barplot.properties.xAxis, y: q1A.figures.barplot.properties.yAxis}">
-          <h4 class="max-w-[540px] mx-auto">{{ q1A.figures.barplot.properties.title }}</h4>
-        </Graph>
-        <QuestionHeader>
-          <div class="text-body-3 leading-6 text-left whitespace-pre-line">
-            <p class="my-4 result-text" v-for="sentence in q1A.text.slice(1)" v-html="sentence"></p>
+  <main class="layout-container -mt-4 text-body-3">
+    <div class="grid-container">
+      <div class="col-span-10">
+        <nav class="flex flex-col gap-3 border-b border-neutral-400 pb-10">
+          <h2 class="text-label-1">Jump to:</h2>
+          <ul class="flex flex-col gap-3">
+            <li>
+              <a href="#part1" class="deo_scroll text-hyperlink flex">
+                <IconsChevron class="fill-white -rotate-90"/>
+                How many stops do police make?
+              </a>
+            </li>
+            <li>
+              <a href="#part2" class="deo_scroll text-hyperlink flex">
+                <IconsChevron class="fill-white -rotate-90"/>
+                Who are police stopping in traffic stops?
+              </a>
+            </li>
+          </ul>
+        </nav>
+    
+        <section>
+          <h2 id="part1" class="text-heading-3 text-left pt-10 mb-6">How many stops do police make?</h2>
+          <QuestionHeader>
+            <h3>How many stops did Philadelphia police make in <SelectLocation v-model="selectedLocation"/>, by <SelectTimeGranularity v-model="selectedTimeGranularity"/> ?</h3>
+          </QuestionHeader>
+          <Answer v-if="q1A" :arrow="true">
+            <AnswerText>
+              <div v-html="q1A.text[0]" class="result-text"></div>
+            </AnswerText>
+            <Graph :graph-data="q1A.figures.barplot.data" :axis-properties="{x: q1A.figures.barplot.properties.xAxis, y: q1A.figures.barplot.properties.yAxis}">
+              <h4>{{ q1A.figures.barplot.properties.title }}</h4>
+            </Graph>
+            <AnswerText>
+              <div class="text-body-3 text-left whitespace-pre-line">
+                <span v-for="sentence in q1A.text.slice(1)"><span class="result-text" v-html="sentence"></span>&nbsp;</span>
+              </div>
+            </AnswerText>
+          </Answer>
+        </section>
+        <HorizontalLine class="my-16"/>
+        <section>
+          <QuestionHeader>
+            <h3>
+              In <SelectLocation v-model="selectedLocation"/>, from the start of <SelectQuarter2 v-model="q1BQuarterStart"></SelectQuarter2> to the end of <SelectQuarter2 v-model="q1BQuarterEnd"></SelectQuarter2>,
+              <span v-if="q1B" class="result-text" v-html="q1B.text[0]"></span>
+            </h3>
+          </QuestionHeader>
+        </section>
+        <HorizontalLine class="my-16"/>
+        <section>
+          <QuestionHeader>
+            <h3>Does traffic enforcement change depending on the time of year? How many traffic stops do Philadelphia police make in certain times of year in <SelectLocation v-model="selectedLocation"/>?</h3>
+          </QuestionHeader>
+          <div class="max-w-2xl mt-4">
+            <div class="text-body-4 text-left">Select time(s) of year</div>
+            <SelectTimeOfYear class="mt-2 max-w-[390px]" v-model="q1CQuarters"/>
           </div>
-        </QuestionHeader>
-      </div>
-    </section>
-    <HorizontalLine class="my-16"/>
-    <section>
-      <QuestionHeader>
-        <h3>
-          In <SelectLocation v-model="selectedLocation"/>, from the start of <SelectQuarter2 v-model="q1BQuarterStart"></SelectQuarter2> to the end of <SelectQuarter2 v-model="q1BQuarterEnd"></SelectQuarter2>,
-          <span v-if="q1B" class="result-text" v-html="q1B.text[0]"></span>
-        </h3>
-      </QuestionHeader>
-    </section>
-    <HorizontalLine class="my-16"/>
-    <section>
-      <QuestionHeader>
-        <h3>
-          Does traffic enforcement change depending on the time of year? How many traffic stops do Philadelphia police make in certain times of year in <SelectLocation v-model="selectedLocation"/>?
-        </h3>
-      </QuestionHeader>
-      <div class="mx-auto max-w-2xl mt-8">
-        <div class="text-label-1 text-center">Select time(s) of year</div>
-        <SelectTimeOfYear class="mt-2 max-w-[390px] mx-auto" v-model="q1CQuarters"/>
-      </div>
-      <IconsArrow class="text-primary-800 rotate-180 mx-auto my-8 h-6"/>
-      <Graph :graph-data="q1C.figures.barplot.data" :axis-properties="{x: q1C.figures.barplot.properties.xAxis, y: q1C.figures.barplot.properties.yAxis}">
-        <h4 class="max-w-[550px] mx-auto">{{ q1C.figures.barplot.properties.title }}</h4>
-      </Graph>
-    </section>
-    <HorizontalLine class="my-16"/>
-    <section>
-      <h2 id="part2" class="text-heading-2 text-center pt-16 mb-16">Who are police stopping in traffic stops?</h2>
-      <QuestionHeader>
-        How often did Philadelphia police stop people of different <SelectDemographicCategory v-model="q2ADemographicCategory"></SelectDemographicCategory> from the start of <SelectQuarter v-model="q1BQuarterStart"/> to the end of <SelectQuarter v-model="q1BQuarterEnd"/>, in <SelectLocation v-model="selectedLocation"/>?
-      </QuestionHeader>
-      <IconsArrow class="text-primary-800 rotate-180 mx-auto my-8 h-6"/>
-      <div v-if="q2A">
-        <Graph :graph-data="q2A.figures.barplot.data" :axis-properties="{x: q2A.figures.barplot.properties.xAxis, y: q2A.figures.barplot.properties.yAxis}">
-          <h4 class="max-w-[550px] mx-auto">{{ q2A.figures.barplot.properties.title }}</h4>
-        </Graph>
-      </div>
-    </section>
-    <HorizontalLine class="my-16"/>
-    <section>
-      <QuestionHeader>
-        <h3>Which demographic groups did Philadelphia police most frequently stop in <SelectLocation v-model="selectedLocation"/> from the start of <SelectQuarter v-model="q1BQuarterStart"/> to the end of <SelectQuarter v-model="q1BQuarterEnd"/>?</h3>
-      </QuestionHeader>
-      <IconsArrow class="text-primary-800 rotate-180 mx-auto my-8 h-6"/>
-      <div v-if="q2B">
-        <QuestionHeader>
-          <div v-html="q2B.text[1]" class="result-text"></div>
-        </QuestionHeader>
-        <h4 class="text-center text-heading-5 text-primary-800">{{ q2B.text[0] }}</h4>
-        <div class="deo-table mt-10">
-          <div class="relative w-full">
-            <table class="w-full">
-              <thead class="w-full">
-                <tr>
-                  <th class="w-1/4">Gender</th>
-                  <th class="w-1/4">Age Range</th>
-                  <th class="w-1/4">Race</th>
-                  <th class="w-1/4">% of Stops</th>
-                </tr>
-              </thead>
-            </table>
+          <Answer>
+            <Graph :graph-data="q1C.figures.barplot.data" :axis-properties="{x: q1C.figures.barplot.properties.xAxis, y: q1C.figures.barplot.properties.yAxis}">
+              <h4 class="max-w-[550px] mx-auto">{{ q1C.figures.barplot.properties.title }}</h4>
+            </Graph>
+          </Answer>
+        </section>
+        <HorizontalLine class="mt-16"/>
+        <section>
+          <h2 id="part2" class="text-heading-3 text-left pt-10 mb-6">Who are police stopping in traffic stops?</h2>
+          <QuestionHeader>
+            How often did Philadelphia police stop people of different <SelectDemographicCategory v-model="q2ADemographicCategory"></SelectDemographicCategory> from the start of <SelectQuarter v-model="q1BQuarterStart"/> to the end of <SelectQuarter v-model="q1BQuarterEnd"/>, in <SelectLocation v-model="selectedLocation"/>?
+          </QuestionHeader>
+          <Answer>
+            <div v-if="q2A">
+              <Graph :graph-data="q2A.figures.barplot.data" :axis-properties="{x: q2A.figures.barplot.properties.xAxis, y: q2A.figures.barplot.properties.yAxis}">
+                <h4 class="max-w-[550px] mx-auto">{{ q2A.figures.barplot.properties.title }}</h4>
+              </Graph>
+            </div>
+          </Answer>
+        </section>
+        <HorizontalLine class="my-16"/>
+        <section>
+          <QuestionHeader>
+            <h3>Which demographic groups did Philadelphia police most frequently stop in <SelectLocation v-model="selectedLocation"/> from the start of <SelectQuarter v-model="q1BQuarterStart"/> to the end of <SelectQuarter v-model="q1BQuarterEnd"/>?</h3>
+          </QuestionHeader>
+          <Answer :arrow="true">
+            <div v-if="q2B">
+              <QuestionHeader>
+                <div v-html="q2B.text[1]" class="result-text"></div>
+              </QuestionHeader>
+              <div class="border border-neutral-400 pt-6">
+                <h4 class="text-center text-body-2 font-semibold text-primary-800">{{ q2B.text[0] }}</h4>
+                <div class="deo-table mt-6 text-body-3">
+                  <div class="relative w-full">
+                    <table class="w-full">
+                      <thead class="w-full">
+                        <tr>
+                          <th class="w-1/4 font-medium">Gender</th>
+                          <th class="w-1/4 font-medium">Age Range</th>
+                          <th class="w-1/4 font-medium">Race</th>
+                          <th class="w-1/4 font-medium">% of Stops</th>
+                        </tr>
+                      </thead>
+                    </table>
+                  </div>
+                  <div class="w-full h-[320px] overflow-y-scroll">
+                    <table class="text-body-3 relative w-full">
+                      <tbody class="w-full">
+                        <tr v-for="row in q2B.tables.demo">
+                          <td class="w-1/4">{{ row["Gender"] }}</td>
+                          <td class="w-1/4">{{ row["Age Range"] }}</td>
+                          <td class="w-1/4">{{ row["Race"] }}</td>
+                          <td class="w-1/4">{{ row["% of traffic stops"] }}%</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </Answer>
+        </section>
+        <HorizontalLine class="my-16"/>
+        <section>
+          <QuestionHeader>
+            How many times did Philadelphia police stop one demographic group compared to another in <SelectLocation v-model="selectedLocation"/> from the start of <SelectQuarter v-model="q1BQuarterStart"/> to the end of <SelectQuarter v-model="q1BQuarterEnd"/>?
+          </QuestionHeader>
+          <div class="max-w-2xl mt-10 mb-6">
+            <div class="text-label-2 text-left">Select two demographic groups and compare</div>
+            <div class="grid grid-cols-2 gap-4 mt-6">
+              <div class="col-span-1 flex flex-col gap-4 text-body-3 font-medium">
+                <h4 class="text-label-2 flex gap-2 items-center">
+                  Group 1
+                  <div class="demographic-group-square bg-primary-600"></div>
+                </h4>
+                <SelectAgeGroup v-model="q2CGroup1AgeRanges"/>
+                <SelectGenderIdentity v-model="q2CGroup1Genders"/>
+                <SelectRaces v-model="q2CGroup1Races"/>
+              </div>
+              <div class="col-span-1 flex flex-col gap-4 text-body-3 font-medium">
+                <h4 class="text-label-2 flex gap-2 items-center">
+                  Group 2
+                  <div class="demographic-group-square bg-red"></div>
+                </h4>
+                <SelectAgeGroup v-model="q2CGroup2AgeRanges"/>
+                <SelectGenderIdentity v-model="q2CGroup2Genders"/>
+                <SelectRaces v-model="q2CGroup2Races"/>
+              </div>
+            </div>
           </div>
-          <div class="w-full h-[400px] overflow-y-scroll">
-            <table class="text-body-3 relative w-full">
-              <tbody class="w-full">
-                <tr v-for="row in q2B.tables.demo">
-                  <td class="w-1/4">{{ row["Gender"] }}</td>
-                  <td class="w-1/4">{{ row["Age Range"] }}</td>
-                  <td class="w-1/4">{{ row["Race"] }}</td>
-                  <td class="w-1/4">{{ row["% of traffic stops"] }}%</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
+          <Answer>
+            <div v-if="q2C">
+              <Graph :graph-data="q2C.figures.barplot.data" :axis-properties="{x: q2C.figures.barplot.properties.xAxis, y: q2C.figures.barplot.properties.yAxis}" group-name="group" :group-classes="{'Group 1': 'fill-primary-600', 'Group 2': 'fill-red'}">
+                <h4 class="max-w-[550px] mx-auto">{{ q2C.figures.barplot.properties.title }}</h4>
+              </Graph>
+            </div>
+          </Answer>
+        </section>
       </div>
-    </section>
-    <HorizontalLine class="my-16"/>
-    <section>
-      <QuestionHeader>
-        How many times did Philadelphia police stop one demographic group compared to another in <SelectLocation v-model="selectedLocation"/> from the start of <SelectQuarter v-model="q1BQuarterStart"/> to the end of <SelectQuarter v-model="q1BQuarterEnd"/>?
-      </QuestionHeader>
-      <div class="mx-auto max-w-2xl mt-16">
-        <div class="text-label-1 text-center">Select two demographic groups and compare</div>
-        <div class="grid grid-cols-2 gap-4 mt-6">
-          <div class="col-span-1 flex flex-col gap-6 text-body-1 font-medium">
-            <h4 class="text-label-2 flex gap-2 items-center">
-              Group 1
-              <div class="demographic-group-square bg-primary-600"></div>
-            </h4>
-            <SelectAgeGroup v-model="q2CGroup1AgeRanges"/>
-            <SelectGenderIdentity v-model="q2CGroup1Genders"/>
-            <SelectRaces v-model="q2CGroup1Races"/>
-          </div>
-          <div class="col-span-1 flex flex-col gap-6 text-body-1 font-medium">
-            <h4 class="text-label-2 flex gap-2 items-center">
-              Group 2
-              <div class="demographic-group-square bg-red"></div>
-            </h4>
-            <SelectAgeGroup v-model="q2CGroup2AgeRanges"/>
-            <SelectGenderIdentity v-model="q2CGroup2Genders"/>
-            <SelectRaces v-model="q2CGroup2Races"/>
-          </div>
-        </div>
-      </div>
-      <IconsArrow class="text-primary-800 rotate-180 mx-auto my-8 h-6"/>
-      <div v-if="q2C">
-        <Graph :graph-data="q2C.figures.barplot.data" :axis-properties="{x: q2C.figures.barplot.properties.xAxis, y: q2C.figures.barplot.properties.yAxis}" group-name="group" :group-classes="{'Group 1': 'fill-primary-600', 'Group 2': 'fill-red'}">
-          <h4 class="max-w-[550px] mx-auto">{{ q2C.figures.barplot.properties.title }}</h4>
-        </Graph>
-      </div>
-    </section>
+    </div>
   </main>
 </template>
 

@@ -12,9 +12,6 @@
         <slot name="quote"></slot>
       </div>
     </div>
-    <div class="absolute z-[2] bottom-40 left-20 text-white">
-      <slot name="jumplinks"></slot>
-    </div>
   </div>
 </template>
 

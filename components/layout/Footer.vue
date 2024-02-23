@@ -1,24 +1,50 @@
 <template>
-  <div class="w-full bg-primary-200 py-20">
-    <div class="layout-container">
-      <div class="text-heading-1 text-primary-800 max-w-3xl">Do you need someone to talk about driving equality?</div>
-      <Button class="mt-28">Contact us</Button>
+  <nav v-if="isDataPage" class="w-full bg-primary-600">
+    <div class="layout-container flex justify-between text-white text-label-2">
+      <a v-if="previousDataPage" :href="previousDataPage.slug" class="flex items-center py-2 text-body-3 font-medium group">
+        <IconsChevron class="w-10 h-10 transform rotate-90 group-hover:-translate-x-2 transition-transform" classes="fill-white"></IconsChevron>
+        <span class="text-primary-200">Previous:</span>&nbsp;{{ previousDataPage.title }}
+      </a>
+      <div v-else></div>
+      <a v-if="nextDataPage" :href="nextDataPage.slug" class="flex items-center py-2 text-body-3 font-medium group">
+        <span class="text-primary-200">Next:</span>&nbsp;{{ nextDataPage.title }}
+        <IconsChevron class="w-10 h-10 transform -rotate-90 group-hover:translate-x-2 transition-transform" classes="fill-white"></IconsChevron>
+      </a>
+      <div v-else></div>
     </div>
-  </div>
-  <div class="w-full bg-primary-800 pt-10">
+  </nav>
+  <div class="w-full bg-primary-800 text-white pt-14">
     <div class="layout-container">
-      <div class="grid md:grid-cols-3 gap-6">
+      <h2 class="text-heading-3 mb-12">Traffic Stops in Philadelphia</h2>
+      <ul class="flex flex-col md:flex-row gap-4 md:gap-10">
+        <li>
+          <a href="#" class="text-cta-1 text-white">About the Data</a>
+        </li>
+        <li>
+          <a href="#" class="text-cta-1 text-white">About Driving Equality</a>
+        </li>
+        <li>
+          <a href="#" class="text-cta-1 text-white">Glossary</a>
+        </li>
+      </ul>
+      <div class="flex flex-col gap-10 sm:flex-row justify-between">
+        <Button class="mt-20">Contact us</Button>
+        <a href="/" class="self-start sm:self-end">
+          <img src="~/assets/images/defender-logo-white.png" alt="Defender Association of Philadelphia" class="w-[182px] mx-auto" />
+        </a>
+      </div>
+      <!-- <div class="grid md:grid-cols-3 gap-6">
         <div class="flex justify-start items-start">
           <a href="/">
             <img src="~/assets/images/defender-logo-white.png" alt="Defender Association of Philadelphia" class="w-[182px] mx-auto" />
           </a>
         </div>
-        <ul class="flex flex-col gap-6">
-          <li>
-            <a href="#" class="text-cta-1 text-white">About Driving Equality</a>
-          </li>
+        <ul class="flex gap-6">
           <li>
             <a href="#" class="text-cta-1 text-white">About the Data</a>
+          </li>
+          <li>
+            <a href="#" class="text-cta-1 text-white">About Driving Equality</a>
           </li>
         </ul>
         <ul class="flex flex-col gap-6">
@@ -35,9 +61,9 @@
             <a href="#" class="text-cta-1 text-white">X (Twitter)</a>
           </li>
         </ul>
-      </div>
-      <div class="py-10 md:py-18 text-caption text-white">
-        Copyright © 2023 Defender Association of Philadelphia. All rights reserved.
+      </div> -->
+      <div class="mt-10 pb-10 md:pb-18 text-caption text-white">
+        Copyright © 2024 Defender Association of Philadelphia. All rights reserved.
       </div>
     </div>
   </div>
@@ -45,4 +71,27 @@
 
 <script setup>
 import Button from '@/components/ui/Button.vue'
+import { useRouter } from 'vue-router';
+
+// Get current route
+const router = useRouter();
+const currentRoute = ref(router.currentRoute.value.path);
+const dataPages = [
+  { slug: '/snapshot', title: 'Snapshot' },
+  { slug: '/stops', title: 'Traffic Stops' },
+  { slug: '/neighborhoods', title: 'Neighborhoods' },
+  { slug: '/safety', title: 'Safety' },
+  { slug: '/reasons', title: 'Reasons for Stops' }
+];
+const isDataPage = computed(() => {
+  return dataPages.some(page => page.slug === currentRoute.value);
+})
+const previousDataPage = computed(() => {
+  const index = dataPages.findIndex(page => page.slug === currentRoute.value);
+  return index > 0 ? dataPages[index - 1] : null;
+});
+const nextDataPage = computed(() => {
+  const index = dataPages.findIndex(page => page.slug === currentRoute.value);
+  return index < dataPages.length - 1 ? dataPages[index + 1] : null;
+});
 </script>
