@@ -11,6 +11,37 @@ export enum QuarterMonths {
   'Oct-Dec' = 4
 }
 
+export class Quarter {
+  year: number;
+  quarter: QuarterMonths;
+  constructor(year: number, quarter: QuarterMonths) {
+    this.year = year;
+    this.quarter = quarter;
+  }
+  toParamString() {
+    return `${this.year}-Q${this.quarter}`;
+  }
+  toString() {
+    return QuarterMonths[this.quarter] + ' ' + this.year;
+  }
+}
+
+export function getLocationParam(location: string) {
+  if (location.startsWith('PSA')) {
+    return location.substring(4, 6) + '-' + location.substring(6)
+  } else if (location.startsWith('District')) {
+    return location.substring(9) + '*'
+  } else if (location.startsWith('Division')) {
+    return location.substring(9)
+  } else {
+    return '*'
+  }
+}
+
+export function getQuarterParam(quarter: QuarterMonths) {
+  return `Q${QuarterMonths[quarter]}`
+}
+
 export function formatLocationForSentence(locationValue: string, capitalize=false) {
   return `${locationValue}`
 }

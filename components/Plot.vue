@@ -1,10 +1,10 @@
 <template>
   <div class="border my-10 p-4">
     <div class="w-full text-center max-w-[720px] mx-auto mt-4 mb-8 text-heading-5 text-primary-800">
-      <slot></slot>
+      <slot name="title"></slot>
     </div>
     <svg class="mx-auto text-body-4" ref="graphSvg"></svg>
-    <slot name="footer"></slot>
+    <slot></slot>
   </div>
 </template>
 <style scope lang="scss">
@@ -39,10 +39,6 @@ const graphSvg = ref(null)
 
 const isGrouped = computed(() => {
   return props.groupName !== undefined
-})
-
-onMounted(() => {
-  drawGraph(props.graphData)
 })
 
 watch(() => props.graphData, (graphData) => {
