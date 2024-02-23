@@ -11,7 +11,7 @@ html {
   font-family: 'Poppins', sans-serif;
   font-weight: 600;
   line-height: 1.28;
-  @apply text-[36px] md:text-[60px];
+  @apply text-[32px] md:text-[60px];
 }
 
 .text-heading-2 {
@@ -59,15 +59,14 @@ html {
 }
 
 .text-body-3 {
-  font-size: 16px;
   font-family: 'Poppins', sans-serif;
-  @apply text-[14px] md:text-[16px];
+  @apply text-[14px] md:text-[18px];
 }
 
 .text-body-4 {
   font-family: 'Poppins', sans-serif;
   line-height: 1.64;
-  @apply text-[12px] md:text-[14px];
+  @apply text-[16px];
 }
 
 .text-label-1 {

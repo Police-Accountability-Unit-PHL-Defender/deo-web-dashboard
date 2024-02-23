@@ -15,16 +15,16 @@
         </div>
       </div>
       <div v-else>
-        <button id="header-menu-button" class="absolute top-12 right-12" title="Open full menu" @click="openPopupMenu"></button>
-        <div class="absolute top-12 left-12">
+        <button id="header-menu-button" class="absolute top-4 right-4 md:top-12 md:right-12" title="Open full menu" @click="openPopupMenu"></button>
+        <div class="absolute top-3 left-4 md:top-12 md:left-12">
           <a href="/" class="order-2">
-            <img src="~/assets/images/defender-logo-white.png" alt="Defender Association of Philadelphia" class="w-[182px] mx-auto" />
+            <img src="~/assets/images/defender-logo-white.png" alt="Defender Association of Philadelphia" class="w-[73px] md:w-[182px] mx-auto" />
           </a>
         </div>
-        <div class="pt-[98px] pb-18">
+        <div class="pt-20 md:pt-[98px] pb-6 md:pb-18">
           <h1 class="text-heading-1">Traffic Stops in<br/>Philadelphia</h1>
           <div class="grid-container justify-center">
-            <p class="col-span-6 md:col-start-4 text-body-4 mt-4 text-center">
+            <p class="col-span-6 md:col-start-4 text-body-4 mt-2 md:mt-4 text-center">
               Explore this dashboard to learn more about racial disparities in the Philadelphia Police Department’s traffic enforcement, how traffic stops have changed over time, and the history of Driving Equality.
             </p>
           </div>

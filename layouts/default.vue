@@ -4,7 +4,6 @@
     <div>
       <slot />
     </div>
-    <BackToTop></BackToTop>
     <Footer></Footer>
   </div>
 </template>
