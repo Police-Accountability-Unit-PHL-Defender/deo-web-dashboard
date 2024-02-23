@@ -15,7 +15,9 @@
   </nav>
   <div class="w-full bg-primary-800 text-white pt-14">
     <div class="layout-container">
-      <h2 class="text-heading-3 mb-12">Traffic Stops in Philadelphia</h2>
+      <a href="/">
+        <h2 class="text-heading-3 mb-12">Traffic Stops in Philadelphia</h2>
+      </a>
       <ul class="flex flex-col md:flex-row gap-4 md:gap-10">
         <li>
           <a href="#" class="text-cta-1 text-white">About the Data</a>

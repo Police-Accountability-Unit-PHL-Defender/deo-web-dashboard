@@ -1,12 +1,12 @@
 <template>
   <button v-if="!props.href"
-    class="button inline-block text-label-2"
+    class="button inline-block text-label-2 text-center"
     :disabled="disabled"
     :type="type"
   >
     <slot />
   </button>
-  <a v-else :href="props.href" class="button inline-block text-label-2">
+  <a v-else :href="props.href" class="button inline-block text-label-2 text-center">
     <slot />
   </a>
 </template>

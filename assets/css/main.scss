@@ -4,7 +4,7 @@
 
 html {
   font-family: 'Poppins', sans-serif;
-  @apply text-[12px] md:text-[16px];
+  @apply md:text-[16px];
 }
 
 .text-heading-1 {
@@ -109,7 +109,7 @@ html {
 }
 
 .layout-container {
-  @apply max-w-[1344px] mx-auto px-3 md:px-8;
+  @apply max-w-[1344px] mx-auto px-4 md:px-8;
 }
 
 @layer components {  
