@@ -5,7 +5,7 @@
         How does Driving Equality impact public safety?
       </template>
       <template #image>
-        <img class="w-full h-full object-cover" src="~/assets/images/about-driving-equality.jpg" alt="A street in Philadelphia"/>
+        <img class="w-full h-full object-cover" src="~/assets/images/driving-equality.jpg" alt="A street in Philadelphia"/>
       </template>
       <template #quote>
         <Quote author="Marcus Biddle, Reporter" source="https://phillydefenders.org" backgroundClass="bg-[#DBEEB9]" quoteMarkClass="fill-yellowgreen">
