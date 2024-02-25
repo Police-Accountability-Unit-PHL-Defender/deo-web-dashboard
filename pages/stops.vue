@@ -258,7 +258,7 @@ const { data: q2A, refresh: refreshQ2A } = await useAsyncData('q2A',
 )
 watch(q2AParams, async () => { refreshQ2A() }, { deep: true })
 
-const a2BParams = ref([selectedLocation, q1BQuarterStart, q1BQuarterEnd])
+const q2BParams = ref([selectedLocation, q1BQuarterStart, q1BQuarterEnd])
 const { data: q2B, refresh: refreshQ2B } = await useAsyncData('q2B',
   () => $fetch(`${apiBaseUrl}/stops/most-frequent-stops`, {
     params: {
@@ -269,7 +269,7 @@ const { data: q2B, refresh: refreshQ2B } = await useAsyncData('q2B',
     options
   })
 )
-watch(a2BParams, async () => { refreshQ2B() }, { deep: true })
+watch(q2BParams, async () => { refreshQ2B() }, { deep: true })
 
 const q2CParams = ref([selectedLocation, q1BQuarterStart, q1BQuarterEnd, q2CGroup1AgeRanges, q2CGroup2AgeRanges, q2CGroup1Genders, q2CGroup2Genders, q2CGroup1Races, q2CGroup2Races])
 const { data: q2C, refresh: refreshQ2C } = await useAsyncData('q2C',
