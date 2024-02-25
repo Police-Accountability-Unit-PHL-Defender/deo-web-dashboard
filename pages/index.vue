@@ -60,7 +60,7 @@
       </template>
     </HomeModule>
 
-    <HomeModule ctaLink="/about-driving-equality">
+    <HomeModule ctaLink="/data">
       <template #title>
         About the Data
       </template>

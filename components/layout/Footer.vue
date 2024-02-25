@@ -32,10 +32,10 @@
       </a>
       <ul class="flex flex-col md:flex-row gap-4 md:gap-10">
         <li>
-          <a href="#" class="text-cta-1 text-white">About the Data</a>
+          <a href="/data" class="text-cta-1 text-white">About the Data</a>
         </li>
         <li>
-          <a href="#" class="text-cta-1 text-white">About Driving Equality</a>
+          <a href="/driving-equality" class="text-cta-1 text-white">About Driving Equality</a>
         </li>
         <li>
           <a href="#" class="text-cta-1 text-white">Glossary</a>

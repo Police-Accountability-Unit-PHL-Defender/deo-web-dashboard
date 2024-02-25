@@ -76,11 +76,6 @@
               </a>
             </li>
             <li>
-              <a href="/safety" class="text-body-1 font-medium">
-                Do traffic stops promote safety?
-              </a>
-            </li>
-            <li>
               <a href="/reasons" class="text-body-1 font-medium">
                 Do police make traffic stops for safety reasons?
               </a>
@@ -91,7 +86,7 @@
               </a>
             </li>
             <li>
-              <a href="/about-the-data" class="text-body-1 font-medium">
+              <a href="/data" class="text-body-1 font-medium">
                 About the Data
               </a>
             </li>
