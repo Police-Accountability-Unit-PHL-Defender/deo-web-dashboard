@@ -48,48 +48,57 @@
         <span class="block max-w-[252px] mx-auto text-label-1">Reasons for stops</span>
       </a>
     </nav>
-    <menu class="fixed z-[999] w-screen h-screen top-0 left-0 bg-primary-800 py-8 text-left layout-container flex flex-col justify-between items-start" :class="{'block': isMenuOpen, 'hidden': !isMenuOpen}" ref="menu">
-      <div class="flex flex-col gap-3">
-        <ul class="flex flex-col gap-3 order-2">
-          <li>
-            <a href="/snapshot" class="text-body-1 font-medium">
-              Snapshot of traffic enforcement in Philadelphia
-            </a>
-          </li>
-          <li>
-            <a href="/stops" class="text-body-1 font-medium">
-              How many stops have police made in my neighborhood?
-            </a>
-          </li>
-          <li>
-            <a href="/neighborhoods" class="text-body-1 font-medium">
-              Do police treat people or neighborhoods differently?
-            </a>
-          </li>
-          <li>
-            <a href="/safety" class="text-body-1 font-medium">
-              Do traffic stops promote safety?
-            </a>
-          </li>
-          <li>
-            <a href="/driving-equality" class="text-body-1 font-medium">
-              Does Driving Equality promote safety?
-            </a>
-          </li>
-          <li>
-            <a href="/about" class="text-body-1 font-medium">
-              About Driving Equality
-            </a>
-          </li>
-          <li>
-            <a href="/about-the-data" class="text-body-1 font-medium">
-              About the data
-            </a>
-          </li>
-        </ul>
-        <button class="order-1 -ml-4" id="header-menu-close-button" title="Close menu" @click="closePopupMenu"></button>
+    <menu class="fixed z-[999] w-screen h-screen inset-0 bg-primary-800 py-8 text-left" :class="{'block': isMenuOpen, 'hidden': !isMenuOpen}" ref="menu">
+      <div class="layout-container">
+        <div class="relative w-full">
+          <button class="absolute top-3 right-3" id="header-menu-close-button" title="Close menu" @click="closePopupMenu"></button>
+        </div>
+        <div class="flex flex-col gap-3">
+          <ul class="flex flex-col gap-3 order-2">
+            <li>
+              <a href="/snapshot" class="text-body-1 font-medium">
+                Snapshot of traffic enforcement in Philadelphia
+              </a>
+            </li>
+            <li>
+              <a href="/stops" class="text-body-1 font-medium">
+                How many stops do police make, and who do they stop?
+              </a>
+            </li>
+            <li>
+              <a href="/neighborhoods" class="text-body-1 font-medium">
+                Do police treat people and neighborhoods differently?
+              </a>
+            </li>
+            <li>
+              <a href="/safety" class="text-body-1 font-medium">
+                Do traffic stops promote safety?
+              </a>
+            </li>
+            <li>
+              <a href="/safety" class="text-body-1 font-medium">
+                Do traffic stops promote safety?
+              </a>
+            </li>
+            <li>
+              <a href="/reasons" class="text-body-1 font-medium">
+                Do police make traffic stops for safety reasons?
+              </a>
+            </li>
+            <li>
+              <a href="/driving-equality" class="text-body-1 font-medium">
+                What is Driving Equality?
+              </a>
+            </li>
+            <li>
+              <a href="/about-the-data" class="text-body-1 font-medium">
+                About the Data
+              </a>
+            </li>
+          </ul>
+        </div>
+        <Button class="mt-12">Contact us</Button>
       </div>
-      <Button class="mt-12">Contact us</Button>
     </menu>
   </header>
 </template>
