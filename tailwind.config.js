@@ -74,6 +74,7 @@ export default {
       },
       boxShadow: {
         quote: "12px 12px 0px currentColor",
+        dropdown: "2px 2px 10px rgba(0, 0, 0, 0.16)",
       },
     },
   },

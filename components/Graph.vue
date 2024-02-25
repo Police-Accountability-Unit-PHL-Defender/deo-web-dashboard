@@ -5,7 +5,7 @@
     </div>
     <div ref="container" class="relative">
       <svg class="mx-auto text-body-4" ref="graphSvg"></svg>
-      <div class="tooltip"></div>
+      <div class="tooltip text-caption"></div>
     </div>
     <slot name="footer"></slot>
   </div>
@@ -135,10 +135,10 @@ const drawGraph = (graphData) => {
       resetStyle(d3.select(this));
     }
     function showTooltip() {
-      tooltipDiv.style("display", "block");
+      tooltipDiv.style("visibility", "visible");
     }
     function hideTooltip() {
-      tooltipDiv.style("display", "none");
+      tooltipDiv.style("visibility", "hidden");
     }
     function setPosition(mouseX, mouseY) {
       tooltipDiv
@@ -231,21 +231,10 @@ function resetStyle(selection) {
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .tooltip {
-  box-sizing: border-box;
-  position: absolute;
-  display: none;
   top: 0;
   left: -100000000px;
-  padding: 8px 12px;
-  font-family: sans-serif;
-  font-size: 12px;
-  color: #333;
-  background-color: #fff;
-  border: 1px solid #333;
-  border-radius: 4px;
-  pointer-events: none;
-  z-index: 1;
+  @apply flex flex-col gap-1 absolute z-[1] p-2 bg-white border border-neutral-400 pointer-events-none box-border shadow-dropdown;
 }
 </style>
