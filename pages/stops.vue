@@ -120,7 +120,7 @@
                       </thead>
                     </table>
                   </div>
-                  <div class="w-full h-[320px] overflow-y-scroll">
+                  <div class="w-full border-b border-neutral-400" :class="{'h-[400px] overflow-y-scroll': isTableShowingAll}, 'h-[280px] overflow-y-hidden'">
                     <table class="text-body-3 relative w-full">
                       <tbody class="w-full">
                         <tr v-for="row in q2B.tables.demo">
@@ -131,6 +131,11 @@
                         </tr>
                       </tbody>
                     </table>
+                  </div>
+                  <div class="flex justify-center">
+                    <Button class="my-4 mx-auto" @click="isTableShowingAll = !isTableShowingAll">
+                      {{ isTableShowingAll ? 'Show less' : 'Show all' }}
+                    </Button>
                   </div>
                 </div>
               </div>
@@ -146,7 +151,7 @@
             <div class="text-label-2 text-left">Select two demographic groups and compare</div>
             <div class="grid grid-cols-2 gap-4 mt-6">
               <div class="col-span-1 flex flex-col gap-4 text-body-3 font-medium">
-                <h4 class="text-label-2 flex gap-2 items-center">
+                <h4 class="text-body-3 font-medium flex gap-2 items-center">
                   Group 1
                   <div class="demographic-group-square bg-primary-600"></div>
                 </h4>
@@ -155,7 +160,7 @@
                 <SelectRaces v-model="q2CGroup1Races"/>
               </div>
               <div class="col-span-1 flex flex-col gap-4 text-body-3 font-medium">
-                <h4 class="text-label-2 flex gap-2 items-center">
+                <h4 class="text-body-3 font-medium flex gap-2 items-center">
                   Group 2
                   <div class="demographic-group-square bg-red"></div>
                 </h4>
@@ -190,6 +195,7 @@ import Graph from '~/components/Graph.vue';
 import SelectLocation from '~/components/SelectLocation.vue'
 import SelectTimeGranularity from '~/components/SelectTimeGranularity.vue'
 import HorizontalLine from '~/components/ui/HorizontalLine.vue';
+import Button from '~/components/ui/Button.vue';
 
 const selectedLocation = ref('Philadelphia')
 const selectedTimeGranularity = ref('year')
@@ -203,6 +209,8 @@ const q2CGroup1Genders = ref(['Male'])
 const q2CGroup2Genders = ref(['Male'])
 const q2CGroup1Races = ref(['Black'])
 const q2CGroup2Races = ref(['White'])
+
+const isTableShowingAll = ref(false)
 
 const apiBaseUrl = 'https://deo-fastapi.onrender.com'
 const options = { mode: 'cors' }

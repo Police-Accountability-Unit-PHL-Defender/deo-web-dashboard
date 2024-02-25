@@ -1,6 +1,6 @@
 <template>
   <div>
-    <label class="block text-body-4 mb-2 font-normal">Age group</label>
+    <label class="block text-caption mb-[6px] font-normal">Age group</label>
     <SelectOne
       :items="items"
       :modelValue="modelValue"
