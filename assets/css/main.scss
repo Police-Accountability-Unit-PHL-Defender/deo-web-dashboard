@@ -150,3 +150,65 @@ html {
 .result-text span {
   @apply bg-primary-200 px-[0.25em] inline-block h-full border-white border;
 }
+
+.faq {
+  ol {
+    @apply pl-6;
+  
+    & > li {
+      list-style: decimal;
+      list-style-position: outside;
+    }
+  }
+  ul {
+    list-style: disc;
+    @apply m-0 pl-5;
+    & > li {
+      @apply my-4
+    }
+  }
+  details {
+    @apply -ml-6 pl-6 border-b border-neutral-600;
+    & > summary {
+      list-style: none;
+      @apply relative cursor-pointer py-4 pr-8;
+  
+      &::marker, &::-webkit-details-marker {
+        display: none;
+      }
+  
+      &::after {
+        content: "";
+        background-image: url('~/assets/icons/chevron.svg');
+        background-repeat: no-repeat;
+        @apply absolute right-0 top-1/2 -translate-y-1/2 w-8 h-8;
+      }
+    }
+    &[open] {
+      @apply pb-4;
+  
+      & > summary {
+        @apply font-medium;
+  
+        &::after {
+          @apply transform rotate-180;
+        }
+      }
+    }
+  
+    p {
+      @apply mb-4;
+    }
+  }
+  a {
+    @apply underline text-primary-600 hover:text-primary-800;
+  }
+  table.timeline {
+    th {
+      @apply font-medium w-[10em] align-top border border-neutral-400 p-2;
+    }
+    td {
+      @apply border border-neutral-400 p-2;
+    }
+  }
+}
