@@ -38,11 +38,11 @@
           <a href="/driving-equality" class="text-cta-1 text-white">About Driving Equality</a>
         </li>
         <li>
-          <a href="#" class="text-cta-1 text-white">Glossary</a>
+          <a href="/glossary" class="text-cta-1 text-white">Glossary</a>
         </li>
       </ul>
       <div class="flex flex-col gap-10 sm:flex-row justify-between">
-        <Button class="mt-10 md:mt-20">Contact us</Button>
+        <Button type="link" href="/contact" class="mt-10 md:mt-20">Contact us</Button>
         <a href="/" class="self-start sm:self-end">
           <img src="~/assets/images/defender-logo-white.png" alt="Defender Association of Philadelphia" class="w-[145px] md:w-[182px] mx-auto" />
         </a>

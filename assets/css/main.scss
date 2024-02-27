@@ -212,3 +212,29 @@ html {
     }
   }
 }
+
+.contact-us {
+  a {
+    @apply underline text-primary-600 hover:text-primary-800;
+  }
+  table {
+    th {
+      @apply font-medium align-top text-left pb-6 pr-6;
+    }
+    td {
+      @apply pb-6 align-top;
+    }
+    address {
+      @apply not-italic;
+    }
+  }
+}
+
+.glossary {
+  dt {
+    @apply col-span-2 font-medium;
+  }
+  dd {
+    @apply col-span-8 mb-6 md:mb-0;
+  }
+}
