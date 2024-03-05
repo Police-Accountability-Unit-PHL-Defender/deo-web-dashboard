@@ -1,9 +1,13 @@
 <template>
-  <SelectOne
-    :items="items"
-    :modelValue="modelValue"
-    @update:modelValue="value => emit('update:modelValue', value)"
-  />
+  <div>
+    <label class="block text-caption mb-[6px] font-normal">Age group</label>
+    <SelectOne
+      :items="items"
+      :modelValue="modelValue"
+      :multiple="true"
+      @update:modelValue="value => emit('update:modelValue', value)"
+    />
+  </div>
 </template>
 
 <script setup>

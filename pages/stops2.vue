@@ -106,18 +106,18 @@
                   Group 1
                   <div class="demographic-group-square bg-primary-600"></div>
                 </h4>
-                <SelectAgeGroup v-model="q2CGroup1AgeRanges"/>
-                <SelectGenderIdentity v-model="q2CGroup1Genders"/>
-                <SelectRaces v-model="q2CGroup1Races"/>
+                <SelectAgeGroups v-model="q2CGroup1AgeRanges"/>
+                <SelectGenders v-model="q2CGroup1Genders"/>
+                <SelectRace v-model="q2CGroup1Races" :multiple="true"/>
               </div>
               <div class="col-span-1 flex flex-col gap-4 text-body-3 font-medium">
                 <h4 class="text-label-2 flex gap-2 items-center">
                   Group 2
                   <div class="demographic-group-square bg-red"></div>
                 </h4>
-                <SelectAgeGroup v-model="q2CGroup2AgeRanges"/>
-                <SelectGenderIdentity v-model="q2CGroup2Genders"/>
-                <SelectRaces v-model="q2CGroup2Races"/>
+                <SelectAgeGroups v-model="q2CGroup2AgeRanges"/>
+                <SelectGenders v-model="q2CGroup2Genders"/>
+                <SelectRace v-model="q2CGroup2Races" :multiple="true"/>
               </div>
             </div>
           </div>

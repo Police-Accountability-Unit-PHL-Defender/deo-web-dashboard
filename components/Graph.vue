@@ -66,11 +66,20 @@ const getGroupClass = (group) => {
 }
 
 const drawGraph = (graphData) => {
-  const barWidth = isGrouped.value ? 32 : 64;
+  let barWidth = 64;
+  if (isGrouped.value) { barWidth = 32 }
   const groupBarGap = 4
   const groupWidth = barWidth * 2 + groupBarGap
-  const padding = 24;
-  const paddingOuter = 16;
+  let padding = 24;
+  let paddingOuter = 16;
+  if (!isGrouped.value && graphData.length < 4) {
+    barWidth = 128
+  }
+  if (!isGrouped.value && graphData.length > 12) {
+    barWidth = 16
+    padding = 6
+    paddingOuter = 6
+  }
   const paddingInnerRatio = isGrouped.value ? (padding/groupWidth) : (padding/barWidth)
   const paddingOuterRatio = isGrouped.value ? (paddingOuter/groupWidth) : (paddingOuter/barWidth)
   const height = 370;
@@ -114,6 +123,14 @@ const drawGraph = (graphData) => {
     .call(d3.axisBottom(x).tickSizeInner(0).tickSizeOuter(0).tickPadding(12))
     .selectAll(".tick text")
       .call(wrap, x.bandwidth());
+  // Add the x-axis label
+  svg.append("text")
+    .attr("x", width / 2)
+    .attr("y", height - 6)
+    .attr("text-anchor", "middle")
+    .attr("fill", "currentColor")
+    .attr("class", "text-body-4")
+    .text(props.axisProperties.x);
   
   const MOUSE_POS_Y_OFFSET = 8;
   const MOUSE_POS_X_OFFSET = 0;
@@ -223,15 +240,9 @@ function setContents(datum, tooltipDiv) {
   // customize this function to set the tooltip's contents however you see fit
   tooltipDiv
     .selectAll("p")
-    .data(Object.entries(datum))
+    .data(datum.hover_text)
     .join("p")
-    .filter(([key, value]) => value !== null && value !== undefined)
-    .html(
-      ([key, value]) =>
-        `<strong>${key}</strong>: ${
-          typeof value === "object" ? value.toLocaleString("en-US") : value
-        }`
-    );
+    .html((d) => d);
 }
 function setStyle(selection) {
   selection.attr("opacity", "0.8");

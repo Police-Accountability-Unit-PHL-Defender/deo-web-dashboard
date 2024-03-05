@@ -42,7 +42,7 @@
             </li>
           </ul>
         </nav>
-
+        <HorizontalLine class="my-16"/>
         <section>
           <h2 id="part1" class="text-heading-3 text-left pt-10 mb-6">How intrusive are police during traffic stops?</h2>
           <QuestionHeader>
@@ -62,7 +62,7 @@
             </AnswerText>
           </Answer>
         </section>
-
+        <HorizontalLine class="my-16"/>
         <section>
           <QuestionHeader>
             <h3>How have Philadelphia police changed the way they intrude during traffic stops in <SelectLocation v-model="selectedLocation"/>, by <SelectTimeGranularity v-model="selectedTimeGranularity"/> ?</h3>
@@ -70,6 +70,49 @@
           <Answer v-if="q1B" :arrow="true">
             <Graph :graph-data="q1B.figures.barplot.data" :axis-properties="{x: q1B.figures.barplot.properties.xAxis, y: q1B.figures.barplot.properties.yAxis}" group-name="group" :group-classes="{'# of Searches': 'fill-primary-600', '# of Frisks': 'fill-red'}">
               <h4>{{ q1B.figures.barplot.properties.title }}</h4>
+            </Graph>
+          </Answer>
+        </section>
+        <HorizontalLine class="my-16"/>
+        <section>
+          <h2 id="part2" class="text-heading-3 text-left pt-10 mb-6">During traffic stops, do police treat people differently?</h2>
+          <QuestionHeader>
+            <h3>
+              Do Philadelphia police intrude upon some drivers and their vehicles more often than others?
+              Show data by <SelectDemographicCategory v-model="q2ADemographicCategory" /> from the start of <SelectQuarter v-model="q2AQuarterStart"/> to the end of <SelectQuarter v-model="q2AQuarterEnd"/>, compared to a baseline of people who are
+              <SelectRace v-if="q2ADemographicCategory === 'Race'" v-model="q2ARace"/>
+              <SelectGender v-if="q2ADemographicCategory ==='Gender'" v-model="q2AGender"/>
+              <SelectAgeGroup v-if="q2ADemographicCategory === 'Age Range'" v-model="q2AAgeGroup"/>.
+            </h3>
+          </QuestionHeader>
+          <!-- <Answer v-if="q2A" :arrow="true">
+          </Answer> -->
+        </section>
+        <HorizontalLine class="my-16"/>
+        <section>
+          <h2 id="part3" class="text-heading-3 text-left pt-10 mb-6">During traffic stops, do police officers treat neighborhoods differently?</h2>
+          <QuestionHeader>
+            <h3>
+              Is traffic enforcement different in districts where most residents are white, compared to districts where most residents are people of color?
+              Comparing majority white districts to majority non-white districts, how many <SelectEvent v-model="q3AEvent" /> did Philadelphia police make from the start of <SelectQuarter v-model="q2AQuarterStart"/> to the end of <SelectQuarter v-model="q2AQuarterEnd"/>?
+            </h3>
+          </QuestionHeader>
+          <Answer v-if="q3A" :arrow="true">
+            <Graph :graph-data="q3A.figures.barplot.data" :axis-properties="{x: q3A.figures.barplot.properties.xAxis, y: q3A.figures.barplot.properties.yAxis}">
+              <h4>{{ q3A.figures.barplot.properties.title }}</h4>
+            </Graph>
+          </Answer>
+        </section>
+        <HorizontalLine class="my-16"/>
+        <section>
+          <QuestionHeader>
+            <h3>
+              From the start of <SelectQuarter v-model="q2AQuarterStart"/> to the end of <SelectQuarter v-model="q2AQuarterEnd"/>, how many <SelectEvent v-model="q3AEvent" /> happened at the following districts: <SelectDistricts v-model="selectedDistricts" />?
+            </h3>
+          </QuestionHeader>
+          <Answer v-if="q3B" :arrow="true">
+            <Graph :graph-data="q3B.figures.barplot.data" :axis-properties="{x: q3B.figures.barplot.properties.xAxis, y: q3B.figures.barplot.properties.yAxis}">
+              <h4>{{ q3B.figures.barplot.properties.title }}</h4>
             </Graph>
           </Answer>
         </section>
@@ -88,6 +131,14 @@ import Button from '~/components/ui/Button.vue';
 
 const selectedLocation = ref('Philadelphia')
 const selectedTimeGranularity = ref('year')
+const q2ADemographicCategory = ref('Race')
+const q2AQuarterStart = ref(new Quarter(2023, QuarterMonths['Jan-Mar']))
+const q2AQuarterEnd = ref(new Quarter(2023, QuarterMonths['Oct-Dec']))
+const q2ARace = ref('White')
+const q2AGender = ref('Male')
+const q2AAgeGroup = ref('<25')
+const q3AEvent = ref('traffic stops')
+const selectedDistricts = ref(['District 25', 'District 05'])
 
 const q1AParams = ref([selectedLocation, selectedTimeGranularity])
 const { data: q1A, refresh: refreshQ1A } = await useAsyncData('q1A',
@@ -113,6 +164,48 @@ const { data: q1B, refresh: refreshQ1B } = await useAsyncData('q1B',
 )
 watch(q1BParams, async () => { refreshQ1B() }, { deep: true })
 
+// const q2AParams = ref([q2ADemographicCategory, q2AQuarterStart, q2AQuarterEnd, q2ARace, q2AGender, q2AAgeGroup])
+// const { data: q2A, refresh: refreshQ2A } = await useAsyncData('q2A',
+//   () => $fetch(`${apiBaseUrl}/neighborhoods/demographic-intrusions`, {
+//     params: {
+//       demographic_category: q2ADemographicCategory.value,
+//       start_qyear: q2AQuarterStart.value,
+//       end_qyear: q2AQuarterEnd.value,
+//     },
+//     options
+//   })
+// )
+// watch(q2AParams, async () => { refreshQ2A() }, { deep: true })
+
+const q3AParams = ref([q3AEvent, q2AQuarterStart, q2AQuarterEnd])
+const { data: q3A, refresh: refreshQ3A } = await useAsyncData('q3A',
+  () => $fetch(`${apiBaseUrl}/neighborhoods/neighborhoods-by-neighborhood`, {
+    params: {
+      police_action: getEventParam(q3AEvent.value),
+      start_qyear: q2AQuarterStart.value.toParamString(),
+      end_qyear: q2AQuarterEnd.value.toParamString(),
+    },
+    options
+  })
+)
+watch(q3AParams, async () => { refreshQ3A() }, { deep: true })
+
+const q3BParams = ref([q3AEvent, q2AQuarterStart, q2AQuarterEnd, selectedDistricts])
+const { data: q3B, refresh: refreshQ3B } = await useAsyncData('q3B',
+  () => $fetch(`${apiBaseUrl}/neighborhoods/neighborhoods-compare-districts`, {
+    params: {
+      police_action: getEventParam(q3AEvent.value),
+      start_qyear: q2AQuarterStart.value.toParamString(),
+      end_qyear: q2AQuarterEnd.value.toParamString(),
+      districts: selectedDistricts.value.map(d => getLocationParam(d)),
+    },
+    options
+  })
+);
+watch(q3BParams, async () => { refreshQ3B() }, { deep: true })
+
 console.log(q1A.value)
 console.log(q1B.value)
+console.log(q3A.value)
+console.log(q3B.value)
 </script>

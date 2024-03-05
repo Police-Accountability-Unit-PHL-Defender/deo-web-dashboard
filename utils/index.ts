@@ -33,7 +33,7 @@ export function getLocationParam(location: string) {
   if (location.startsWith('PSA')) {
     return location.substring(4, 6) + '-' + location.substring(6)
   } else if (location.startsWith('District')) {
-    return location.substring(9) + '*'
+    return location.substring(9).padStart(2, '0') + '*'
   } else if (location.startsWith('Division')) {
     return location.substring(9)
   } else {
@@ -43,6 +43,14 @@ export function getLocationParam(location: string) {
 
 export function getQuarterParam(quarter: QuarterMonths) {
   return `Q${QuarterMonths[quarter]}`
+}
+
+export function getEventParam(event: string) {
+  if (event==='traffic stops') return 'stop'
+  if (event==='searches') return 'search'
+  if (event==='frisks') return 'frisk'
+  if (event==='intrusions') return 'intrusion'
+  return ''
 }
 
 export function formatLocationForSentence(locationValue: string, capitalize=false) {
