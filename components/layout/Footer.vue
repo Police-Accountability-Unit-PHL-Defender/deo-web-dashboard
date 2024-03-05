@@ -41,6 +41,12 @@
           <a href="/glossary" class="text-cta-1 text-white">Glossary</a>
         </li>
       </ul>
+      <div class="mt-8 max-w-[540px]">
+        <p class="text-caption">
+          Please note: This dashboard shows public data from the Philadelphia Police Department, which may at times be incomplete, unreliable, or inaccurate.
+          <a href="/data#11" class="underline">Learn more</a>.
+        </p>
+      </div>
       <div class="flex flex-col gap-10 sm:flex-row justify-between">
         <Button type="link" href="/contact" class="mt-10 md:mt-20">Contact us</Button>
         <a href="/" class="self-start sm:self-end">

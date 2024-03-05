@@ -37,50 +37,6 @@
             </li>
           </ul>
         </nav>
-    
-        <section>
-          <h2 id="part1" class="text-heading-3 text-left pt-10 mb-6">How many stops do police make?</h2>
-          <QuestionHeader>
-            <h3>How many stops did Philadelphia police make in <SelectLocation v-model="selectedLocation"/>, by <SelectTimeGranularity v-model="selectedTimeGranularity"/> ?</h3>
-          </QuestionHeader>
-          <Answer v-if="q1A" :arrow="true">
-            <AnswerText>
-              <div v-html="q1A.text[0]" class="result-text"></div>
-            </AnswerText>
-            <Graph :graph-data="q1A.figures.barplot.data" :axis-properties="{x: q1A.figures.barplot.properties.xAxis, y: q1A.figures.barplot.properties.yAxis}">
-              <h4>{{ q1A.figures.barplot.properties.title }}</h4>
-            </Graph>
-            <AnswerText>
-              <div class="text-body-3 text-left whitespace-pre-line">
-                <span v-for="sentence in q1A.text.slice(1)"><span class="result-text" v-html="sentence"></span>&nbsp;</span>
-              </div>
-            </AnswerText>
-          </Answer>
-        </section>
-        <HorizontalLine class="my-16"/>
-        <section>
-          <QuestionHeader>
-            <h3>
-              In <SelectLocation v-model="selectedLocation"/>, from the start of <SelectQuarter2 v-model="q1BQuarterStart"></SelectQuarter2> to the end of <SelectQuarter2 v-model="q1BQuarterEnd"></SelectQuarter2>,
-              <span v-if="q1B" class="result-text" v-html="q1B.text[0]"></span>
-            </h3>
-          </QuestionHeader>
-        </section>
-        <HorizontalLine class="my-16"/>
-        <section>
-          <QuestionHeader>
-            <h3>Does traffic enforcement change depending on the time of year? How many traffic stops do Philadelphia police make in certain times of year in <SelectLocation v-model="selectedLocation"/>?</h3>
-          </QuestionHeader>
-          <div class="max-w-2xl mt-4">
-            <div class="text-body-4 text-left">Select time(s) of year</div>
-            <SelectTimeOfYear class="mt-2 max-w-[390px]" v-model="q1CQuarters"/>
-          </div>
-          <Answer>
-            <Graph :graph-data="q1C.figures.barplot.data" :axis-properties="{x: q1C.figures.barplot.properties.xAxis, y: q1C.figures.barplot.properties.yAxis}">
-              <h4 class="max-w-[550px] mx-auto">{{ q1C.figures.barplot.properties.title }}</h4>
-            </Graph>
-          </Answer>
-        </section>
         <HorizontalLine class="mt-16"/>
         <section>
           <h2 id="part2" class="text-heading-3 text-left pt-10 mb-6">Who are police stopping in traffic stops?</h2>
@@ -120,7 +76,7 @@
                       </thead>
                     </table>
                   </div>
-                  <div class="w-full border-b border-neutral-400" :class="{'h-[400px] overflow-y-scroll': isTableShowingAll}, 'h-[280px] overflow-y-hidden'">
+                  <div class="w-full h-[320px] overflow-y-scroll">
                     <table class="text-body-3 relative w-full">
                       <tbody class="w-full">
                         <tr v-for="row in q2B.tables.demo">
@@ -131,11 +87,6 @@
                         </tr>
                       </tbody>
                     </table>
-                  </div>
-                  <div class="flex justify-center">
-                    <Button class="my-4 mx-auto" @click="isTableShowingAll = !isTableShowingAll">
-                      {{ isTableShowingAll ? 'Show less' : 'Show all' }}
-                    </Button>
                   </div>
                 </div>
               </div>
@@ -151,7 +102,7 @@
             <div class="text-label-2 text-left">Select two demographic groups and compare</div>
             <div class="grid grid-cols-2 gap-4 mt-6">
               <div class="col-span-1 flex flex-col gap-4 text-body-3 font-medium">
-                <h4 class="text-body-3 font-medium flex gap-2 items-center">
+                <h4 class="text-label-2 flex gap-2 items-center">
                   Group 1
                   <div class="demographic-group-square bg-primary-600"></div>
                 </h4>
@@ -160,7 +111,7 @@
                 <SelectRaces v-model="q2CGroup1Races"/>
               </div>
               <div class="col-span-1 flex flex-col gap-4 text-body-3 font-medium">
-                <h4 class="text-body-3 font-medium flex gap-2 items-center">
+                <h4 class="text-label-2 flex gap-2 items-center">
                   Group 2
                   <div class="demographic-group-square bg-red"></div>
                 </h4>
@@ -180,6 +131,7 @@
         </section>
       </div>
     </div>
+    <!-- <button @click="refreshQ2C()">Refresh</button> -->
   </main>
 </template>
 
@@ -189,13 +141,12 @@
 }
 </style>
 
-<script setup>
+<script setup lang="ts">
 import QuestionHeader from '~/components/QuestionHeader.vue';
 import Graph from '~/components/Graph.vue';
 import SelectLocation from '~/components/SelectLocation.vue'
 import SelectTimeGranularity from '~/components/SelectTimeGranularity.vue'
 import HorizontalLine from '~/components/ui/HorizontalLine.vue';
-import Button from '~/components/ui/Button.vue';
 
 const selectedLocation = ref('Philadelphia')
 const selectedTimeGranularity = ref('year')
@@ -210,52 +161,33 @@ const q2CGroup2Genders = ref(['Male'])
 const q2CGroup1Races = ref(['Black'])
 const q2CGroup2Races = ref(['White'])
 
-const isTableShowingAll = ref(false)
+const apiBaseUrl = 'https://deo-fastapi.onrender.com'
+const options = { mode: 'cors' }
 
-const q1AParams = ref([selectedLocation, selectedTimeGranularity])
-const { data: q1A, refresh: refreshQ1A } = await useAsyncData('q1A',
-  () => $fetch(`${apiBaseUrl}/stops/num-stops`, {
-    params: {
-      location: getLocationParam(selectedLocation.value),
-      time_aggregation: selectedTimeGranularity.value,
-    },
-    options
-  })
-)
-watch(q1AParams, async () => { refreshQ1A() }, { deep: true })
+// interface QuestionResponse {
+//   text: string[]
+//   figures: {
+//     barplot: {
+//       data: any
+//       properties: {
+//         title: string
+//         xAxis: string
+//         yAxis: string
+//       }
+//     }
+//   }
+//   tables: {
+//     demo: {}
+//   }
+// }
 
-const q1BParams = ref([selectedLocation, q1BQuarterStart, q1BQuarterEnd])
-const { data: q1B, refresh: refreshQ1B } = await useAsyncData('q1B',
-  () => $fetch(`${apiBaseUrl}/stops/num-stops-time-slice`, {
-    params: {
-      location: getLocationParam(selectedLocation.value),
-      start_qyear: q1BQuarterStart.value.toParamString(),
-      end_qyear: q1BQuarterEnd.value.toParamString(),
-    },
-    options
-  })
-)
-watch(q1BParams, async () => { refreshQ1B() }, { deep: true })
-
-const q1CParams = ref([selectedLocation, q1CQuarters])
-const { data: q1C, refresh: refreshQ1C } = await useAsyncData('q1C',
-  () => $fetch(`${apiBaseUrl}/stops/seasonal`, {
-    params: {
-      location: getLocationParam(selectedLocation.value),
-      q_over_year_select: q1CQuarters.value.map(q => getQuarterParam(q)),
-    },
-    options
-  })
-)
-watch(q1CParams, async () => { refreshQ1C() }, { deep: true })
-
-const q2AParams = ref([selectedLocation, q1BQuarterStart, q1BQuarterEnd, q2ADemographicCategory])
+const q2AParams = ref([selectedLocation, q1BQuarterStart, q1BQuarterEnd])
 const { data: q2A, refresh: refreshQ2A } = await useAsyncData('q2A',
   () => $fetch(`${apiBaseUrl}/stops/by-demographic-category`, {
     params: {
       location: getLocationParam(selectedLocation.value),
-      start_qyear: q1BQuarterStart.value.toParamString(),
-      end_qyear: q1BQuarterEnd.value.toParamString(),
+      start_date: q1BQuarterStart.value.toParamString(),
+      end_date: q1BQuarterEnd.value.toParamString(),
       demographic_category: q2ADemographicCategory.value,
     },
     options
@@ -268,8 +200,8 @@ const { data: q2B, refresh: refreshQ2B } = await useAsyncData('q2B',
   () => $fetch(`${apiBaseUrl}/stops/most-frequent-stops`, {
     params: {
       location: getLocationParam(selectedLocation.value),
-      start_qyear: q1BQuarterStart.value.toParamString(),
-      end_qyear: q1BQuarterEnd.value.toParamString(),
+      start_date: q1BQuarterStart.value.toParamString(),
+      end_date: q1BQuarterEnd.value.toParamString(),
     },
     options
   })
@@ -287,8 +219,8 @@ const { data: q2C, refresh: refreshQ2C } = await useAsyncData('q2C',
       gender_group2: q2CGroup2Genders.value,
       racial_group2: q2CGroup2Races.value,
       location: getLocationParam(selectedLocation.value),
-      start_qyear: q1BQuarterStart.value.toParamString(),
-      end_qyear: q1BQuarterEnd.value.toParamString(),
+      start_date: q1BQuarterStart.value.toParamString(),
+      end_date: q1BQuarterEnd.value.toParamString(),
     },
     options
   })

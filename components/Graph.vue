@@ -57,6 +57,14 @@ watch(() => props.graphData, (graphData) => {
 
 const margin = { top: 30, right: 0, bottom: 60, left: 80 }
 
+const getGroupClass = (group) => {
+  if (props.groupClasses[group]) {
+    return props.groupClasses[group]
+  } else {
+    return 'fill-primary-600'
+  }
+}
+
 const drawGraph = (graphData) => {
   const barWidth = isGrouped.value ? 32 : 64;
   const groupBarGap = 4
@@ -183,7 +191,7 @@ const drawGraph = (graphData) => {
         .attr("y", (d) => y(d[props.axisProperties.y]))
         .attr("height", (d) => y(0) - y(d[props.axisProperties.y]))
         .attr("width", barWidth)
-        .attr("class", (d) => props.groupClasses[d.group])
+        .attr("class", (d) => getGroupClass(d.group))
       .call(tooltip, tooltipDiv, groupWidth);
   } else {
     svg.append("g")
@@ -255,7 +263,6 @@ function wrap(text, width) {
       }
       lineNumber++
     }
-    console.log(tspan)
   });
 }
 </script>

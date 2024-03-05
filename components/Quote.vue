@@ -7,7 +7,7 @@
           <slot name="quoteText"></slot>
           <div class="text-center font-bold mt-2">—{{ props.author }}</div>
           <div class="flex justify-end mt-1">
-            <a class="text-right text-primary-600" :href="props.source">
+            <a class="text-right text-primary-600" :href="props.source" target="_blank">
               <IconsLinkExternal class="inline mr-2"/>
               <span class="underline">SOURCE</span>
             </a>
