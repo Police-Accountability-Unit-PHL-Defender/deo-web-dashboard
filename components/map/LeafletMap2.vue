@@ -1,5 +1,5 @@
 <template>
-  <div class="map" id="map"/>
+  <div class="map" id="map" ref="mapElement"/>
 </template>
 
 <style>
@@ -11,8 +11,10 @@
 
 <script setup>
 
-  const props = defineProps(['geoAggregation', 'modelValue'])
-  const emit = defineEmits(['update:modelValue'])
+  const props = defineProps(['geoAggregation'])
+  // const emit = defineEmits(['update:modelValue'])
+
+  const mapElement = ref(null)
 
   const mapObj = ref()
   const mapsLoaded = ref()
@@ -30,29 +32,29 @@
       fillOpacity: 0.7,
     },
   };
-  const geoAggregations = {
-    psa: {
-      url: "https://opendata.arcgis.com/datasets/8dc58605f9dd484295c7d065694cdc0f_0.geojson",
-      legendSelectedTextFunction: (obj) =>
-        `<b>District:${obj.PSA_NUM.substr(0, 2)} PSA:${obj.PSA_NUM[2]}</b>`,
-      tooltipFunction: (obj) => obj.PSA_NUM,
-    },
-    district: {
-      url: "https://opendata.arcgis.com/datasets/62ec63afb8824a15953399b1fa819df2_0.geojson",
-      legendSelectedTextFunction: (obj) => `<b>District:${obj.DIST_NUM}</b>`,
-      tooltipFunction: (obj) => obj.DIST_NUMC,
-    },
-    division: {
-      url: "https://opendata.arcgis.com/datasets/4333983fd1e1449ca7fc2d63ad7e0076_0.geojson",
-      legendSelectedTextFunction: (obj) => `<b>Division:${obj.DIV_NAME}</b>`,
-      tooltipFunction: (obj) => obj.DIV_NAME,
-    },
-    city: {
-      url: "https://opendata.arcgis.com/datasets/405ec3da942d4e20869d4e1449a2be48_0.geojson",
-      legendSelectedTextFunction: (obj) => "<b>Philadelphia</b>",
-      tooltipFunction: (obj) => "Philadelphia",
-    },
-  };
+  // const geoAggregations = {
+  //   psa: {
+  //     url: "https://opendata.arcgis.com/datasets/8dc58605f9dd484295c7d065694cdc0f_0.geojson",
+  //     legendSelectedTextFunction: (obj) =>
+  //       `<b>District:${obj.PSA_NUM.substr(0, 2)} PSA:${obj.PSA_NUM[2]}</b>`,
+  //     tooltipFunction: (obj) => obj.PSA_NUM,
+  //   },
+  //   district: {
+  //     url: "https://opendata.arcgis.com/datasets/62ec63afb8824a15953399b1fa819df2_0.geojson",
+  //     legendSelectedTextFunction: (obj) => `<b>District:${obj.DIST_NUM}</b>`,
+  //     tooltipFunction: (obj) => obj.DIST_NUMC,
+  //   },
+  //   division: {
+  //     url: "https://opendata.arcgis.com/datasets/4333983fd1e1449ca7fc2d63ad7e0076_0.geojson",
+  //     legendSelectedTextFunction: (obj) => `<b>Division:${obj.DIV_NAME}</b>`,
+  //     tooltipFunction: (obj) => obj.DIV_NAME,
+  //   },
+  //   city: {
+  //     url: "https://opendata.arcgis.com/datasets/405ec3da942d4e20869d4e1449a2be48_0.geojson",
+  //     legendSelectedTextFunction: (obj) => "<b>Philadelphia</b>",
+  //     tooltipFunction: (obj) => "Philadelphia",
+  //   },
+  // };
 
   function updateSelectedFeature(featureProperties) {
     let featureName = 'Philadelphia';
@@ -63,7 +65,7 @@
     } else if (featureProperties.PSA_NUM) {
       featureName = `PSA ${featureProperties.PSA_NUM}`
     }
-    emit("update:modelValue", featureName);
+    // emit("update:modelValue", featureName);
   }
 
   let L = {};
@@ -76,7 +78,7 @@
     zoom = 13,
     maxZoom = 19,
     minZoom = 11,
-    mapID = "map",
+    // mapID = "map",
     attributionControl = true,
     center = [0, 0],
     scrollWheelZoom = false,
@@ -103,7 +105,7 @@
     setTimeout(async () => {
       L = window["L"];
       createMap();
-      updateGeojsonUrlLayer(geoAggregations[props.geoAggregation]);
+      updateGeojsonLayer(props.geoAggregation);
     }, 1);
   }
 
@@ -127,7 +129,7 @@
   };
 
   function createMap() {
-    map = L.map(mapID, {
+    map = L.map(mapElement.value, {
       attributionControl,
       zoomControl: controls.zoomControl,
       minZoom,
@@ -211,11 +213,42 @@
     );
     updateSelectedFeature(layerFeature.feature.properties)
   }
-  function updateGeojsonUrlLayer(geojsonLayerProperties) {
+  function updateGeojsonLayer(geojsonLayerProperties) {
     if (selectedGeojsonLayer) {
       map.removeLayer(selectedGeojsonLayer);
     }
-    addGeojsonUrlLayer(geojsonLayerProperties);
+    addGeojsonLayer(geojsonLayerProperties);
+  }
+  function addGeojsonLayer(geojsonLayerProperties) {
+    // const geojsonLayerUrl = geojsonLayerProperties.url;
+    // set the function for getting the text in the map legend
+    getTextFromSelectedFeatureProperties = geojsonLayerProperties.legendSelectedTextFunction;
+
+    // add the url layer and set the tooltip function to that layer
+    let thisGeojsonLayer = L.geoJSON(geojsonLayerProperties.data, {
+      onEachFeature: onEachFeature,
+    });
+    thisGeojsonLayer.addTo(map);
+    selectedGeojsonLayer = thisGeojsonLayer;
+
+    function onEachFeature(feature, layer) {
+      if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
+        layer.bindTooltip(
+          geojsonLayerProperties.tooltipFunction(feature.properties)
+        );
+      }
+      // https://leafletjs.com/examples/choropleth/
+      function zoomAndHighlightFeatureFromClick(e) {
+        // TODO: we could pass through the text function, but
+        // zoomAndHighlightFeature can also be called on search,
+        // in which case it would need to know the text function to use
+        zoomAndHighlightFeature(thisGeojsonLayer, e.target);
+        removeMarkers();
+      }
+      layer.on({
+        click: zoomAndHighlightFeatureFromClick,
+      });
+    }
   }
   function addGeojsonUrlLayer(geojsonLayerProperties) {
     const geojsonLayerUrl = geojsonLayerProperties.url;
@@ -274,7 +307,7 @@
   watch(
     () => props.geoAggregation,
     (newValue) => {
-      updateGeojsonUrlLayer(geoAggregations[newValue]);
+      updateGeojsonLayer(newValue);
     }
   );
 

@@ -85,8 +85,30 @@
               <SelectAgeGroup v-if="q2ADemographicCategory === 'Age Range'" v-model="q2AAgeGroup"/>.
             </h3>
           </QuestionHeader>
-          <!-- <Answer v-if="q2A" :arrow="true">
-          </Answer> -->
+          <Answer v-if="q2A" :arrow="true">
+            <Graph :graph-data="q2A.figures.barplot.data" :axis-properties="{x: q2A.figures.barplot.properties.xAxis, y: q2A.figures.barplot.properties.yAxis}">
+              <h4>{{ q2A.figures.barplot.properties.title }}</h4>
+            </Graph>
+          </Answer>
+          <QuestionHeader>
+            <h3>How many times do police intrude during traffic stops without finding any contraband?</h3>
+          </QuestionHeader>
+          <Answer v-if="q2A" :arrow="true">
+            <Graph :graph-data="q2A.figures.barplot2.data" :axis-properties="{x: q2A.figures.barplot2.properties.xAxis, y: q2A.figures.barplot2.properties.yAxis}">
+              <h4>{{ q2A.figures.barplot2.properties.title }}</h4>
+            </Graph>
+          </Answer>
+          <QuestionHeader>
+            <h3>When police intrude during traffic stops, how often do they find contraband?</h3>
+          </QuestionHeader>
+          <Answer v-if="q2A" :arrow="true">
+            <Graph :graph-data="q2A.figures.barplot3.data" :axis-properties="{x: q2A.figures.barplot3.properties.xAxis, y: q2A.figures.barplot3.properties.yAxis}">
+              <h4>{{ q2A.figures.barplot3.properties.title }}</h4>
+            </Graph>
+            <AnswerText>
+              <div v-html="q2A.text[0]" class="result-text"></div>
+            </AnswerText>
+          </Answer>
         </section>
         <HorizontalLine class="my-16"/>
         <section>
@@ -98,8 +120,14 @@
             </h3>
           </QuestionHeader>
           <Answer v-if="q3A" :arrow="true">
-            <Graph :graph-data="q3A.figures.barplot.data" :axis-properties="{x: q3A.figures.barplot.properties.xAxis, y: q3A.figures.barplot.properties.yAxis}">
+            <Graph :graph-data="q3A.figures.barplot.data" :axis-properties="{x: q3A.figures.barplot.properties.xAxis, y: q3A.figures.barplot.properties.yAxis}" :trendline="q3A.figures.barplot.trendlines">
               <h4>{{ q3A.figures.barplot.properties.title }}</h4>
+            </Graph>
+            <Graph :graph-data="q3A.figures.barplot2.data" :axis-properties="{x: q3A.figures.barplot2.properties.xAxis, y: q3A.figures.barplot2.properties.yAxis}" :trendline="q3A.figures.barplot2.trendlines">
+              <h4>{{ q3A.figures.barplot2.properties.title }}</h4>
+            </Graph>
+            <Graph :graph-data="q3A.figures.barplot3.data" :axis-properties="{x: q3A.figures.barplot3.properties.xAxis, y: q3A.figures.barplot3.properties.yAxis}" :trendline="q3A.figures.barplot3.trendlines">
+              <h4>{{ q3A.figures.barplot3.properties.title }}</h4>
             </Graph>
           </Answer>
         </section>
@@ -137,6 +165,11 @@ const q2AQuarterEnd = ref(new Quarter(2023, QuarterMonths['Oct-Dec']))
 const q2ARace = ref('White')
 const q2AGender = ref('Male')
 const q2AAgeGroup = ref('<25')
+const q2ADemographicBaseline = computed(() => {
+  if (q2ADemographicCategory.value === 'Race') { return q2ARace.value }
+  if (q2ADemographicCategory.value === 'Age Group') { return q2AAgeGroup.value }
+  if (q2ADemographicCategory.value === 'Gender') { return q2AGender.value }
+})
 const q3AEvent = ref('traffic stops')
 const selectedDistricts = ref(['District 25', 'District 05'])
 
@@ -164,18 +197,20 @@ const { data: q1B, refresh: refreshQ1B } = await useAsyncData('q1B',
 )
 watch(q1BParams, async () => { refreshQ1B() }, { deep: true })
 
-// const q2AParams = ref([q2ADemographicCategory, q2AQuarterStart, q2AQuarterEnd, q2ARace, q2AGender, q2AAgeGroup])
-// const { data: q2A, refresh: refreshQ2A } = await useAsyncData('q2A',
-//   () => $fetch(`${apiBaseUrl}/neighborhoods/demographic-intrusions`, {
-//     params: {
-//       demographic_category: q2ADemographicCategory.value,
-//       start_qyear: q2AQuarterStart.value,
-//       end_qyear: q2AQuarterEnd.value,
-//     },
-//     options
-//   })
-// )
-// watch(q2AParams, async () => { refreshQ2A() }, { deep: true })
+const q2AParams = ref([q2ADemographicCategory, q2AQuarterStart, q2AQuarterEnd, q2ARace, q2AGender, q2AAgeGroup])
+const { data: q2A, refresh: refreshQ2A } = await useAsyncData('q2A',
+  () => $fetch(`${apiBaseUrl}/neighborhoods/neighborhoods-by-demographic-category`, {
+    params: {
+      location: getLocationParam(selectedLocation.value),
+      demographic_category: q2ADemographicCategory.value,
+      demographic_baseline: q2ADemographicBaseline.value,
+      start_qyear: q2AQuarterStart.value.toParamString(),
+      end_qyear: q2AQuarterEnd.value.toParamString(),
+    },
+    options
+  })
+)
+watch(q2AParams, async () => { refreshQ2A() }, { deep: true })
 
 const q3AParams = ref([q3AEvent, q2AQuarterStart, q2AQuarterEnd])
 const { data: q3A, refresh: refreshQ3A } = await useAsyncData('q3A',
@@ -206,6 +241,7 @@ watch(q3BParams, async () => { refreshQ3B() }, { deep: true })
 
 console.log(q1A.value)
 console.log(q1B.value)
+console.log(q2A.value)
 console.log(q3A.value)
 console.log(q3B.value)
 </script>

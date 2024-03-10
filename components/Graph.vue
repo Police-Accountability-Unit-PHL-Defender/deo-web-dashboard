@@ -35,6 +35,10 @@ const props = defineProps({
   groupClasses: {
     type: Object,
     required: false
+  },
+  trendline: {
+    type: Array,
+    required: false
   }
 })
 
@@ -135,7 +139,7 @@ const drawGraph = (graphData) => {
   const MOUSE_POS_Y_OFFSET = 8;
   const MOUSE_POS_X_OFFSET = 0;
   const tooltipDiv = d3.select(container.value).select('.tooltip')
-  const tooltip = (selectionGroup, tooltipDiv, groupWidth = 0) => {
+  const tooltip = (selectionGroup, tooltipDiv, groupWidth = 0, trendline = false) => {
     selectionGroup.each(function () {
       d3.select(this)
         .on("mouseover.tooltip", handleMouseover)
@@ -222,6 +226,22 @@ const drawGraph = (graphData) => {
         .attr("width", x.bandwidth())
       .call(tooltip, tooltipDiv);
   }
+
+  // trendline
+  if (props.trendline) {
+    const trendline = d3.line()
+      .x(d => x(d[props.axisProperties.x]) + x.bandwidth() / 2)
+      .y(d => y(d[props.axisProperties.y]))
+    svg.append("path")
+      .datum(props.trendline)
+      .attr("fill", "none")
+      .attr("stroke", "currentColor")
+      .attr("stroke-width", 1.5)
+      .attr("d", trendline)
+      // .call(tooltip, tooltipDiv);
+  }
+
+
   // // Create horizontal lines for each tick in the y-axis
   // svg.selectAll('.horizontal-line')
   //   .data(graphData)
