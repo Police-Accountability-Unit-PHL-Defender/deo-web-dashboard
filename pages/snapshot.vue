@@ -40,11 +40,24 @@
               <h4>{{ q1A.figures.barplot.properties.title }}</h4>
             </Graph>
             <AnswerText>
-              <div v-html="q1A.text.slice(1,2).join(' ')" class="result-text"></div>
-              <!-- <div class="text-body-3 text-left whitespace-pre-line">
-                <span v-for="sentence in q1A.text.slice(1, 2)"><span class="result-text" v-html="sentence"></span>&nbsp;</span>
-              </div> -->
+              <div v-html="q1A.text.slice(3,4).join(' ')" class="result-text"></div>
             </AnswerText>
+          </Answer>
+        </section>
+        <HorizontalLine class="my-16"/>
+        <section>
+          <QuestionHeader>
+            <h3>How did traffic stops change after Driving Equality?</h3>
+          </QuestionHeader>
+          <Answer v-if="q1A" :arrow="true">
+            <AnswerText>
+              <div v-html="q1A.text.slice(1, 2).join(' ')" class="result-text"></div>
+            </AnswerText>
+            [Graph]
+            <AnswerText>
+              <div v-html="q1A.text.slice(2, 3).join(' ')" class="result-text"></div>
+            </AnswerText>
+            [Graph]
           </Answer>
         </section>
       </div>

@@ -53,15 +53,9 @@
         <HorizontalLine class="my-16"/>
         <section>
           <QuestionHeader>
-            <h3>When police stop people, what percent take place on high injury network roads? Show me the data by <SelectDemographicCategory v-model="q1BDemographicCategory" /> in <SelectLocation v-model="selectedLocation"/> from the start of <SelectQuarter v-model="q1BQuarterStart"/> to the end of <SelectQuarter v-model="q1BQuarterEnd"/>.</h3>
+            <h3>Most traffic stops by the Philadelphia police do not happen on High Injury Network (HIN) roads.</h3>
           </QuestionHeader>
-          <Answer v-if="q1B" :arrow="true">
-            <AnswerText>
-              <div v-html="q1B.text[0]" class="result-text"></div>
-            </AnswerText>
-            <Graph :graph-data="q1B.figures.barplot.data" :axis-properties="{x: q1B.figures.barplot.properties.xAxis, y: q1B.figures.barplot.properties.yAxis}">
-              <h4>{{ q1B.figures.barplot.properties.title }}</h4>
-            </Graph>
+          <Answer v-if="q1C" :arrow="true">
             <div class="h-[480px] relative z-0">
               <LeafletMap2 :geo-aggregation="q1CGeoAggregation" />
             </div>
