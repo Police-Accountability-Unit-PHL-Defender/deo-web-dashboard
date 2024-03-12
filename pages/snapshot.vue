@@ -22,7 +22,7 @@
       <div class="col-span-10">
         <section>
           <QuestionHeader>
-            <h3>How many stops did Philadelphia police make in the last year?</h3>
+            <h3>How many traffic stops<Tooltip term="Traffic Stop"/> did Philadelphia police make in the last year?</h3>
           </QuestionHeader>
           <Answer v-if="q1A" :arrow="true">
             <AnswerText>
@@ -33,7 +33,7 @@
         <HorizontalLine class="my-16"/>
         <section>
           <QuestionHeader>
-            <h3>What are the racial disparities in traffic stops by Philadelphia police? How does the city population compare to who is stopped?</h3>
+            <h3>What are the racial disparities<Tooltip term="Disparity"/> in traffic stops by Philadelphia police? How does the city population compare to who is stopped?</h3>
           </QuestionHeader>
           <Answer v-if="q1A" :arrow="true">
             <Graph :graph-data="q1A.figures.barplot.data" :axis-properties="{x: q1A.figures.barplot.properties.xAxis, y: q1A.figures.barplot.properties.yAxis}" group-name="group" :group-classes="{'Percent of traffic stops': 'fill-primary-600', 'Percent of population': 'fill-red'}">
@@ -59,6 +59,7 @@ import SelectLocation from '~/components/SelectLocation.vue'
 import SelectTimeGranularity from '~/components/SelectTimeGranularity.vue'
 import HorizontalLine from '~/components/ui/HorizontalLine.vue';
 import Button from '~/components/ui/Button.vue';
+import Tooltip from '~/components/ui/Tooltip.vue';
 
 const selectedLocation = ref('Philadelphia')
 const selectedTimeGranularity = ref('year')

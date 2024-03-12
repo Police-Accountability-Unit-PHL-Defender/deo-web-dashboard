@@ -46,7 +46,7 @@
         <section>
           <h2 id="part1" class="text-heading-3 text-left pt-10 mb-6">How intrusive are police during traffic stops?</h2>
           <QuestionHeader>
-            <h3>How many times did Philadelphia police intrude during traffic stops in <SelectLocation v-model="selectedLocation"/>, by <SelectTimeGranularity v-model="selectedTimeGranularity"/> ?</h3>
+            <h3>How many times did Philadelphia police intrude<Tooltip term="Intrusion"/> during traffic stops<Tooltip term="Traffic Stop"/> in <SelectLocation v-model="selectedLocation"/>, by <SelectTimeGranularity v-model="selectedTimeGranularity"/> ?</h3>
           </QuestionHeader>
           <Answer v-if="q1A" :arrow="true">
             <AnswerText>
@@ -91,7 +91,7 @@
             </Graph>
           </Answer>
           <QuestionHeader>
-            <h3>How many times do police intrude during traffic stops without finding any contraband?</h3>
+            <h3>How many times do police intrude during traffic stops without finding any contraband<Tooltip term="Contraband"/>?</h3>
           </QuestionHeader>
           <Answer v-if="q2A" :arrow="true">
             <Graph :graph-data="q2A.figures.barplot2.data" :axis-properties="{x: q2A.figures.barplot2.properties.xAxis, y: q2A.figures.barplot2.properties.yAxis}">
@@ -115,7 +115,7 @@
           <h2 id="part3" class="text-heading-3 text-left pt-10 mb-6">During traffic stops, do police officers treat neighborhoods differently?</h2>
           <QuestionHeader>
             <h3>
-              Is traffic enforcement different in districts where most residents are white, compared to districts where most residents are people of color?
+              Is traffic enforcement different in districts<Tooltip term="District"/> where most residents are white, compared to districts where most residents are people of color?
               Comparing majority white districts to majority non-white districts, how many <SelectEvent v-model="q3AEvent" /> did Philadelphia police make from the start of <SelectQuarter v-model="q2AQuarterStart"/> to the end of <SelectQuarter v-model="q2AQuarterEnd"/>?
             </h3>
           </QuestionHeader>
@@ -156,6 +156,7 @@ import SelectLocation from '~/components/SelectLocation.vue'
 import SelectTimeGranularity from '~/components/SelectTimeGranularity.vue'
 import HorizontalLine from '~/components/ui/HorizontalLine.vue';
 import Button from '~/components/ui/Button.vue';
+import Tooltip from '~/components/ui/Tooltip.vue';
 
 const selectedLocation = ref('Philadelphia')
 const selectedTimeGranularity = ref('year')
