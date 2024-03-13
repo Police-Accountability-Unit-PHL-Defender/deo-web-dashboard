@@ -45,7 +45,8 @@ const dictionary = {
   "PSA": "Police Service Area: The smallest geographical subdivision of a police district to which police personnel are assigned.",
   "Search": "An examination by police of a person and/or their property or premises that a person would reasonably consider private with the intent of discovering evidence of the commission of a crime.",
   "Search rate": "How often police search people and/or vehicles during traffic stops.",
-  "Traffic Stop": "When police pull over a vehicle for a known or suspected traffic violation."
+  "Traffic Stop": "When police pull over a vehicle for a known or suspected traffic violation.",
+  "Year": "April 1, 2022 - March 31, 2023"
 }
 const definition = computed(() => {
   if (!props.term) return

@@ -40,7 +40,8 @@
               <h4>{{ q1A.figures.barplot.properties.title }}</h4>
             </Graph>
             <AnswerText>
-              <div v-html="q1A.text.slice(3,4).join(' ')" class="result-text"></div>
+              When Philadelphia police intrude<Tooltip term="Intrusion"/> during traffic stops, they do not find any contraband<Tooltip term="Contraband"/> most of the time.
+              <span v-html="q1A.text[3]" class="result-text"></span>
             </AnswerText>
           </Answer>
         </section>
@@ -55,7 +56,8 @@
             </AnswerText>
             [Graph]
             <AnswerText>
-              <div v-html="q1A.text.slice(2, 3).join(' ')" class="result-text"></div>
+              In the year<Tooltip term="Year"/> after Driving Equality,
+              <span v-html="q1A.text.slice(2, 3).join(' ')" class="result-text"></span>
             </AnswerText>
             [Graph]
           </Answer>
@@ -76,7 +78,7 @@ import Tooltip from '~/components/ui/Tooltip.vue';
 
 const selectedLocation = ref('Philadelphia')
 const selectedTimeGranularity = ref('year')
-const q2ADemographicCategory = ref('Race')
+const q2ADemographicCategory = ref('race')
 const q2AQuarterStart = ref(new Quarter(2023, QuarterMonths['Jan-Mar']))
 const q2AQuarterEnd = ref(new Quarter(2023, QuarterMonths['Oct-Dec']))
 const q2ARace = ref('White')

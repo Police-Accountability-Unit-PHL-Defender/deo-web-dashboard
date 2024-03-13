@@ -42,20 +42,16 @@
         <section>
           <h2 id="part1" class="text-heading-3 text-left pt-10 mb-6">Do traffic stops happen where car accidents happen?</h2>
           <QuestionHeader>
-            <h3>How often did Philadelphia police make traffic stops<Tooltip term="Traffic Stop"/> on High Injury Network (HIN)<Tooltip term="High Injury Network"/> roads in <SelectLocation v-model="selectedLocation"/>, by <SelectTimeGranularity v-model="selectedTimeGranularity"/> ?</h3>
+            <h3>How often did Philadelphia police make traffic stops<Tooltip term="Traffic Stop"/> on High Injury Network<Tooltip term="High Injury Network"/> (HIN) roads in <SelectLocation v-model="selectedLocation"/>, by <SelectTimeGranularity v-model="selectedTimeGranularity"/> ?</h3>
           </QuestionHeader>
           <Answer v-if="q1A" :arrow="true">
             <Graph :graph-data="q1A.figures.barplot.data" :axis-properties="{x: q1A.figures.barplot.properties.xAxis, y: q1A.figures.barplot.properties.yAxis}">
               <h4>{{ q1A.figures.barplot.properties.title }}</h4>
             </Graph>
-          </Answer>
-        </section>
-        <HorizontalLine class="my-16"/>
-        <section>
-          <QuestionHeader>
-            <h3>Most traffic stops by the Philadelphia police do not happen on High Injury Network (HIN) roads.</h3>
-          </QuestionHeader>
-          <Answer v-if="q1C" :arrow="true">
+            <AnswerText>
+              Driving Equality came into effect on March 3, 2022. In the year<Tooltip term="Year"/> after Driving Equality,
+              <span v-html="q1A.text[0]" class="result-text"></span>
+            </AnswerText>
             <div class="h-[480px] relative z-0">
               <LeafletMap2 :geo-aggregation="q1CGeoAggregation" />
             </div>
@@ -98,7 +94,7 @@ import Tooltip from '~/components/ui/Tooltip.vue';
 
 const selectedLocation = ref('Philadelphia')
 const selectedTimeGranularity = ref('year')
-const q1BDemographicCategory = ref('Race')
+const q1BDemographicCategory = ref('race')
 const q1BQuarterStart = ref(new Quarter(2023, QuarterMonths['Jan-Mar']))
 const q1BQuarterEnd = ref(new Quarter(2023, QuarterMonths['Oct-Dec']))
 const q3AEvent = ref('traffic stops')

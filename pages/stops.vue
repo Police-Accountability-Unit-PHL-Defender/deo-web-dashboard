@@ -85,7 +85,7 @@
         <section>
           <h2 id="part2" class="text-heading-3 text-left pt-10 mb-6">Who are police stopping in traffic stops?</h2>
           <QuestionHeader>
-            How often did Philadelphia police stop people of different <SelectDemographicCategory v-model="q2ADemographicCategory"></SelectDemographicCategory> from the start of <SelectQuarter v-model="q1BQuarterStart"/> to the end of <SelectQuarter v-model="q1BQuarterEnd"/>, in <SelectLocation v-model="selectedLocation"/>?
+            How often did Philadelphia police stop people of different <SelectDemographicCategory v-model="q2ADemographicCategory" :is-plural="true" /> from the start of <SelectQuarter v-model="q1BQuarterStart"/> through the end of <SelectQuarter v-model="q1BQuarterEnd"/>, in <SelectLocation v-model="selectedLocation"/>?
           </QuestionHeader>
           <Answer>
             <div v-if="q2A">
@@ -98,7 +98,7 @@
         <HorizontalLine class="my-16"/>
         <section>
           <QuestionHeader>
-            <h3>Which demographic groups did Philadelphia police most frequently stop in <SelectLocation v-model="selectedLocation"/> from the start of <SelectQuarter v-model="q1BQuarterStart"/> to the end of <SelectQuarter v-model="q1BQuarterEnd"/>?</h3>
+            <h3>Which demographic groups did Philadelphia police most frequently stop in <SelectLocation v-model="selectedLocation"/> from the start of <SelectQuarter v-model="q1BQuarterStart"/> through the end of <SelectQuarter v-model="q1BQuarterEnd"/>?</h3>
           </QuestionHeader>
           <Answer :arrow="true">
             <div v-if="q2B">
@@ -124,9 +124,9 @@
                     <table class="text-body-3 relative w-full">
                       <tbody class="w-full">
                         <tr v-for="row in q2B.tables.demo">
-                          <td class="w-1/4">{{ row["Gender"] }}</td>
-                          <td class="w-1/4">{{ row["Age Range"] }}</td>
-                          <td class="w-1/4">{{ row["Race"] }}</td>
+                          <td class="w-1/4">{{ row['gender'] }}</td>
+                          <td class="w-1/4">{{ row['age range'] }}</td>
+                          <td class="w-1/4">{{ row['race'] }}</td>
                           <td class="w-1/4">{{ row["% of traffic stops"] }}%</td>
                         </tr>
                       </tbody>
@@ -145,7 +145,7 @@
         <HorizontalLine class="my-16"/>
         <section>
           <QuestionHeader>
-            How many times did Philadelphia police stop one demographic group compared to another in <SelectLocation v-model="selectedLocation"/> from the start of <SelectQuarter v-model="q1BQuarterStart"/> to the end of <SelectQuarter v-model="q1BQuarterEnd"/>?
+            How many times did Philadelphia police stop one demographic group compared to another in <SelectLocation v-model="selectedLocation"/> from the start of <SelectQuarter v-model="q1BQuarterStart"/> through the end of <SelectQuarter v-model="q1BQuarterEnd"/>?
           </QuestionHeader>
           <div class="max-w-2xl mt-10 mb-6">
             <div class="text-label-2 text-left">Select two demographic groups and compare</div>
@@ -203,7 +203,7 @@ const selectedTimeGranularity = ref('year')
 const q1BQuarterStart = ref(new Quarter(2023, QuarterMonths['Jan-Mar']))
 const q1BQuarterEnd = ref(new Quarter(2023, QuarterMonths['Oct-Dec']))
 const q1CQuarters = ref(['Jan-Mar'])
-const q2ADemographicCategory = ref('Race')
+const q2ADemographicCategory = ref('race')
 const q2CGroup1AgeRanges = ref(['25-34'])
 const q2CGroup2AgeRanges = ref(['25-34'])
 const q2CGroup1Genders = ref(['Male'])

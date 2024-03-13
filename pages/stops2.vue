@@ -80,9 +80,9 @@
                     <table class="text-body-3 relative w-full">
                       <tbody class="w-full">
                         <tr v-for="row in q2B.tables.demo">
-                          <td class="w-1/4">{{ row["Gender"] }}</td>
-                          <td class="w-1/4">{{ row["Age Range"] }}</td>
-                          <td class="w-1/4">{{ row["Race"] }}</td>
+                          <td class="w-1/4">{{ row['gender'] }}</td>
+                          <td class="w-1/4">{{ row['age range'] }}</td>
+                          <td class="w-1/4">{{ row['race'] }}</td>
                           <td class="w-1/4">{{ row["% of traffic stops"] }}%</td>
                         </tr>
                       </tbody>
@@ -153,7 +153,7 @@ const selectedTimeGranularity = ref('year')
 const q1BQuarterStart = ref(new Quarter(2023, QuarterMonths['Jan-Mar']))
 const q1BQuarterEnd = ref(new Quarter(2023, QuarterMonths['Oct-Dec']))
 const q1CQuarters = ref(['Jan-Mar'])
-const q2ADemographicCategory = ref('Race')
+const q2ADemographicCategory = ref('race')
 const q2CGroup1AgeRanges = ref(['25-34'])
 const q2CGroup2AgeRanges = ref(['25-34'])
 const q2CGroup1Genders = ref(['Male'])

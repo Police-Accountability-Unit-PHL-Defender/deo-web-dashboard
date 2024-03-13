@@ -65,7 +65,7 @@
         <HorizontalLine class="my-16"/>
         <section>
           <QuestionHeader>
-            <h3>How have Philadelphia police changed the way they intrude during traffic stops in <SelectLocation v-model="selectedLocation"/>, by <SelectTimeGranularity v-model="selectedTimeGranularity"/> ?</h3>
+            <h3>How have Philadelphia police changed the way they intrude during traffic stops in <SelectLocation v-model="selectedLocation"/>, by <SelectTimeGranularity v-model="selectedTimeGranularity"/>? How do frisks<Tooltip term="Frisk"/> and searches<Tooltip term="Search"/>  compare over time?</h3>
           </QuestionHeader>
           <Answer v-if="q1B" :arrow="true">
             <Graph :graph-data="q1B.figures.barplot.data" :axis-properties="{x: q1B.figures.barplot.properties.xAxis, y: q1B.figures.barplot.properties.yAxis}" group-name="group" :group-classes="{'# of Searches': 'fill-primary-600', '# of Frisks': 'fill-red'}">
@@ -78,11 +78,11 @@
           <h2 id="part2" class="text-heading-3 text-left pt-10 mb-6">During traffic stops, do police treat people differently?</h2>
           <QuestionHeader>
             <h3>
-              Do Philadelphia police intrude upon some drivers and their vehicles more often than others?
+              Do Philadelphia police intrude upon some drivers and/or their vehicles more often than others?
               Show data by <SelectDemographicCategory v-model="q2ADemographicCategory" /> from the start of <SelectQuarter v-model="q2AQuarterStart"/> to the end of <SelectQuarter v-model="q2AQuarterEnd"/>, compared to a baseline of people who are
-              <SelectRace v-if="q2ADemographicCategory === 'Race'" v-model="q2ARace"/>
-              <SelectGender v-if="q2ADemographicCategory ==='Gender'" v-model="q2AGender"/>
-              <SelectAgeGroup v-if="q2ADemographicCategory === 'Age Range'" v-model="q2AAgeGroup"/>.
+              <SelectRace v-if="q2ADemographicCategory === 'race'" v-model="q2ARace"/>
+              <SelectGender v-if="q2ADemographicCategory ==='gender'" v-model="q2AGender"/>
+              <SelectAgeGroup v-if="q2ADemographicCategory === 'age range'" v-model="q2AAgeGroup"/>.
             </h3>
           </QuestionHeader>
           <Answer v-if="q2A" :arrow="true">
@@ -91,7 +91,7 @@
             </Graph>
           </Answer>
           <QuestionHeader>
-            <h3>How many times do police intrude during traffic stops without finding any contraband<Tooltip term="Contraband"/>?</h3>
+            <h3>How many times do Philadelphia police intrude during traffic stops without finding any contraband<Tooltip term="Contraband"/>?</h3>
           </QuestionHeader>
           <Answer v-if="q2A" :arrow="true">
             <Graph :graph-data="q2A.figures.barplot2.data" :axis-properties="{x: q2A.figures.barplot2.properties.xAxis, y: q2A.figures.barplot2.properties.yAxis}">
@@ -99,7 +99,7 @@
             </Graph>
           </Answer>
           <QuestionHeader>
-            <h3>When police intrude during traffic stops, how often do they find contraband?</h3>
+            <h3>When Philadelphia police intrude during traffic stops, how often do they find contraband?</h3>
           </QuestionHeader>
           <Answer v-if="q2A" :arrow="true">
             <Graph :graph-data="q2A.figures.barplot3.data" :axis-properties="{x: q2A.figures.barplot3.properties.xAxis, y: q2A.figures.barplot3.properties.yAxis}">
@@ -112,7 +112,7 @@
         </section>
         <HorizontalLine class="my-16"/>
         <section>
-          <h2 id="part3" class="text-heading-3 text-left pt-10 mb-6">During traffic stops, do police officers treat neighborhoods differently?</h2>
+          <h2 id="part3" class="text-heading-3 text-left pt-10 mb-6">During traffic stops, do police treat neighborhoods differently?</h2>
           <QuestionHeader>
             <h3>
               Is traffic enforcement different in districts<Tooltip term="District"/> where most residents are white, compared to districts where most residents are people of color?
@@ -123,6 +123,13 @@
             <Graph :graph-data="q3A.figures.barplot.data" :axis-properties="{x: q3A.figures.barplot.properties.xAxis, y: q3A.figures.barplot.properties.yAxis}" :trendline="q3A.figures.barplot.trendlines">
               <h4>{{ q3A.figures.barplot.properties.title }}</h4>
             </Graph>
+          </Answer>
+          <QuestionHeader>
+            <h3>
+              During this time period, what was the intrusion rate<Tooltip term="Intrusion Rate"/> and contraband hit rate<Tooltip term="Contraband Hit Rate"/> across districts?
+            </h3>
+          </QuestionHeader>
+          <Answer v-if="q3A" :arrow="true">
             <Graph :graph-data="q3A.figures.barplot2.data" :axis-properties="{x: q3A.figures.barplot2.properties.xAxis, y: q3A.figures.barplot2.properties.yAxis}" :trendline="q3A.figures.barplot2.trendlines">
               <h4>{{ q3A.figures.barplot2.properties.title }}</h4>
             </Graph>
@@ -135,7 +142,7 @@
         <section>
           <QuestionHeader>
             <h3>
-              From the start of <SelectQuarter v-model="q2AQuarterStart"/> to the end of <SelectQuarter v-model="q2AQuarterEnd"/>, how many <SelectEvent v-model="q3AEvent" /> happened at the following districts: <SelectDistricts v-model="selectedDistricts" />?
+              How does traffic enforcement compare in different districts? How many <SelectEvent v-model="q3AEvent" /> did Philadelphia police make from the start of <SelectQuarter v-model="q2AQuarterStart"/> through the end of <SelectQuarter v-model="q2AQuarterEnd"/> in these districts: <SelectDistricts v-model="selectedDistricts" />?
             </h3>
           </QuestionHeader>
           <Answer v-if="q3B" :arrow="true">
@@ -160,19 +167,19 @@ import Tooltip from '~/components/ui/Tooltip.vue';
 
 const selectedLocation = ref('Philadelphia')
 const selectedTimeGranularity = ref('year')
-const q2ADemographicCategory = ref('Race')
+const q2ADemographicCategory = ref('race')
 const q2AQuarterStart = ref(new Quarter(2023, QuarterMonths['Jan-Mar']))
 const q2AQuarterEnd = ref(new Quarter(2023, QuarterMonths['Oct-Dec']))
 const q2ARace = ref('White')
 const q2AGender = ref('Male')
 const q2AAgeGroup = ref('<25')
 const q2ADemographicBaseline = computed(() => {
-  if (q2ADemographicCategory.value === 'Race') { return q2ARace.value }
+  if (q2ADemographicCategory.value === 'race') { return q2ARace.value }
   if (q2ADemographicCategory.value === 'Age Group') { return q2AAgeGroup.value }
-  if (q2ADemographicCategory.value === 'Gender') { return q2AGender.value }
+  if (q2ADemographicCategory.value === 'gender') { return q2AGender.value }
 })
 const q3AEvent = ref('traffic stops')
-const selectedDistricts = ref(['District 25', 'District 05'])
+const selectedDistricts = ref(['District 05', 'District 12'])
 
 const q1AParams = ref([selectedLocation, selectedTimeGranularity])
 const { data: q1A, refresh: refreshQ1A } = await useAsyncData('q1A',
