@@ -17,7 +17,7 @@
     </template>
   </LayoutPageHeader>
 
-  <main class="layout-container -mt-4 text-body-3">
+  <main class="layout-container mt-14 text-body-3">
     <div class="grid-container">
       <div class="col-span-10">
         <section>

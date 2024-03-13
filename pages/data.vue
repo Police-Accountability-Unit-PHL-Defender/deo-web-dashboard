@@ -7,7 +7,7 @@
       <img class="w-full h-full object-cover" src="~/assets/images/data.jpg" alt="A street in Philadelphia"/>
     </template>
     <template #quote>
-      <Quote author="Professor Lance Hannon" source="http://www88.homepage.villanova.edu/lance.hannon/TestimonyBills210635and210636Draft.pdf" backgroundClass="bg-[#DBEEB9]" quoteMarkClass="fill-yellowgreen">
+      <Quote author="Professor Lance Hannon" source="http://www88.homepage.villanova.edu/lance.hannon/TestimonyBills210635and210636Draft.pdf" backgroundClass="bg-[#E9D1F7]" quoteMarkClass="fill-violet" bold-color-class="text-violet" alignment="center">
         <template #quoteText>
           <p>
             I look forward to the day that I will see Philadelphia featured not as an example where numerous statistical tests all point to racial bias in policing practices, but rather as a national leader in evidence-based justice reform.
@@ -20,7 +20,7 @@
   <div class="layout-container text-body-2">
     <div class="grid-container">
       <div class="faq col-span-8 md:col-start-3">
-        <h2 class="text-heading-3 text-center mt-10 mb-12">About the Dashboard</h2>
+        <h2 class="text-heading-3 text-center mt-20 mb-4">About the Dashboard</h2>
         <ol>
           <FaqQuestion id="1" question="What datasets are in this dashboard?">
             <p>The datasets in this dashboard are: </p>
@@ -121,7 +121,7 @@
           </FaqQuestion>
         </ol>
 
-        <h2 class="text-heading-3 text-center mt-16 mb-12 pt-6">Since Driving Equality</h2>
+        <h2 class="text-heading-3 text-center mt-18 mb-4 pt-6">Since Driving Equality</h2>
         <ol start="7">
           <FaqQuestion id="7" question="Who manages the traffic stop data, and how is data collected?">
             <p><a href="https://opendataphilly.org/datasets/vehicle-pedestrian-investigations/" target="_blank">Traffic stop
@@ -228,7 +228,7 @@
           </FaqQuestion>
         </ol>
 
-        <h2 class="text-heading-3 text-center mt-16 mb-12 pt-6">High Injury Network Data</h2>
+        <h2 class="text-heading-3 text-center mt-18 mb-4 pt-6">High Injury Network Data</h2>
         <ol start="15">
           <FaqQuestion id="15" question="What is the High Injury Network?">
             <p>The <a href="https://phl.maps.arcgis.com/apps/MapSeries/index.html?appid%3D2a51d5357e24439996f2aa9cdeae72b9"
@@ -255,7 +255,7 @@
           </FaqQuestion>
         </ol>
 
-        <h2 class="text-heading-3 text-center mt-16 mb-12 pt-6">Census Data</h2>
+        <h2 class="text-heading-3 text-center mt-18 mb-4 pt-6">Census Data</h2>
         <ol start="18">
           <FaqQuestion id="18" question="Who manages the Census data, and how is data collected?">
             <p>The U.S. Census Bureau manages all Census data including the 2020 <a
@@ -313,7 +313,7 @@
     service areas (PSAs). </p>
           </FaqQuestion>
 
-          <h2 class="text-heading-3 text-center mt-16 mb-12 pt-6">Shootings Data</h2>
+          <h2 class="text-heading-3 text-center mt-18 mb-4 pt-6">Shootings Data</h2>
           <FaqQuestion id="25" question="Who manages the shootings data, and how is data collected?">
             <p><a href="https://opendataphilly.org/datasets/shooting-victims/" target="_blank">Shootings data</a> is managed by
     the Statistics Unit of the Philadelphia Police Department (PPD) and is collected from PPD reports. </p>

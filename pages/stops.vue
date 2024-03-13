@@ -61,7 +61,7 @@
         <section>
           <QuestionHeader>
             <h3>
-              In <SelectLocation v-model="selectedLocation"/>, from the start of <SelectQuarter2 v-model="q1BQuarterStart"></SelectQuarter2> to the end of <SelectQuarter2 v-model="q1BQuarterEnd"></SelectQuarter2>,
+              In <SelectLocation v-model="selectedLocation"/>, from the start of <SelectQuarter2 v-model="q1BQuarterStart" item-label-end="start" /> through the end of <SelectQuarter2 v-model="q1BQuarterEnd" item-label-end="end"/>,
               <span v-if="q1B" class="result-text" v-html="q1B.text[0]"></span>
             </h3>
           </QuestionHeader>
@@ -85,7 +85,7 @@
         <section>
           <h2 id="part2" class="text-heading-3 text-left pt-10 mb-6">Who are police stopping in traffic stops?</h2>
           <QuestionHeader>
-            How often did Philadelphia police stop people of different <SelectDemographicCategory v-model="q2ADemographicCategory" :is-plural="true" /> from the start of <SelectQuarter v-model="q1BQuarterStart"/> through the end of <SelectQuarter v-model="q1BQuarterEnd"/>, in <SelectLocation v-model="selectedLocation"/>?
+            How often did Philadelphia police stop people of different <SelectDemographicCategory v-model="q2ADemographicCategory" :is-plural="true" /> from the start of <SelectQuarter2 v-model="q1BQuarterStart" item-label-end="start"/> through the end of <SelectQuarter2 v-model="q1BQuarterEnd" item-label-end="end"/>, in <SelectLocation v-model="selectedLocation"/>?
           </QuestionHeader>
           <Answer>
             <div v-if="q2A">
@@ -98,7 +98,7 @@
         <HorizontalLine class="my-16"/>
         <section>
           <QuestionHeader>
-            <h3>Which demographic groups did Philadelphia police most frequently stop in <SelectLocation v-model="selectedLocation"/> from the start of <SelectQuarter v-model="q1BQuarterStart"/> through the end of <SelectQuarter v-model="q1BQuarterEnd"/>?</h3>
+            <h3>Which demographic groups did Philadelphia police most frequently stop in <SelectLocation v-model="selectedLocation"/> from the start of <SelectQuarter2 v-model="q1BQuarterStart" item-label-end="start"/> through the end of <SelectQuarter2 v-model="q1BQuarterEnd" item-label-end="end"/>?</h3>
           </QuestionHeader>
           <Answer :arrow="true">
             <div v-if="q2B">
@@ -145,7 +145,7 @@
         <HorizontalLine class="my-16"/>
         <section>
           <QuestionHeader>
-            How many times did Philadelphia police stop one demographic group compared to another in <SelectLocation v-model="selectedLocation"/> from the start of <SelectQuarter v-model="q1BQuarterStart"/> through the end of <SelectQuarter v-model="q1BQuarterEnd"/>?
+            How many times did Philadelphia police stop one demographic group compared to another in <SelectLocation v-model="selectedLocation"/> from the start of <SelectQuarter2 v-model="q1BQuarterStart" item-label-end="start"/> through the end of <SelectQuarter2 v-model="q1BQuarterEnd" item-label-end="end"/>?
           </QuestionHeader>
           <div class="max-w-2xl mt-10 mb-6">
             <div class="text-label-2 text-left">Select two demographic groups and compare</div>

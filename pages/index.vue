@@ -35,7 +35,7 @@
         Do traffic stops promote safety?
       </template>
       <template #image>
-        <div class="absolute bg-yellowgreen w-1/3 aspect-square rounded-tl-super bottom-1/2 left-0"></div>
+        <div class="hidden md:block absolute bg-yellowgreen w-1/3 aspect-square rounded-tl-super bottom-1/2 left-0"></div>
         <img class="relative md:left-[16%] w-full md:w-5/6 aspect-[3/2] object-cover" src="~/assets/images/safety.jpg" alt="A car's side view mirror" />
       </template>
     </HomeModule>
@@ -45,7 +45,7 @@
         Do police make traffic stops for safety reasons?
       </template>
       <template #image>
-        <div class="absolute right-0 top-0 bg-yellow w-1/3 aspect-square"></div>
+        <div class="hidden md:block absolute right-0 -top-[40px] bg-yellow w-1/3 aspect-square"></div>
         <img class="relative w-full md:w-5/6 aspect-[3/2] object-cover" src="~/assets/images/reasons.jpg" alt="A street in Philadelphia" />
       </template>
     </HomeModule>
@@ -55,7 +55,7 @@
         What is Driving Equality?
       </template>
       <template #image>
-        <div class="absolute left-0 top-1/2 -translate-y-1/2 bg-violet rounded-full w-1/3 aspect-square"></div>
+        <div class="hidden md:block absolute left-0 top-1/2 -translate-y-1/2 bg-violet rounded-full w-1/3 aspect-square"></div>
         <img class="relative md:left-[16%] bottom-0 md:bottom-auto w-full md:w-5/6" src="~/assets/images/driving-equality.jpg" alt="A police car" />
       </template>
     </HomeModule>
@@ -65,7 +65,7 @@
         About the Data
       </template>
       <template #image>
-        <div class="absolute right-0 top-1/2 w-1/3 rounded-br-super bg-mint aspect-square"></div>
+        <div class="hidden md:block absolute right-0 top-1/2 w-1/3 rounded-br-super bg-mint aspect-square"></div>
         <img class="relative w-full md:w-5/6 aspect-[3/2] object-cover" src="~/assets/images/data.jpg" alt="A police car" />
       </template>
     </HomeModule>

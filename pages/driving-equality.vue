@@ -8,7 +8,7 @@
       <img class="w-full h-full object-cover" src="~/assets/images/driving-equality.jpg" alt="A street in Philadelphia"/>
     </template>
     <template #quote>
-      <Quote author="Attorney Nia Holston" source="https://www.facebook.com/CMThomasPHL/videos/578497320999248" backgroundClass="bg-[#DBEEB9]" quoteMarkClass="fill-yellowgreen">
+      <Quote author="Attorney Nia Holston" source="https://www.facebook.com/CMThomasPHL/videos/578497320999248" backgroundClass="bg-[#E1F8FF]" quoteMarkClass="fill-primary-400" bold-color-class="text-[#C0EEFD]" alignment="center">
         <template #quoteText>
           <p>
             This law stands as an example for the rest of the nation to follow to reconcile the legacy of racism as it relates to policing, to promote true equality, and to continue the work and the struggle.
@@ -21,7 +21,7 @@
   <div class="layout-container text-body-2">
     <div class="grid-container">
       <div class="faq col-span-8 md:col-start-3">
-        <h2 class="text-heading-3 text-center mt-10 mb-12">Before Driving Equality</h2>
+        <h2 class="text-heading-3 text-center mt-20 mb-4">Before Driving Equality</h2>
         <ol>
           <FaqQuestion id="1" question="What problem led to the creation of the Driving Equality law in Philadelphia?">
             <p>
@@ -61,7 +61,7 @@
           </FaqQuestion>
         </ol>
 
-        <h2 class="text-heading-3 text-center mt-16 mb-12 pt-6">Since Driving Equality</h2>
+        <h2 class="text-heading-3 text-center mt-18 mb-4 pt-6">Since Driving Equality</h2>
         <ol start="7">
           <FaqQuestion id="7" question="What is Driving Equality?">
               <p>

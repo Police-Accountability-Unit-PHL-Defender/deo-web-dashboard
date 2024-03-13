@@ -27,6 +27,12 @@ export class Quarter {
   toString() {
     return QuarterMonths[this.quarter] + ' ' + this.year;
   }
+  getStartString() {
+    return QuarterMonths[this.quarter].split('-')[0] + ' ' + this.year;
+  }
+  getEndString() {
+    return QuarterMonths[this.quarter].split('-')[1] + ' ' + this.year;
+  }
 }
 
 export function getLocationParam(location: string) {

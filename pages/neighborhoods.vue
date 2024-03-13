@@ -42,7 +42,6 @@
             </li>
           </ul>
         </nav>
-        <HorizontalLine class="my-16"/>
         <section>
           <h2 id="part1" class="text-heading-3 text-left pt-10 mb-6">How intrusive are police during traffic stops?</h2>
           <QuestionHeader>
@@ -75,11 +74,11 @@
         </section>
         <HorizontalLine class="my-16"/>
         <section>
-          <h2 id="part2" class="text-heading-3 text-left pt-10 mb-6">During traffic stops, do police treat people differently?</h2>
+          <h2 id="part2" class="text-heading-3 text-left mb-6">During traffic stops, do police treat people differently?</h2>
           <QuestionHeader>
             <h3>
               Do Philadelphia police intrude upon some drivers and/or their vehicles more often than others?
-              Show data by <SelectDemographicCategory v-model="q2ADemographicCategory" /> from the start of <SelectQuarter v-model="q2AQuarterStart"/> to the end of <SelectQuarter v-model="q2AQuarterEnd"/>, compared to a baseline of people who are
+              Show data by <SelectDemographicCategory v-model="q2ADemographicCategory" /> from the start of <SelectQuarter2 v-model="q2AQuarterStart" item-label-end="start"/> to the end of <SelectQuarter2 v-model="q2AQuarterEnd" item-label-end="end"/>, compared to a baseline of people who are
               <SelectRace v-if="q2ADemographicCategory === 'race'" v-model="q2ARace"/>
               <SelectGender v-if="q2ADemographicCategory ==='gender'" v-model="q2AGender"/>
               <SelectAgeGroup v-if="q2ADemographicCategory === 'age range'" v-model="q2AAgeGroup"/>.
@@ -112,11 +111,11 @@
         </section>
         <HorizontalLine class="my-16"/>
         <section>
-          <h2 id="part3" class="text-heading-3 text-left pt-10 mb-6">During traffic stops, do police treat neighborhoods differently?</h2>
+          <h2 id="part3" class="text-heading-3 text-left mb-6">During traffic stops, do police treat neighborhoods differently?</h2>
           <QuestionHeader>
             <h3>
               Is traffic enforcement different in districts<Tooltip term="District"/> where most residents are white, compared to districts where most residents are people of color?
-              Comparing majority white districts to majority non-white districts, how many <SelectEvent v-model="q3AEvent" /> did Philadelphia police make from the start of <SelectQuarter v-model="q2AQuarterStart"/> to the end of <SelectQuarter v-model="q2AQuarterEnd"/>?
+              Comparing majority white districts to majority non-white districts, how many <SelectEvent v-model="q3AEvent" /> did Philadelphia police make from the start of <SelectQuarter2 v-model="q2AQuarterStart" item-label-end="start"/> to the end of <SelectQuarter2 v-model="q2AQuarterEnd" item-label-end="end"/>?
             </h3>
           </QuestionHeader>
           <Answer v-if="q3A" :arrow="true">
@@ -142,7 +141,7 @@
         <section>
           <QuestionHeader>
             <h3>
-              How does traffic enforcement compare in different districts? How many <SelectEvent v-model="q3AEvent" /> did Philadelphia police make from the start of <SelectQuarter v-model="q2AQuarterStart"/> through the end of <SelectQuarter v-model="q2AQuarterEnd"/> in these districts: <SelectDistricts v-model="selectedDistricts" />?
+              How does traffic enforcement compare in different districts? How many <SelectEvent v-model="q3AEvent" /> did Philadelphia police make from the start of <SelectQuarter2 v-model="q2AQuarterStart" item-label-end="start"/> through the end of <SelectQuarter2 v-model="q2AQuarterEnd" item-label-end="end"/> in these districts: <SelectDistricts v-model="selectedDistricts" />?
             </h3>
           </QuestionHeader>
           <Answer v-if="q3B" :arrow="true">

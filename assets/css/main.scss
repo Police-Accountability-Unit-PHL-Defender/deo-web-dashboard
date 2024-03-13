@@ -46,6 +46,11 @@ html {
   @apply text-[15px] md:text-[21px];
 }
 
+.text-fullscreen-nav {
+  font-family: 'Poppins', sans-serif;
+  @apply text-[21px] md:text-[32px];
+}
+
 .text-body-1 {
   font-size: 24px;
   font-family: 'Poppins', sans-serif;
@@ -87,6 +92,19 @@ html {
 
 .text-cta-1 {
   font-size: 16px;
+  font-family: 'Poppins', sans-serif;
+  text-transform: uppercase;
+  padding-bottom: 2px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  &:hover {
+    padding-bottom: 0px;
+    border-bottom: 2px solid currentColor;
+  }
+}
+
+.text-cta-18 {
+  font-size: 18px;
   font-family: 'Poppins', sans-serif;
   text-transform: uppercase;
   padding-bottom: 2px;
@@ -148,7 +166,7 @@ html {
 }
 
 .result-text span {
-  @apply bg-primary-200 px-[0.25em] inline-block h-full border-white border;
+  @apply bg-primary-100 px-[0.25em] inline-block h-full border-white border;
 }
 
 .faq {
@@ -232,7 +250,7 @@ html {
 
 .glossary {
   dt {
-    @apply col-span-2 font-medium;
+    @apply col-span-2 font-semibold;
   }
   dd {
     @apply col-span-8 mb-6 md:mb-0;

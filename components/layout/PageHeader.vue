@@ -8,9 +8,7 @@
       <slot name="header"></slot>
     </h2>
     <div class="mt-20">
-      <div class="flex justify-end">
-        <slot name="quote"></slot>
-      </div>
+      <slot name="quote"></slot>
     </div>
   </div>
 </template>

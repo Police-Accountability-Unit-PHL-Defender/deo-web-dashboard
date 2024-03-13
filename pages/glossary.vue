@@ -1,5 +1,5 @@
 <template>
-  <div class="glossary layout-container">
+  <div class="glossary layout-container text-body-3">
     <div class="grid-container">
       <div class="col-span-6 md:col-span-12 lg:col-span-8">
         <h2 class="text-heading-1 mt-20 mb-4">Glossary</h2>

@@ -1,12 +1,12 @@
 <template>
-  <div class="contact-us layout-container">
+  <div class="contact-us layout-container text-body-3">
     <div class="grid-container">
       <div class="col-span-6 md:col-span-12 lg:col-span-8">
         <h2 class="text-heading-1 mt-20 mb-4">Contact Us</h2>
         <p>
           This dashboard is created and maintained by the <a href="https://phillydefenders.org/practice-units/police-accountability/" target="_blank">Police Accountability Unit</a> (PAU) at the <a href="https://phillydefenders.org/" target="_blank">Defender Association of Philadelphia</a>. PAU works to improve outcomes for Defender clients, aid trial attorneys in their representation of clients with police-related issues, and effectuate policy and legal changes related to systemic police misconduct.
         </p>
-        <h3 class="text-heading-3 mt-12">Connect with the Police Accountability Unit</h3>
+        <h3 class="text-heading-4 mt-12">Connect with the Police Accountability Unit</h3>
         <table class="mt-8">
           <tr>
             <th>Email us</th>

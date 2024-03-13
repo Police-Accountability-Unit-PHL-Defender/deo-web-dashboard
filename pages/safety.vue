@@ -38,9 +38,8 @@
             </li>
           </ul>
         </nav>
-        <HorizontalLine class="my-16"/>
         <section>
-          <h2 id="part1" class="text-heading-3 text-left pt-10 mb-6">Do traffic stops happen where car accidents happen?</h2>
+          <h2 id="part1" class="text-heading-3 text-left pt-14 mb-6">Do traffic stops happen where car accidents happen?</h2>
           <QuestionHeader>
             <h3>How often did Philadelphia police make traffic stops<Tooltip term="Traffic Stop"/> on High Injury Network<Tooltip term="High Injury Network"/> (HIN) roads in <SelectLocation v-model="selectedLocation"/>, by <SelectTimeGranularity v-model="selectedTimeGranularity"/> ?</h3>
           </QuestionHeader>
@@ -59,7 +58,7 @@
         </section>
         <HorizontalLine class="my-16"/>
         <section>
-          <h2 id="part1" class="text-heading-3 text-left pt-10 mb-6">How do police stops relate to shootings?</h2>
+          <h2 id="part1" class="text-heading-3 text-left mb-6">How do police stops relate to shootings?</h2>
           <QuestionHeader>
             <h3>Comparing 2018 to 2019</h3>
           </QuestionHeader>
@@ -132,11 +131,12 @@ const { data: q1C, refresh: refreshQ1C } = await useAsyncData('q1C',
   })
 )
 const q1CGeoAggregation = computed(() => {
-  return {
-    data: q1C.value.maps[0],
-    legendSelectedTextFunction: (obj) => obj.street_name,
-    tooltipFunction: (obj) => obj.street_name,
-  }
+  return {}
+  // return {
+  //   data: q1C.value.maps[0],
+  //   legendSelectedTextFunction: (obj) => obj.street_name,
+  //   tooltipFunction: (obj) => obj.street_name,
+  // }
 })
 
 const { data: q2, refresh: refreshQ2 } = await useAsyncData('q2',
@@ -145,17 +145,19 @@ const { data: q2, refresh: refreshQ2 } = await useAsyncData('q2',
   })
 )
 const q2AGeoAggregation = computed(() => {
-  return {
-    data: q2.value.maps[0],
-    legendSelectedTextFunction: (obj) => obj.DIST_NUM,
-    tooltipFunction: (obj) => obj.DIST_NUM,
-  }
+  return {}
+  // return {
+  //   data: q2.value.maps[0],
+  //   legendSelectedTextFunction: (obj) => obj.DIST_NUM,
+  //   tooltipFunction: (obj) => obj.DIST_NUM,
+  // }
 })
 const q2BGeoAggregation = computed(() => {
-  return {
-    data: q2.value.maps[1],
-    legendSelectedTextFunction: (obj) => obj.DIST_NUM,
-    tooltipFunction: (obj) => obj.DIST_NUM,
-  }
+  return {}
+  // return {
+  //   data: q2.value.maps[1],
+  //   legendSelectedTextFunction: (obj) => obj.DIST_NUM,
+  //   tooltipFunction: (obj) => obj.DIST_NUM,
+  // }
 })
 </script>
