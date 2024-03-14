@@ -1,7 +1,7 @@
 <template>
   <LayoutPageHeader>
     <template #header>
-      About the data
+      About the Data
     </template>
     <template #image>
       <img class="w-full h-full object-cover" src="~/assets/images/data.jpg" alt="A street in Philadelphia"/>

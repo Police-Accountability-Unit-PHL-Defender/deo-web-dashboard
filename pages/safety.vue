@@ -26,13 +26,13 @@
           <ul class="flex flex-col gap-3">
             <li>
               <a href="#part1" class="deo_scroll text-hyperlink flex">
-                <IconsChevron class="fill-white -rotate-90"/>
+                <IconsChevron class="fill-black -rotate-90"/>
                 Do traffic stops happen where car accidents happen?
               </a>
             </li>
             <li>
               <a href="#part2" class="deo_scroll text-hyperlink flex">
-                <IconsChevron class="fill-white -rotate-90"/>
+                <IconsChevron class="fill-black -rotate-90"/>
                 How do police stops relate to shootings?
               </a>
             </li>

@@ -2,14 +2,14 @@
   <header class="w-full bg-primary-600 text-white text-center">
     <div class="layout-container relative">
       <div v-if="!isIndex">
-        <div class="absolute inset-0 flex justify-center items-center pointer-events-none">
+        <div class="hidden md:flex absolute inset-0 justify-center items-center pointer-events-none">
           <a href="/" class="pointer-events-auto">
             <h1 class="text-heading-3 mt-1">Traffic Stops in Philadelphia</h1>
           </a>
         </div>
-        <div class="h-32 flex justify-between items-center">
+        <div class="h-16 md:h-32 flex justify-between items-center">
           <a href="/">
-            <img src="~/assets/images/defender-logo-white.png" alt="Defender Association of Philadelphia" class="h-20 mx-auto" />
+            <img src="~/assets/images/defender-logo-white.png" alt="Defender Association of Philadelphia" class="h-10 md:h-20 mx-auto" />
           </a>
           <button id="header-menu-button" title="Open full menu" @click="openPopupMenu"></button>
         </div>
@@ -44,16 +44,16 @@
       <a href="/safety" class="flex items-center hover:bg-primary-400 hover:text-primary-800 py-6 px-4 text-body-3 font-medium" :class="currentRoute === '/safety' ? 'bg-primary-400 text-primary-800' : 'bg-primary-800 text-white'">
         <span class="block max-w-[252px] mx-auto text-label-1">Safety</span>
       </a>
-      <a href="/driving-equality" class="flex items-center hover:bg-primary-400 hover:text-primary-800 py-6 px-4 text-body-3 font-medium" :class="currentRoute === '/driving-equality' ? 'bg-primary-400 text-primary-800' : 'bg-primary-800 text-white'">
+      <a href="/reasons" class="flex items-center hover:bg-primary-400 hover:text-primary-800 py-6 px-4 text-body-3 font-medium" :class="currentRoute === '/driving-equality' ? 'bg-primary-400 text-primary-800' : 'bg-primary-800 text-white'">
         <span class="block max-w-[252px] mx-auto text-label-1">Reasons for stops</span>
       </a>
     </nav>
-    <menu class="fixed z-[999] w-screen h-screen inset-0 bg-primary-800 py-8 text-left" :class="{'block': isMenuOpen, 'hidden': !isMenuOpen}" ref="menu">
+    <menu class="fixed z-[999] w-screen h-screen inset-0 bg-primary-800 py-8 text-left overflow-y-scroll" :class="{'block': isMenuOpen, 'hidden': !isMenuOpen}" ref="menu">
       <div class="layout-container">
         <div class="relative w-full">
           <button class="absolute top-3 right-3" id="header-menu-close-button" title="Close menu" @click="closePopupMenu"></button>
         </div>
-        <div class="flex flex-col gap-3">
+        <div class="flex flex-col justify-center gap-3">
           <ul class="flex flex-col gap-6 order-2 mt-18 md:mt-28">
             <li>
               <a href="/snapshot" class="text-fullscreen-nav font-medium hover:underline hover:text-primary-200">
@@ -81,13 +81,18 @@
               </a>
             </li>
             <li>
+              <a href="/data" class="text-fullscreen-nav font-medium hover:underline hover:text-primary-200">
+                About the Data
+              </a>
+            </li>
+            <li>
               <a href="/driving-equality" class="text-fullscreen-nav font-medium hover:underline hover:text-primary-200">
                 What is Driving Equality?
               </a>
             </li>
             <li>
-              <a href="/data" class="text-fullscreen-nav font-medium hover:underline hover:text-primary-200">
-                About the Data
+              <a href="/glossary" class="text-fullscreen-nav font-medium hover:underline hover:text-primary-200">
+                Glossary
               </a>
             </li>
           </ul>

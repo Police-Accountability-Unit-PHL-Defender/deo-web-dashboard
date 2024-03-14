@@ -2,15 +2,17 @@
   <button class="button-select px-2 inline h-10 text-primary-800 leading-10 font-medium" @click="locationModalIsOpen = true">
     <span>{{ formatLocationForSentence(props.modelValue, props.capitalize)}}</span>
   </button>
-  <div v-if="locationModalIsOpen" class="fixed z-10 inset-0 flex justify-center items-center p-4">
+  <div v-if="locationModalIsOpen" class="fixed z-10 inset-0 flex justify-center items-center p-2">
     <div class="absolute z-0 inset-0 bg-[rgba(255,255,255,0.75)]" @click="locationModalIsOpen = false"></div>
-    <div class="relative z-10 w-[630px] h-[750px] max-h-full max-w-full p-10 bg-neutral-100 drop-shadow-popup">
+    <div class="relative z-10 w-[568px] h-[630px] max-h-full max-w-full p-6 bg-white drop-shadow-popup">
       <div>
-        <div class="relative z-10">
-          Show map by:
-          <SelectGeoBoundary v-model="selectedGeoBoundary"></SelectGeoBoundary>
+        <button class="absolute z-20 top-6 right-4 text-neutral-600 hover:text-black">
+          <IconsClose class="close-button w-10" @click="locationModalIsOpen = false" />
+        </button>
+        <div class="relative z-10 mb-4">
+          Show data for <SelectGeoBoundary v-model="selectedGeoBoundary"></SelectGeoBoundary>
         </div>
-        <div class="h-[600px] relative z-0">
+        <div class="h-[520px] relative z-0">
           <LeafletMap
             :geo-aggregation="selectedGeoBoundary"
             :modelValue="modelValue"

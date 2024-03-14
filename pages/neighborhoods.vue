@@ -24,19 +24,19 @@
           <ul class="flex flex-col gap-3">
             <li>
               <a href="#part1" class="deo_scroll text-hyperlink flex">
-                <IconsChevron class="fill-white -rotate-90"/>
+                <IconsChevron class="fill-black -rotate-90"/>
                 How intrusive are police during traffic stops?
               </a>
             </li>
             <li>
               <a href="#part2" class="deo_scroll text-hyperlink flex">
-                <IconsChevron class="fill-white -rotate-90"/>
+                <IconsChevron class="fill-black -rotate-90"/>
                 During traffic stops, do police treat people differently?
               </a>
             </li>
             <li>
               <a href="#part3" class="deo_scroll text-hyperlink flex">
-                <IconsChevron class="fill-white -rotate-90"/>
+                <IconsChevron class="fill-black -rotate-90"/>
                 During traffic stops, do police officers treat neighborhoods differently?
               </a>
             </li>
@@ -163,6 +163,7 @@ import SelectTimeGranularity from '~/components/SelectTimeGranularity.vue'
 import HorizontalLine from '~/components/ui/HorizontalLine.vue';
 import Button from '~/components/ui/Button.vue';
 import Tooltip from '~/components/ui/Tooltip.vue';
+import IconsChevron from '~/components/icons/Chevron.vue';
 import { getDemographicGroupParam } from '~/utils';
 
 const selectedLocation = ref('Philadelphia')

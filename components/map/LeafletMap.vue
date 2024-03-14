@@ -74,7 +74,7 @@ var selectedGeojsonLayer = null;
 let map = "";
 
 let {
-  zoom = 13,
+  zoom = 11,
   maxZoom = 19,
   minZoom = 11,
   mapID = "map",
