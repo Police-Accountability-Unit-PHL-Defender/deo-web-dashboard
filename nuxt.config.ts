@@ -21,5 +21,10 @@ export default defineNuxtConfig({
         { src: 'https://unpkg.com/leaflet@1.7.1/dist/leaflet.js' }
       ]
     }
+  },
+  runtimeConfig: {
+    public: {
+      maptilerKey: process.env.NUXT_MAPTILER_KEY
+    }
   }
 })
