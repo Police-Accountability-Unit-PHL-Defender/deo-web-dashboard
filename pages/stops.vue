@@ -124,9 +124,9 @@
                     <table class="text-body-3 relative w-full">
                       <tbody class="w-full">
                         <tr v-for="row in q2B.tables.demo">
-                          <td class="w-1/4">{{ row['gender'] }}</td>
-                          <td class="w-1/4">{{ row['age range'] }}</td>
-                          <td class="w-1/4">{{ row['race'] }}</td>
+                          <td class="w-1/4">{{ row['Gender'] }}</td>
+                          <td class="w-1/4">{{ row['Age Range'] }}</td>
+                          <td class="w-1/4">{{ row['Race'] }}</td>
                           <td class="w-1/4">{{ row["% of traffic stops"] }}%</td>
                         </tr>
                       </tbody>
@@ -257,7 +257,7 @@ const { data: q2A, refresh: refreshQ2A } = await useAsyncData('q2A',
       location: getLocationParam(selectedLocation.value),
       start_qyear: q1BQuarterStart.value.toParamString(),
       end_qyear: q1BQuarterEnd.value.toParamString(),
-      demographic_category: q2ADemographicCategory.value,
+      demographic_category: getDemographicGroupParam(q2ADemographicCategory.value),
     },
     options
   })

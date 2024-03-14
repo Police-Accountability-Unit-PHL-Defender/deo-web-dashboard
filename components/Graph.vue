@@ -27,6 +27,10 @@ const props = defineProps({
     type: Object,
     required: false
   },
+  barAnnotationProperty: {
+    type: String,
+    required: false
+  },
   groupName: {
     type: String,
     required: false,
@@ -76,7 +80,7 @@ const drawGraph = (graphData) => {
   const groupWidth = barWidth * 2 + groupBarGap
   let padding = 24;
   let paddingOuter = 16;
-  if (!isGrouped.value && graphData.length < 4) {
+  if (!isGrouped.value && graphData.length <= 6) {
     barWidth = 128
   }
   if (!isGrouped.value && graphData.length > 12) {
@@ -215,16 +219,37 @@ const drawGraph = (graphData) => {
         .attr("class", (d) => getGroupClass(d.group))
       .call(tooltip, tooltipDiv, groupWidth);
   } else {
-    svg.append("g")
+    // const group = svg.append("g")
+    //   .attr("class", "fill-primary-600")
+    //   .selectAll()
+    //   .data(graphData)
+    //   .join("rect")
+    //     .attr("x", (d) => x(d[props.axisProperties.x]))
+    //     .attr("y", (d) => y(d[props.axisProperties.y]))
+    //     .attr("height", (d) => y(0) - y(d[props.axisProperties.y]))
+    //     .attr("width", x.bandwidth())
+    //   .call(tooltip, tooltipDiv)
+
+    const group = svg.append("g")
       .attr("class", "fill-primary-600")
       .selectAll()
       .data(graphData)
-      .join("rect")
-        .attr("x", (d) => x(d[props.axisProperties.x]))
-        .attr("y", (d) => y(d[props.axisProperties.y]))
-        .attr("height", (d) => y(0) - y(d[props.axisProperties.y]))
-        .attr("width", x.bandwidth())
+      .join("g");
+    
+    group.append("rect")
+      .attr("x", (d) => x(d[props.axisProperties.x]))
+      .attr("y", (d) => y(d[props.axisProperties.y]))
+      .attr("height", (d) => y(0) - y(d[props.axisProperties.y]))
+      .attr("width", x.bandwidth())
       .call(tooltip, tooltipDiv);
+
+    group.append("text")
+      .attr("x", (d) => x(d[props.axisProperties.x]) + x.bandwidth() / 2)
+      .attr("y", (d) => y(d[props.axisProperties.y]) - 5) // Adjust this value for positioning
+      .attr("text-anchor", "middle")
+      .attr("fill", "#393939")
+      .attr("class", "text-caption")
+      .text((d) => d[props.barAnnotationProperty]); // You can adjust this to show any value you want
   }
 
   // trendline

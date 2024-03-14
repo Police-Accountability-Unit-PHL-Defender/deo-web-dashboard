@@ -1,11 +1,36 @@
 <template>
-  <div class="map" id="map" ref="mapElement"/>
+  <div class="border border-neutral-400 my-6 pt-4 box-border">
+    <div class="w-full text-center mt-1 mb-6 text-body-2 font-semibold text-primary-800 max-w-[800px] mx-auto">
+      <slot></slot>
+    </div>
+    <div class="h-[480px] relative z-0">
+      <div class="map" id="map" ref="mapElement"/>
+    </div>
+    <svg width="0" height="0">
+      <defs>
+          <pattern id="O-pattern-blue" x="0" y="0" width="6" height="6" patternUnits="userSpaceOnUse" patternContentUnits="userSpaceOnUse" patternTransform="rotate(45)">
+              <path stroke="#60D9FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" pointer-events="none" d="M0 2h8"/>
+              <path stroke="#fff" stroke-opacity="0" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none" pointer-events="none" d="M0 2h8"/>
+          </pattern>
+          <pattern id="O-pattern-red" x="0" y="0" width="6" height="6" patternUnits="userSpaceOnUse" patternContentUnits="userSpaceOnUse" patternTransform="rotate(-45)">
+              <path stroke="#F94C4C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" pointer-events="none" d="M0 2h8"/>
+              <path stroke="#fff" stroke-opacity="0" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none" pointer-events="none" d="M0 2h8"/>
+          </pattern>
+      </defs>
+    </svg>
+  </div>
 </template>
 
 <style>
   .map {
     width: 100%;
     height: 100%;
+  }
+  .pattern-fill-blue {
+    fill: url(#O-pattern-blue);
+  }
+  .pattern-fill-red {
+    fill: url(#O-pattern-red);
   }
 </style>
 
@@ -25,13 +50,48 @@ const addressSelection = ref()
 const options = {
   center: [40.0, -75.12],
   zoom: 11,
-  selectedFeatureStyle: {
-    weight: 5,
-    color: "#666",
-    dashArray: "",
-    fillOpacity: 0.7,
-  },
+  // selectedFeatureStyle: {
+  //   weight: 5,
+  //   color: "#364ED7",
+  //   dashArray: "",
+  //   fillOpacity: 0.7,
+  // },
 };
+
+const geojsonMarkerOptions = {
+  radius: 2,
+  fillColor: "#F94C4C",
+  color: "#F94C4C",
+  weight: 1,
+  opacity: 1,
+  fillOpacity: 1
+}
+
+function polystyle(feature) {
+  if (feature.geometry.type === "Point") {
+    const pointColor = feature.properties.name === "Traffic stop on the HIN" ? "#364ED7" : "#F94C4C"
+    return {
+      radius: 3,
+      fillColor: pointColor,
+      color: pointColor,
+      weight: 1,
+      opacity: 1,
+      fillOpacity: 1
+    };
+  } else if (feature.geometry.type === "LineString") {
+    return {
+      weight: 1,
+      color: "#393939"
+    };
+  } else if (feature.geometry.type === "Polygon") {
+    return {
+      color: "#393939",
+      weight: 1,
+      fillOpacity: 1
+    }
+  }
+}
+
 // const geoAggregations = {
 //   psa: {
 //     url: "https://opendata.arcgis.com/datasets/8dc58605f9dd484295c7d065694cdc0f_0.geojson",
@@ -56,17 +116,17 @@ const options = {
 //   },
 // };
 
-function updateSelectedFeature(featureProperties) {
-  let featureName = 'Philadelphia';
-  if (featureProperties.DIST_NUM) {
-    featureName = `District ${featureProperties.DIST_NUM}`
-  } else if (featureProperties.DIV_NAME) {
-    featureName = `Division ${featureProperties.DIV_NAME}`
-  } else if (featureProperties.PSA_NUM) {
-    featureName = `PSA ${featureProperties.PSA_NUM}`
-  }
-  // emit("update:modelValue", featureName);
-}
+// function updateSelectedFeature(featureProperties) {
+//   let featureName = 'Philadelphia';
+//   if (featureProperties.DIST_NUM) {
+//     featureName = `District ${featureProperties.DIST_NUM}`
+//   } else if (featureProperties.DIV_NAME) {
+//     featureName = `Division ${featureProperties.DIV_NAME}`
+//   } else if (featureProperties.PSA_NUM) {
+//     featureName = `PSA ${featureProperties.PSA_NUM}`
+//   }
+//   // emit("update:modelValue", featureName);
+// }
 
 let L = {};
 var selectedInfoControlDiv;
@@ -86,9 +146,10 @@ let {
   tilelayers = [
     {
       // url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-      url: `https://api.maptiler.com/maps/positron/{z}/{x}/{y}.png?key=${config.public.maptilerKey}`,
+      url: `https://api.maptiler.com/maps/positron/256/{z}/{x}/{y}@2x.png?key=${config.public.maptilerKey}`,
       attribution:
         '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      // tileSize: 256,
     },
   ],
   controls = {
@@ -110,24 +171,24 @@ function initialise() {
   }, 1);
 }
 
-const addMarker = (obj) => {
-  obj.markers.map((e, i) => {
-    icon = e.icon ? L.icon(e.icon) : null;
-    let marker = new L.marker([e.lat, e.lng], icon).addTo(map);
-    marker.addTo(map);
-    markersArray[marker._leaflet_id] = marker;
-  });
-};
+// const addMarker = (obj) => {
+//   obj.markers.map((e, i) => {
+//     icon = e.icon ? L.icon(e.icon) : null;
+//     let marker = new L.marker([e.lat, e.lng], icon).addTo(map);
+//     marker.addTo(map);
+//     markersArray[marker._leaflet_id] = marker;
+//   });
+// };
 const removeMarkers = () => {
   Object.values(markersArray).forEach((marker) => {
     map.removeLayer(marker);
     markersArray = {};
   });
 };
-const updateMarkers = (obj) => {
-  removeMarkers();
-  addMarker(obj);
-};
+// const updateMarkers = (obj) => {
+//   removeMarkers();
+//   addMarker(obj);
+// };
 
 function createMap() {
   map = L.map(mapElement.value, {
@@ -170,38 +231,38 @@ function createMap() {
   return map;
 }
 
-function selectGeojsonUrlFeatureFromMarker(marker) {
-  function isMarkerInsidePolygon(marker, layerFeature) {
-    let polyPoints = layerFeature.feature.geometry.coordinates[0];
-    var x = marker.lat,
-      y = marker.lng;
+// function selectGeojsonUrlFeatureFromMarker(marker) {
+//   function isMarkerInsidePolygon(marker, layerFeature) {
+//     let polyPoints = layerFeature.feature.geometry.coordinates[0];
+//     var x = marker.lat,
+//       y = marker.lng;
 
-    var inside = false;
-    for (
-      var i = 0, j = polyPoints.length - 1;
-      i < polyPoints.length;
-      j = i++
-    ) {
-      var xi = polyPoints[i][1],
-        yi = polyPoints[i][0];
-      var xj = polyPoints[j][1],
-        yj = polyPoints[j][0];
+//     var inside = false;
+//     for (
+//       var i = 0, j = polyPoints.length - 1;
+//       i < polyPoints.length;
+//       j = i++
+//     ) {
+//       var xi = polyPoints[i][1],
+//         yi = polyPoints[i][0];
+//       var xj = polyPoints[j][1],
+//         yj = polyPoints[j][0];
 
-      var intersect =
-        yi > y != yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi;
+//       var intersect =
+//         yi > y != yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi;
 
-      if (intersect) inside = !inside;
-    }
-    if (inside) {
-      zoomAndHighlightFeature(selectedGeojsonLayer, layerFeature);
-    }
+//       if (intersect) inside = !inside;
+//     }
+//     if (inside) {
+//       zoomAndHighlightFeature(selectedGeojsonLayer, layerFeature);
+//     }
 
-    return inside;
-  }
-  Object.values(selectedGeojsonLayer._layers).forEach((layerFeature) =>
-    isMarkerInsidePolygon(marker, layerFeature)
-  );
-}
+//     return inside;
+//   }
+//   Object.values(selectedGeojsonLayer._layers).forEach((layerFeature) =>
+//     isMarkerInsidePolygon(marker, layerFeature)
+//   );
+// }
 function zoomAndHighlightFeature(geojsonLayer, layerFeature) {
   geojsonLayer.resetStyle();
   map.fitBounds(layerFeature.getBounds());
@@ -212,7 +273,7 @@ function zoomAndHighlightFeature(geojsonLayer, layerFeature) {
   selectedInfoControlDiv.update(
     getTextFromSelectedFeatureProperties(layerFeature.feature.properties)
   );
-  updateSelectedFeature(layerFeature.feature.properties)
+  // updateSelectedFeature(layerFeature.feature.properties)
 }
 function updateGeojsonLayer(geojsonLayerProperties) {
   if (selectedGeojsonLayer) {
@@ -228,6 +289,10 @@ function addGeojsonLayer(geojsonLayerProperties) {
   // add the url layer and set the tooltip function to that layer
   let thisGeojsonLayer = L.geoJSON(geojsonLayerProperties.data, {
     onEachFeature: onEachFeature,
+    pointToLayer: function (feature, latlng) {
+      return L.circleMarker(latlng, geojsonMarkerOptions);
+    },
+    style: polystyle,
   });
   thisGeojsonLayer.addTo(map);
   selectedGeojsonLayer = thisGeojsonLayer;
@@ -249,42 +314,15 @@ function addGeojsonLayer(geojsonLayerProperties) {
     layer.on({
       click: zoomAndHighlightFeatureFromClick,
     });
-  }
-}
-function addGeojsonUrlLayer(geojsonLayerProperties) {
-  const geojsonLayerUrl = geojsonLayerProperties.url;
-  // set the function for getting the text in the map legend
-  getTextFromSelectedFeatureProperties = geojsonLayerProperties.legendSelectedTextFunction;
-
-  // add the url layer and set the tooltip function to that layer
-  fetch(geojsonLayerUrl)
-    .then((response) => response.json())
-    .then((geojsonLayer) => {
-      let thisGeojsonLayer = L.geoJSON(geojsonLayer, {
-        onEachFeature: onEachFeature,
-      });
-      thisGeojsonLayer.addTo(map);
-      selectedGeojsonLayer = thisGeojsonLayer;
-
-      function onEachFeature(feature, layer) {
-        if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
-          layer.bindTooltip(
-            geojsonLayerProperties.tooltipFunction(feature.properties)
-          );
-        }
-        // https://leafletjs.com/examples/choropleth/
-        function zoomAndHighlightFeatureFromClick(e) {
-          // TODO: we could pass through the text function, but
-          // zoomAndHighlightFeature can also be called on search,
-          // in which case it would need to know the text function to use
-          zoomAndHighlightFeature(thisGeojsonLayer, e.target);
-          removeMarkers();
-        }
-        layer.on({
-          click: zoomAndHighlightFeatureFromClick,
-        });
+    if (feature.geometry.type === "Polygon") {
+      if (feature.properties.shooting_decrease) {
+        layer.options.className = "pattern-fill-red";
+      } else if (feature.properties.stops_increase) {
+        layer.options.className = "pattern-fill-blue";
       }
-    });
+      // layer.options.className = "pattern-fill-blue";
+    }
+  }
 }
 function resizeMap() {
   if (map) {

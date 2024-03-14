@@ -51,29 +51,29 @@
               Driving Equality came into effect on March 3, 2022. In the year<Tooltip term="Year"/> after Driving Equality,
               <span v-html="q1A.text[0]" class="result-text"></span>
             </AnswerText>
-            <div class="h-[480px] relative z-0">
-              <LeafletMap2 :geo-aggregation="q1CGeoAggregation" />
-            </div>
+            <LeafletMap2 :geo-aggregation="q1CGeoAggregation">
+              <h4>Random Sample of 1,000 PPD Traffic Stops in 2023 Mapped on HIN Roads</h4>
+            </LeafletMap2>
           </Answer>
         </section>
         <HorizontalLine class="my-16"/>
         <section>
           <h2 id="part1" class="text-heading-3 text-left mb-6">How do police stops relate to shootings?</h2>
           <QuestionHeader>
-            <h3>Comparing 2018 to 2019</h3>
+            <h3>During a surge in traffic stops from 2018 to 2019, which districts had the largest increase in traffic stops? Were these the same districts that had the largest decrease in shootings?</h3>
           </QuestionHeader>
           <Answer v-if="q2" :arrow="true">
-            <div class="h-[480px] relative z-0">
-              <LeafletMap2 :geo-aggregation="q2AGeoAggregation" />
-            </div>
+            <LeafletMap2 :geo-aggregation="q2AGeoAggregation">
+              <h4>Comparing 2018 to 2019: Districts with Largest Increase in Traffic Stops vs. Districts with Largest Decrease in Shootings</h4>
+            </LeafletMap2>
           </Answer>
           <QuestionHeader>
-            <h3>Comparing Jan 2021-Dec 2021 to April 2022-March 2023</h3>
+            <h3>Comparing the year before Driving Equality to the year after the law was implemented, which districts had the largest increase in traffic stops? Were these the same districts that had the largest decrease in shootings?</h3>
           </QuestionHeader>
           <Answer v-if="q2" :arrow="true">
-            <div class="h-[480px] relative z-0">
-              <LeafletMap2 :geo-aggregation="q2BGeoAggregation" />
-            </div>
+            <LeafletMap2 :geo-aggregation="q2BGeoAggregation">
+              <h4>Before and After Driving Equality: Districts with Largest Increase in Traffic Stops vs. Districts with Largest Decrease in Shootings</h4>
+            </LeafletMap2>
           </Answer>
         </section>
       </div>
@@ -131,12 +131,16 @@ const { data: q1C, refresh: refreshQ1C } = await useAsyncData('q1C',
   })
 )
 const q1CGeoAggregation = computed(() => {
-  return {}
-  // return {
-  //   data: q1C.value.maps[0],
-  //   legendSelectedTextFunction: (obj) => obj.street_name,
-  //   tooltipFunction: (obj) => obj.street_name,
-  // }
+  const reversedData = q1C.value.geojson.features.reverse()
+  const data = {
+    type: "FeatureCollection",
+    features: reversedData
+  }
+  return {
+    data,
+    legendSelectedTextFunction: (obj) => obj.street_name,
+    tooltipFunction: (obj) => obj.street_name,
+  }
 })
 
 const { data: q2, refresh: refreshQ2 } = await useAsyncData('q2',
@@ -144,20 +148,25 @@ const { data: q2, refresh: refreshQ2 } = await useAsyncData('q2',
     options
   })
 )
+console.log(q2.value)
 const q2AGeoAggregation = computed(() => {
-  return {}
-  // return {
-  //   data: q2.value.maps[0],
-  //   legendSelectedTextFunction: (obj) => obj.DIST_NUM,
-  //   tooltipFunction: (obj) => obj.DIST_NUM,
-  // }
+  return {
+    data: {
+      features: q2.value.geojson.features.slice(0, 10),
+      type: "FeatureCollection"
+    },
+    legendSelectedTextFunction: (obj) => obj.DIST_NUM,
+    tooltipFunction: (obj) => obj.hovertext,
+  }
 })
 const q2BGeoAggregation = computed(() => {
-  return {}
-  // return {
-  //   data: q2.value.maps[1],
-  //   legendSelectedTextFunction: (obj) => obj.DIST_NUM,
-  //   tooltipFunction: (obj) => obj.DIST_NUM,
-  // }
+  return {
+    data: {
+      features: q2.value.geojson.features.slice(10),
+      type: "FeatureCollection"
+    },
+    legendSelectedTextFunction: (obj) => obj.DIST_NUM,
+    tooltipFunction: (obj) => obj.hovertext,
+  }
 })
 </script>

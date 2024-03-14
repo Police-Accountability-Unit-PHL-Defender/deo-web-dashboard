@@ -85,7 +85,7 @@
             </h3>
           </QuestionHeader>
           <Answer v-if="q2A" :arrow="true">
-            <Graph :graph-data="q2A.figures.barplot.data" :axis-properties="{x: q2A.figures.barplot.properties.xAxis, y: q2A.figures.barplot.properties.yAxis}">
+            <Graph :graph-data="q2AData1" :axis-properties="{x: q2A.figures.barplot.properties.xAxis, y: q2A.figures.barplot.properties.yAxis}" bar-annotation-property="annotation">
               <h4>{{ q2A.figures.barplot.properties.title }}</h4>
             </Graph>
           </Answer>
@@ -93,7 +93,7 @@
             <h3>How many times do Philadelphia police intrude during traffic stops without finding any contraband<Tooltip term="Contraband"/>?</h3>
           </QuestionHeader>
           <Answer v-if="q2A" :arrow="true">
-            <Graph :graph-data="q2A.figures.barplot2.data" :axis-properties="{x: q2A.figures.barplot2.properties.xAxis, y: q2A.figures.barplot2.properties.yAxis}">
+            <Graph :graph-data="q2AData2" :axis-properties="{x: q2A.figures.barplot2.properties.xAxis, y: q2A.figures.barplot2.properties.yAxis}" bar-annotation-property="annotation">
               <h4>{{ q2A.figures.barplot2.properties.title }}</h4>
             </Graph>
           </Answer>
@@ -101,7 +101,7 @@
             <h3>When Philadelphia police intrude during traffic stops, how often do they find contraband?</h3>
           </QuestionHeader>
           <Answer v-if="q2A" :arrow="true">
-            <Graph :graph-data="q2A.figures.barplot3.data" :axis-properties="{x: q2A.figures.barplot3.properties.xAxis, y: q2A.figures.barplot3.properties.yAxis}">
+            <Graph :graph-data="q2AData3" :axis-properties="{x: q2A.figures.barplot3.properties.xAxis, y: q2A.figures.barplot3.properties.yAxis}" bar-annotation-property="annotation">
               <h4>{{ q2A.figures.barplot3.properties.title }}</h4>
             </Graph>
             <AnswerText>
@@ -163,6 +163,7 @@ import SelectTimeGranularity from '~/components/SelectTimeGranularity.vue'
 import HorizontalLine from '~/components/ui/HorizontalLine.vue';
 import Button from '~/components/ui/Button.vue';
 import Tooltip from '~/components/ui/Tooltip.vue';
+import { getDemographicGroupParam } from '~/utils';
 
 const selectedLocation = ref('Philadelphia')
 const selectedTimeGranularity = ref('year')
@@ -171,10 +172,10 @@ const q2AQuarterStart = ref(new Quarter(2023, QuarterMonths['Jan-Mar']))
 const q2AQuarterEnd = ref(new Quarter(2023, QuarterMonths['Oct-Dec']))
 const q2ARace = ref('White')
 const q2AGender = ref('Male')
-const q2AAgeGroup = ref('<25')
+const q2AAgeGroup = ref('Under 25')
 const q2ADemographicBaseline = computed(() => {
   if (q2ADemographicCategory.value === 'race') { return q2ARace.value }
-  if (q2ADemographicCategory.value === 'Age Group') { return q2AAgeGroup.value }
+  if (q2ADemographicCategory.value === 'age range') { return q2AAgeGroup.value }
   if (q2ADemographicCategory.value === 'gender') { return q2AGender.value }
 })
 const q3AEvent = ref('traffic stops')
@@ -209,7 +210,7 @@ const { data: q2A, refresh: refreshQ2A } = await useAsyncData('q2A',
   () => $fetch(`${apiBaseUrl}/neighborhoods/neighborhoods-by-demographic-category`, {
     params: {
       location: getLocationParam(selectedLocation.value),
-      demographic_category: q2ADemographicCategory.value,
+      demographic_category: getDemographicGroupParam(q2ADemographicCategory.value),
       demographic_baseline: q2ADemographicBaseline.value,
       start_qyear: q2AQuarterStart.value.toParamString(),
       end_qyear: q2AQuarterEnd.value.toParamString(),
@@ -218,6 +219,36 @@ const { data: q2A, refresh: refreshQ2A } = await useAsyncData('q2A',
   })
 )
 watch(q2AParams, async () => { refreshQ2A() }, { deep: true })
+
+const getQ2AnnotatedData = (barplotKey) => {
+  if (!q2A.value) return null
+  const yAxisProperty = q2A.value.figures[barplotKey].properties.yAxis
+  const baselineDatum = q2A.value.figures[barplotKey].data.find(d => d[getDemographicGroupParam(q2ADemographicCategory.value)] === q2ADemographicBaseline.value)
+  const baselineAmount = baselineDatum[yAxisProperty]
+  return q2A.value.figures[barplotKey].data.map(d => {
+    let annotation = ''
+    if (d[getDemographicGroupParam(q2ADemographicCategory.value)] === q2ADemographicBaseline.value) {
+      annotation = 'Baseline'
+    } else {
+      const multiple = (d[yAxisProperty] / baselineAmount).toFixed(1)
+      annotation = `${multiple}x of ${q2ADemographicBaseline.value} people`
+    }
+    return {
+      ...d,
+      annotation
+    }
+  })
+}
+
+const q2AData1 = computed(() => {
+  return getQ2AnnotatedData('barplot')
+})
+const q2AData2 = computed(() => {
+  return getQ2AnnotatedData('barplot2')
+})
+const q2AData3 = computed(() => {
+  return getQ2AnnotatedData('barplot3')
+})
 
 const q3AParams = ref([q3AEvent, q2AQuarterStart, q2AQuarterEnd])
 const { data: q3A, refresh: refreshQ3A } = await useAsyncData('q3A',
@@ -245,10 +276,4 @@ const { data: q3B, refresh: refreshQ3B } = await useAsyncData('q3B',
   })
 );
 watch(q3BParams, async () => { refreshQ3B() }, { deep: true })
-
-console.log(q1A.value)
-console.log(q1B.value)
-console.log(q2A.value)
-console.log(q3A.value)
-console.log(q3B.value)
 </script>

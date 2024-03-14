@@ -59,6 +59,13 @@ export function getEventParam(event: string) {
   return ''
 }
 
+export function getDemographicGroupParam(demographicGroup: string) {
+  if (demographicGroup === 'age range') return 'Age Range'
+  if (demographicGroup === 'gender') return 'Gender'
+  if (demographicGroup === 'race') return 'Race'
+  return ''
+}
+
 export function formatLocationForSentence(locationValue: string, capitalize=false) {
   return `${locationValue}`
 }
