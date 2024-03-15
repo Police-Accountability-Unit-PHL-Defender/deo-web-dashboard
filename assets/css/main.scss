@@ -135,7 +135,7 @@ html {
 
 @layer components {  
   .button-select {
-    @apply bg-neutral-100 hover:bg-neutral-200;
+    @apply bg-neutral-100 hover:bg-neutral-200 border border-neutral-100 hover:border-neutral-200;
   }
 }
 

@@ -41,14 +41,14 @@
         <section>
           <h2 id="part1" class="text-heading-3 text-left pt-14 mb-6">Do traffic stops happen where car accidents happen?</h2>
           <QuestionHeader>
-            <h3>How often did Philadelphia police make traffic stops<Tooltip term="Traffic Stop"/> on High Injury Network<Tooltip term="High Injury Network"/> (HIN) roads in <SelectLocation v-model="selectedLocation"/>, by <SelectTimeGranularity v-model="selectedTimeGranularity"/> ?</h3>
+            <h3>How often did Philadelphia police make traffic stops<Tooltip term="Traffic Stop"/> on High Injury Network<Tooltip term="High Injury Network"/> (HIN) roads in <SelectLocation v-model="selectedLocation"/> by <SelectTimeGranularity v-model="selectedTimeGranularity"/> ?</h3>
           </QuestionHeader>
           <Answer v-if="q1A" :arrow="true">
             <Graph :graph-data="q1A.figures.barplot.data" :axis-properties="{x: q1A.figures.barplot.properties.xAxis, y: q1A.figures.barplot.properties.yAxis}">
               <h4>{{ q1A.figures.barplot.properties.title }}</h4>
             </Graph>
             <AnswerText>
-              Driving Equality came into effect on March 3, 2022. In the year<Tooltip term="Year"/> after Driving Equality,
+              Driving Equality came into effect on March 3, 2022. In the year after<Tooltip term="Year after"/> Driving Equality,
               <span v-html="q1A.text[0]" class="result-text"></span>
             </AnswerText>
             <LeafletMap2 :geo-aggregation="q1CGeoAggregation" hin-legend="true">

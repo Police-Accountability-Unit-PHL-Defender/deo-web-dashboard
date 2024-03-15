@@ -6,24 +6,26 @@
     :multiple="props.multiple"
     class="relative inline-block text-left"
     :class="{'w-full': props.multiple}"
+    v-slot="{ open }"
   >
-    <ListboxButton class="button-select flex gap-6 items-center justify-between h-10 px-2 font-medium" :class="{'w-full': props.multiple}">
+    <ListboxButton class="button-select flex gap-6 items-center justify-between h-10 px-2 font-medium" :class="{'w-full': props.multiple, 'border-primary-600 hover:border-primary-600': open}">
       <div v-if="props.multiple" class="flex gap-2">
         <div v-for="item in props.modelValue" class="bg-white text-primary-800 px-1">
           {{ item }}
         </div>
       </div>
       <span v-else class="text-primary-800">{{ getDisplayText(props.modelValue) }}</span>
-      <IconsChevron classes="fill-black"></IconsChevron>
+      <IconsChevron classes="fill-black" :class="{'rotate-180': open}"></IconsChevron>
     </ListboxButton>
-    <ListboxOptions class="bg-neutral-100 absolute z-[1] top-full w-auto mt-2 leading-6 max-h-[50vh] overflow-scroll">
+    <ListboxOptions class="bg-neutral-100 border border-neutral-400 absolute z-[1] top-full w-auto mt-0 leading-6 max-h-[50vh] min-w-full overflow-y-auto">
       <ListboxOption
         v-for="item in props.items"
         :key="item"
         :value="item"
-        class="py-2 pl-8 pr-4 cursor-pointer hover:bg-neutral-200 text-neutral-600 hover:text-primary-800 whitespace-nowrap transition-colors"
+        class="py-2 pl-6 pr-4 cursor-pointer hover:bg-neutral-200 text-black hover:text-primary-800 whitespace-nowrap transition-colors"
+        v-slot="{ selected }"
       >
-        {{ getDisplayText(item) }}
+        <span :class="{'text-primary-800': selected}">{{ getDisplayText(item) }}</span>
       </ListboxOption>
     </ListboxOptions>
   </Listbox>

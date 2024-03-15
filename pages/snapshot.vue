@@ -33,10 +33,10 @@
         <HorizontalLine class="my-16"/>
         <section>
           <QuestionHeader>
-            <h3>What are the racial disparities<Tooltip term="Disparity"/> in traffic stops by Philadelphia police? How does the city population compare to who is stopped?</h3>
+            <h3>In the last year, what were the racial disparities<Tooltip term="Disparity"/> in traffic stops by Philadelphia police? How does the city population compare to who was stopped?</h3>
           </QuestionHeader>
           <Answer v-if="q1A" :arrow="true">
-            <Graph :graph-data="q1A.figures.barplot.data" :axis-properties="{x: q1A.figures.barplot.properties.xAxis, y: q1A.figures.barplot.properties.yAxis}" group-name="group" :group-classes="{'Percent of traffic stops': 'fill-primary-600', 'Percent of population': 'fill-red'}">
+            <Graph :graph-data="q1A.figures.barplot.data" :axis-properties="{x: q1A.figures.barplot.properties.xAxis, y: q1A.figures.barplot.properties.yAxis}" group-name="group" :group-classes="{'% of traffic stops': 'fill-primary-600', '% of city population': 'fill-red'}" :chart-legend="['Percent of traffic stops', 'Percent of city population']">
               <h4>{{ q1A.figures.barplot.properties.title }}</h4>
             </Graph>
             <AnswerText>
@@ -52,11 +52,12 @@
           </QuestionHeader>
           <Answer v-if="q1A" :arrow="true">
             <AnswerText>
-              <div v-html="q1A.text.slice(1, 2).join(' ')" class="result-text"></div>
+              Driving Equality came into effect on March 3, 2022. In the year after<Tooltip term="Year after"/> Driving Equality,
+              <span v-html="q1A.text.slice(1, 2).join(' ')" class="result-text"></span>,
+              compared to 2021 (see <a class="underline text-primary-600 hover:text-primary-800;" href="http://localhost:3000/driving-equality#10">What is Driving Equality?</a> to learn more about these date comparisons). Concerningly, racial disparities in traffic stops have persisted.
             </AnswerText>
             [Graph]
             <AnswerText>
-              In the year<Tooltip term="Year"/> after Driving Equality,
               <span v-html="q1A.text.slice(2, 3).join(' ')" class="result-text"></span>
             </AnswerText>
             [Graph]

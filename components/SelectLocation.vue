@@ -10,7 +10,7 @@
           <IconsClose class="close-button w-10" @click="locationModalIsOpen = false" />
         </button>
         <div class="relative z-10 mb-4">
-          Show data for <SelectGeoBoundary v-model="selectedGeoBoundary"></SelectGeoBoundary>
+          Select <SelectGeoBoundary v-model="selectedGeoBoundary"></SelectGeoBoundary>
         </div>
         <div class="h-[520px] relative z-0">
           <LeafletMap

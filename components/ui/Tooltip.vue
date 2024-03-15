@@ -4,7 +4,9 @@
       <button
         class="flex size-8 items-center justify-center border-primary-300 pt-[1px] text-primary-300 hover:border-primary-500 hover:text-primary-500"
         aria-label="info"
-        @click="handleClickTooltipButton">
+        @mouseenter="tooltipIsVisible = true"
+        @mouseleave="tooltipIsVisible = false"
+        >
         <TooltipIcon icon-classes="hover:text-primary-400 transition-colors"></TooltipIcon>
       </button>
     </div>
@@ -46,7 +48,7 @@ const dictionary = {
   "Search": "An examination by police of a person and/or their property or premises that a person would reasonably consider private with the intent of discovering evidence of the commission of a crime.",
   "Search rate": "How often police search people and/or vehicles during traffic stops.",
   "Traffic Stop": "When police pull over a vehicle for a known or suspected traffic violation.",
-  "Year": "April 1, 2022 - March 31, 2023"
+  "Year after": "April 1, 2022 - March 31, 2023"
 }
 const definition = computed(() => {
   if (!props.term) return

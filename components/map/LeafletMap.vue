@@ -36,7 +36,7 @@ const geoAggregations = {
     url: "https://opendata.arcgis.com/datasets/8dc58605f9dd484295c7d065694cdc0f_0.geojson",
     legendSelectedTextFunction: (obj) =>
       `<b>District:${obj.PSA_NUM.substr(0, 2)} PSA:${obj.PSA_NUM[2]}</b>`,
-    tooltipFunction: (obj) => obj.PSA_NUM,
+    tooltipFunction: (obj) => obj.PSA_NUM.substr(0, 2) + '-' + obj.PSA_NUM.substr(2),
   },
   district: {
     url: "https://opendata.arcgis.com/datasets/62ec63afb8824a15953399b1fa819df2_0.geojson",

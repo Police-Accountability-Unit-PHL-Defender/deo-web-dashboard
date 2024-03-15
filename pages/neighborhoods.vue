@@ -45,7 +45,7 @@
         <section>
           <h2 id="part1" class="text-heading-3 text-left pt-10 mb-6">How intrusive are police during traffic stops?</h2>
           <QuestionHeader>
-            <h3>How many times did Philadelphia police intrude<Tooltip term="Intrusion"/> during traffic stops<Tooltip term="Traffic Stop"/> in <SelectLocation v-model="selectedLocation"/>, by <SelectTimeGranularity v-model="selectedTimeGranularity"/> ?</h3>
+            <h3>How many times did Philadelphia police intrude<Tooltip term="Intrusion"/> during traffic stops<Tooltip term="Traffic Stop"/> in <SelectLocation v-model="selectedLocation"/> by <SelectTimeGranularity v-model="selectedTimeGranularity"/> ?</h3>
           </QuestionHeader>
           <Answer v-if="q1A" :arrow="true">
             <AnswerText>
@@ -64,7 +64,7 @@
         <HorizontalLine class="my-16"/>
         <section>
           <QuestionHeader>
-            <h3>How have Philadelphia police changed the way they intrude during traffic stops in <SelectLocation v-model="selectedLocation"/>, by <SelectTimeGranularity v-model="selectedTimeGranularity"/>? How do frisks<Tooltip term="Frisk"/> and searches<Tooltip term="Search"/>  compare over time?</h3>
+            <h3>How have Philadelphia police changed the way they intrude during traffic stops in <SelectLocation v-model="selectedLocation"/> by <SelectTimeGranularity v-model="selectedTimeGranularity"/>? How do frisks<Tooltip term="Frisk"/> and searches<Tooltip term="Search"/> compare over time?</h3>
           </QuestionHeader>
           <Answer v-if="q1B" :arrow="true">
             <Graph :graph-data="q1B.figures.barplot.data" :axis-properties="{x: q1B.figures.barplot.properties.xAxis, y: q1B.figures.barplot.properties.yAxis}" group-name="group" :group-classes="{'# of searches': 'fill-primary-600', '# of frisks': 'fill-red'}" :chart-legend="['Number of searches', 'Number of frisks']">
@@ -78,7 +78,7 @@
           <QuestionHeader>
             <h3>
               Do Philadelphia police intrude upon some drivers and/or their vehicles more often than others?
-              Show data by <SelectDemographicCategory v-model="q2ADemographicCategory" /> from the start of <SelectQuarter2 v-model="q2AQuarterStart" item-label-end="start"/> to the end of <SelectQuarter2 v-model="q2AQuarterEnd" item-label-end="end"/>, compared to a baseline of people who are
+              Show data by <SelectDemographicCategory v-model="q2ADemographicCategory" /> in <SelectLocation v-model="selectedLocation"/> from the start of quarter <SelectQuarter2 v-model="q2AQuarterStart" item-label-end="start"/> to the end of <SelectQuarter2 v-model="q2AQuarterEnd" item-label-end="end"/>, compared to a baseline of people who are
               <SelectRace v-if="q2ADemographicCategory === 'race'" v-model="q2ARace"/>
               <SelectGender v-if="q2ADemographicCategory ==='gender'" v-model="q2AGender"/>
               <SelectAgeGroup v-if="q2ADemographicCategory === 'age range'" v-model="q2AAgeGroup"/>.
@@ -125,7 +125,7 @@
           </Answer>
           <QuestionHeader>
             <h3>
-              During this time period, what was the intrusion rate<Tooltip term="Intrusion Rate"/> and contraband hit rate<Tooltip term="Contraband Hit Rate"/> across districts?
+              During this time period, what was the intrusion rate<Tooltip term="Intrusion rate"/> and contraband hit rate<Tooltip term="Contraband hit rate"/> across districts?
             </h3>
           </QuestionHeader>
           <Answer v-if="q3A" :arrow="true">
@@ -169,11 +169,11 @@ import { getDemographicGroupParam } from '~/utils';
 const selectedLocation = ref('Philadelphia')
 const selectedTimeGranularity = ref('year')
 const q2ADemographicCategory = ref('race')
-const q2AQuarterStart = ref(new Quarter(2023, QuarterMonths['Jan-Mar']))
+const q2AQuarterStart = ref(new Quarter(2014, QuarterMonths['Jan-Mar']))
 const q2AQuarterEnd = ref(new Quarter(2023, QuarterMonths['Oct-Dec']))
 const q2ARace = ref('White')
-const q2AGender = ref('Male')
-const q2AAgeGroup = ref('Under 25')
+const q2AGender = ref('Female')
+const q2AAgeGroup = ref('35-44')
 const q2ADemographicBaseline = computed(() => {
   if (q2ADemographicCategory.value === 'race') { return q2ARace.value }
   if (q2ADemographicCategory.value === 'age range') { return q2AAgeGroup.value }
@@ -207,7 +207,7 @@ const { data: q1B, refresh: refreshQ1B } = await useAsyncData('q1B',
 watch(q1BParams, async () => { refreshQ1B() }, { deep: true })
 console.log(q1B.value)
 
-const q2AParams = ref([q2ADemographicCategory, q2AQuarterStart, q2AQuarterEnd, q2ARace, q2AGender, q2AAgeGroup])
+const q2AParams = ref([q2ADemographicCategory, selectedLocation, q2AQuarterStart, q2AQuarterEnd, q2ARace, q2AGender, q2AAgeGroup])
 const { data: q2A, refresh: refreshQ2A } = await useAsyncData('q2A',
   () => $fetch(`${apiBaseUrl}/neighborhoods/neighborhoods-by-demographic-category`, {
     params: {
@@ -233,7 +233,7 @@ const getQ2AnnotatedData = (barplotKey) => {
       annotation = 'Baseline'
     } else {
       const multiple = (d[yAxisProperty] / baselineAmount).toFixed(1)
-      annotation = `${multiple}x of ${q2ADemographicBaseline.value} people`
+      annotation = `${multiple}x of Baseline`
     }
     return {
       ...d,
@@ -243,6 +243,7 @@ const getQ2AnnotatedData = (barplotKey) => {
 }
 
 const q2AData1 = computed(() => {
+
   return getQ2AnnotatedData('barplot')
 })
 const q2AData2 = computed(() => {

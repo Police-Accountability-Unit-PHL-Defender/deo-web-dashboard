@@ -131,7 +131,7 @@ const drawGraph = (graphData) => {
   // Add the y-axis and label, and remove the domain line.
   svg.append("g")
     .attr("transform", `translate(${margin.left},0)`)
-    .attr("class", "text-body-4")
+    .attr("class", "text-caption")
     .call(d3.axisLeft(y).tickSizeInner(-width, 0, 0).tickSizeOuter(0).tickPadding(8))
     // .call(g => g.select(".domain").remove())
     .call(g => g.append("text")
@@ -139,10 +139,11 @@ const drawGraph = (graphData) => {
       .attr("y", 16)
       .attr("fill", "currentColor")
       .attr("text-anchor", "start")
+      .attr("class", "text-body-4")
       .text(props.axisProperties.y));
   svg.append("g")
     .attr("transform", `translate(0,${height - margin.bottom})`)
-    .attr("class", "text-body-4")
+    .attr("class", "text-caption")
     .call(d3.axisBottom(x).tickSizeInner(0).tickSizeOuter(0).tickPadding(12))
     .selectAll(".tick text")
       .call(wrap, x.bandwidth());
@@ -234,30 +235,18 @@ const drawGraph = (graphData) => {
         .attr("class", (d) => getGroupClass(d.group))
       .call(tooltip, tooltipDiv, groupWidth);
   } else {
-    // const group = svg.append("g")
-    //   .attr("class", "fill-primary-600")
-    //   .selectAll()
-    //   .data(graphData)
-    //   .join("rect")
-    //     .attr("x", (d) => x(d[props.axisProperties.x]))
-    //     .attr("y", (d) => y(d[props.axisProperties.y]))
-    //     .attr("height", (d) => y(0) - y(d[props.axisProperties.y]))
-    //     .attr("width", x.bandwidth())
-    //   .call(tooltip, tooltipDiv)
-
+    // text above bars for baseline comparisons
     const group = svg.append("g")
       .attr("class", "fill-primary-600")
       .selectAll()
       .data(graphData)
       .join("g");
-    
     group.append("rect")
       .attr("x", (d) => x(d[props.axisProperties.x]))
       .attr("y", (d) => y(d[props.axisProperties.y]))
       .attr("height", (d) => y(0) - y(d[props.axisProperties.y]))
       .attr("width", x.bandwidth())
       .call(tooltip, tooltipDiv);
-
     group.append("text")
       .attr("x", (d) => x(d[props.axisProperties.x]) + x.bandwidth() / 2)
       .attr("y", (d) => y(d[props.axisProperties.y]) - 5) // Adjust this value for positioning

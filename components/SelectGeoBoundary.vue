@@ -1,6 +1,7 @@
 <template>
   <SelectOne
     :items="items"
+    :itemDisplayText="itemDisplayText"
     :modelValue="modelValue"
     @update:modelValue="value => emit('update:modelValue', value)"
   />
@@ -9,7 +10,13 @@
 <script setup>
   import SelectOne from '~/components/ui/SelectOne.vue'
   // TODO: Options for years should be based on available data
-  const items = ['city', 'district', 'division', 'psa']
+  const items = ['city', 'division', 'district', 'psa']
+  const itemDisplayText = {
+    city: 'city',
+    division: 'division',
+    district: 'district',
+    psa: 'PSA'
+  }
   const props = defineProps(['modelValue'])
   const emit = defineEmits(['update:modelValue'])
 </script>
