@@ -14,11 +14,11 @@
           </tr>
           <tr>
             <th>Follow us on X (Twitter)</th>
-            <td><a href="https://twitter.com/phldefenderspau">@PHLDefendersPAU</a></td>
+            <td><a href="https://twitter.com/phldefenderspau" target="_blank">@PHLDefendersPAU</a></td>
           </tr>
           <tr>
             <th>Website</th>
-            <td><a href="https://phillydefenders.org/police-accountability">phillydefenders.org/police-accountability</a></td>
+            <td><a href="https://phillydefenders.org/police-accountability" target="_blank">phillydefenders.org/police-accountability</a></td>
           </tr>
           <tr>
             <th>Address</th>
@@ -32,7 +32,7 @@
           </tr>
         </table>
         <p class="mt-6">
-          The Police Accountability Unit is grateful to the many people who contributed to the development of this dashboard. This dashboard was supported by the <a href="https://www.urban.org/projects/catalyst-grant-program" target="_blank">Catalyst Grant Program</a>, an initiative by the <a href="https://www.urban.org/" target="_blank">Urban Institute</a> and the <a href="https://www.microsoft.com/en-us/corporate-responsibility/justice-reform-initiative?activetab=pivot_1%3aprimaryr4" target="_blank">Microsoft Justice Reform Initiative</a> to support local communities in using data and technology to advance racial equity in the criminal legal system.
+          The Police Accountability Unit is grateful to the many people who contributed to the development of this dashboard. This dashboard was supported by the <a href="https://www.urban.org/projects/catalyst-grant-program" target="_blank">Catalyst Grant Program</a>, an initiative by the <a href="https://www.urban.org/" target="_blank">Urban Institute</a> and the <a href="https://www.microsoft.com/en-us/corporate-responsibility/justice-reform-initiative" target="_blank">Microsoft Justice Reform Initiative</a> to support local communities in using data and technology to advance racial equity in the criminal legal system.
         </p>
       </div>
     </div>

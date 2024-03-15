@@ -1,6 +1,6 @@
 <template>
   <div class="border border-neutral-400 my-6 pt-4 box-border">
-    <div class="w-full text-center mt-1 mb-6 text-body-2 font-semibold text-primary-800 max-w-[800px] mx-auto">
+    <div class="w-full text-center mt-1 mb-6 text-body-2 font-semibold text-primary-800 max-w-[800px] mx-auto px-4">
       <slot></slot>
     </div>
     <div class="h-[480px] relative z-0">
@@ -8,16 +8,44 @@
     </div>
     <svg width="0" height="0">
       <defs>
-          <pattern id="O-pattern-blue" x="0" y="0" width="6" height="6" patternUnits="userSpaceOnUse" patternContentUnits="userSpaceOnUse" patternTransform="rotate(45)">
-              <path stroke="#60D9FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" pointer-events="none" d="M0 2h8"/>
-              <path stroke="#fff" stroke-opacity="0" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none" pointer-events="none" d="M0 2h8"/>
-          </pattern>
-          <pattern id="O-pattern-red" x="0" y="0" width="6" height="6" patternUnits="userSpaceOnUse" patternContentUnits="userSpaceOnUse" patternTransform="rotate(-45)">
-              <path stroke="#F94C4C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" pointer-events="none" d="M0 2h8"/>
-              <path stroke="#fff" stroke-opacity="0" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none" pointer-events="none" d="M0 2h8"/>
-          </pattern>
+        <pattern id="O-pattern-blue" x="0" y="0" width="6" height="6" patternUnits="userSpaceOnUse" patternContentUnits="userSpaceOnUse" patternTransform="rotate(45)">
+          <path stroke="#60D9FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" pointer-events="none" d="M0 2h8"/>
+          <path stroke="#fff" stroke-opacity="0" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none" pointer-events="none" d="M0 2h8"/>
+        </pattern>
+        <pattern id="O-pattern-red" x="0" y="0" width="6" height="6" patternUnits="userSpaceOnUse" patternContentUnits="userSpaceOnUse" patternTransform="rotate(-45)">
+          <path stroke="#F94C4C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" pointer-events="none" d="M0 2h8"/>
+          <path stroke="#fff" stroke-opacity="0" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none" pointer-events="none" d="M0 2h8"/>
+        </pattern>
       </defs>
     </svg>
+    <div v-if="props.mapLegend" class="text-caption p-4 text-neutral-800 flex gap-x-8 gap-y-2 flex-wrap md:justify-center">
+      <div class="flex gap-1 items-center">
+        <svg class="w-6 h-6" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <rect width="24" height="24" class="pattern-fill-blue" stroke="#393939" stroke-width="2"/>
+        </svg>
+        <div>District with a large increase in traffic stops</div>
+      </div>
+      <div class="flex gap-1 items-center">
+        <svg class="w-6 h-6" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <rect width="24" height="24" class="pattern-fill-red" stroke="#393939" stroke-width="2"/>
+        </svg>
+        <div>District with a large decrease in shootings</div>
+      </div>
+    </div>
+    <div v-if="props.hinLegend" class="text-caption p-4 text-neutral-800 flex gap-x-8 gap-y-2 flex-wrap md:justify-center">
+      <div class="flex gap-1 items-center">
+        <div class="bg-primary-600 rounded-full w-2 h-2"></div>
+        <div>Traffic stop on the HIN</div>
+      </div>
+      <div class="flex gap-1 items-center">
+        <div class="bg-red rounded-full w-2 h-2"></div>
+        <div>Traffic stop not on the HIN</div>
+      </div>
+      <div class="flex gap-1 items-center">
+        <div class="bg-neutral-800 rounded-full w-4 h-[1.5px]"></div>
+        <div>HIN Roads</div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -36,7 +64,7 @@
 
 <script setup>
 const config = useRuntimeConfig()
-const props = defineProps(['geoAggregation'])
+const props = defineProps(['geoAggregation', 'mapLegend', 'hinLegend'])
 // const emit = defineEmits(['update:modelValue'])
 
 const mapElement = ref(null)

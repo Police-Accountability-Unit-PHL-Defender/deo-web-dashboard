@@ -1,9 +1,9 @@
 <template>
   <div class="glossary layout-container text-body-3">
     <div class="grid-container">
-      <div class="col-span-6 md:col-span-12 lg:col-span-8">
+      <div class="col-span-6 md:col-span-12">
         <h2 class="text-heading-1 mt-20 mb-4">Glossary</h2>
-        <p>
+        <p class="max-w-[800px]">
           These terms and their definitions relate to vehicle stops in Philadelphia, Pennsylvania. Terms, definitions, and relevant case law may differ in other jurisdictions. 
         </p>
       </div>

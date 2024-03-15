@@ -10,7 +10,7 @@
       <Quote author="Pastor Carl Day" source="https://www.facebook.com/CMThomasPHL/videos/578497320999248">
         <template #quoteText>
           <p>
-            As a Black man, you’re just awaiting that moment. You’ll sit in the car and you’re just waiting for that time for the red and blue lights to come on.
+            As a Black man, you’re just awaiting that moment. You’ll sit in the car and you’re just awaiting that time for the red and blue lights to come on.
           </p>
         </template>
       </Quote>
@@ -26,7 +26,7 @@
             <li>
               <a href="#part1" class="deo_scroll text-hyperlink flex">
                 <IconsChevron class="fill-black -rotate-90"/>
-                How many stops do police make?
+                How many traffic stops do police make?
               </a>
             </li>
             <li>
@@ -39,9 +39,9 @@
         </nav>
     
         <section>
-          <h2 id="part1" class="text-heading-3 text-left pt-10 mb-6">How many stops do police make?</h2>
+          <h2 id="part1" class="text-heading-3 text-left pt-10 mb-6">How many traffic stops do police make?</h2>
           <QuestionHeader>
-            <h3>How many traffic stops<Tooltip term="Traffic Stop"/> did Philadelphia police make in <SelectLocation v-model="selectedLocation"/>, by <SelectTimeGranularity v-model="selectedTimeGranularity"/> ?</h3>
+            <h3>How many traffic stops<Tooltip term="Traffic Stop"/> did Philadelphia police make in <SelectLocation v-model="selectedLocation"/> by <SelectTimeGranularity v-model="selectedTimeGranularity"/> ?</h3>
           </QuestionHeader>
           <Answer v-if="q1A" :arrow="true">
             <AnswerText>
@@ -85,7 +85,7 @@
         <section>
           <h2 id="part2" class="text-heading-3 text-left pt-10 mb-6">Who are police stopping in traffic stops?</h2>
           <QuestionHeader>
-            How often did Philadelphia police stop people of different <SelectDemographicCategory v-model="q2ADemographicCategory" :is-plural="true" /> from the start of <SelectQuarter2 v-model="q1BQuarterStart" item-label-end="start"/> through the end of <SelectQuarter2 v-model="q1BQuarterEnd" item-label-end="end"/>, in <SelectLocation v-model="selectedLocation"/>?
+            How often did Philadelphia police stop people of different <SelectDemographicCategory v-model="q2ADemographicCategory" :is-plural="true" /> from the start of <SelectQuarter2 v-model="q1BQuarterStart" item-label-end="start"/> through the end of <SelectQuarter2 v-model="q1BQuarterEnd" item-label-end="end"/> in <SelectLocation v-model="selectedLocation"/>?
           </QuestionHeader>
           <Answer>
             <div v-if="q2A">
@@ -172,7 +172,7 @@
           </div>
           <Answer>
             <div v-if="q2C">
-              <Graph :graph-data="q2C.figures.barplot.data" :axis-properties="{x: q2C.figures.barplot.properties.xAxis, y: q2C.figures.barplot.properties.yAxis}" group-name="group" :group-classes="{'Group 1': 'fill-primary-600', 'Group 2': 'fill-red'}">
+              <Graph :graph-data="q2C.figures.barplot.data" :axis-properties="{x: q2C.figures.barplot.properties.xAxis, y: q2C.figures.barplot.properties.yAxis}" group-name="group" :group-classes="{'Group 1': 'fill-primary-600', 'Group 2': 'fill-red'}" :chart-legend="['Group 1', 'Group 2']">
                 <h4 class="max-w-[550px] mx-auto">{{ q2C.figures.barplot.properties.title }}</h4>
               </Graph>
             </div>

@@ -51,7 +51,7 @@
               Driving Equality came into effect on March 3, 2022. In the year<Tooltip term="Year"/> after Driving Equality,
               <span v-html="q1A.text[0]" class="result-text"></span>
             </AnswerText>
-            <LeafletMap2 :geo-aggregation="q1CGeoAggregation">
+            <LeafletMap2 :geo-aggregation="q1CGeoAggregation" hin-legend="true">
               <h4>Random Sample of 1,000 PPD Traffic Stops in 2023 Mapped on HIN Roads</h4>
             </LeafletMap2>
           </Answer>
@@ -63,7 +63,7 @@
             <h3>During a surge in traffic stops from 2018 to 2019, which districts had the largest increase in traffic stops? Were these the same districts that had the largest decrease in shootings?</h3>
           </QuestionHeader>
           <Answer v-if="q2" :arrow="true">
-            <LeafletMap2 :geo-aggregation="q2AGeoAggregation">
+            <LeafletMap2 :geo-aggregation="q2AGeoAggregation" map-legend="true">
               <h4>Comparing 2018 to 2019: Districts with Largest Increase in Traffic Stops vs. Districts with Largest Decrease in Shootings</h4>
             </LeafletMap2>
           </Answer>
@@ -71,7 +71,7 @@
             <h3>Comparing the year before Driving Equality to the year after the law was implemented, which districts had the largest increase in traffic stops? Were these the same districts that had the largest decrease in shootings?</h3>
           </QuestionHeader>
           <Answer v-if="q2" :arrow="true">
-            <LeafletMap2 :geo-aggregation="q2BGeoAggregation">
+            <LeafletMap2 :geo-aggregation="q2BGeoAggregation" map-legend="true">
               <h4>Before and After Driving Equality: Districts with Largest Increase in Traffic Stops vs. Districts with Largest Decrease in Shootings</h4>
             </LeafletMap2>
           </Answer>

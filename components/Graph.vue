@@ -8,6 +8,16 @@
       <div class="tooltip text-caption"></div>
     </div>
     <slot name="footer"></slot>
+    <div v-if="props.chartLegend" class="text-caption pt-4 px-4 text-neutral-800 flex gap-x-8 gap-y-2 flex-wrap md:justify-center">
+      <div class="flex gap-1 items-center">
+        <div class="bg-primary-600 w-3 h-3"></div>
+        <div>{{ chartLegend[0] }}</div>
+      </div>
+      <div class="flex gap-1 items-center">
+        <div class="bg-red w-3 h-3"></div>
+        <div>{{ chartLegend[1] }}</div>
+      </div>
+    </div>
   </div>
 </template>
 <style scope lang="scss">
@@ -43,7 +53,12 @@ const props = defineProps({
   trendline: {
     type: Array,
     required: false
-  }
+  },
+  chartLegend: {
+    type: Array,
+    required: false,
+    default: false
+  },
 })
 
 const graphSvg = ref(null)

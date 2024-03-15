@@ -97,7 +97,7 @@
             </li>
           </ul>
         </div>
-        <Button class="mt-8 w-full md:w-auto">Contact us</Button>
+        <Button class="mt-8 w-full md:w-auto" href="contact">Contact us</Button>
       </div>
     </menu>
   </header>
