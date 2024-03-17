@@ -51,8 +51,19 @@
               <h4>{{ q1A.figures.barplot.properties.title }}</h4>
             </Graph>
             <AnswerText>
-              <div class="text-body-3 text-left whitespace-pre-line">
-                <span v-for="sentence in q1A.text.slice(1)"><span class="result-text" v-html="sentence"></span>&nbsp;</span>
+              <div class="result-text">
+                <p v-html="q1A.text[1]"></p>
+                <ul class="pl-4">
+                  <li>
+                    <p v-html="q1A.text[2]"></p>
+                  </li>
+                  <li>
+                    <p v-html="q1A.text[3]"></p>
+                  </li>
+                  <li>
+                    <p v-html="q1A.text[4]"></p>
+                  </li>
+                </ul>
               </div>
             </AnswerText>
           </Answer>
@@ -61,7 +72,7 @@
         <section>
           <QuestionHeader>
             <h3>
-              In <SelectLocation v-model="selectedLocation"/>, from the start of <SelectQuarter2 v-model="q1BQuarterStart" item-label-end="start" /> through the end of <SelectQuarter2 v-model="q1BQuarterEnd" item-label-end="end"/>,
+              In <SelectLocation v-model="selectedLocation"/>, from the start of quarter <SelectQuarter2 v-model="q1BQuarterStart" item-label-end="start" /> through the end of <SelectQuarter2 v-model="q1BQuarterEnd" item-label-end="end"/>,
               <span v-if="q1B" class="result-text" v-html="q1B.text[0]"></span>
             </h3>
           </QuestionHeader>
@@ -155,18 +166,18 @@
                   Group 1
                   <div class="demographic-group-square bg-primary-600"></div>
                 </h4>
-                <SelectAgeGroup v-model="q2CGroup1AgeRange"/>
-                <SelectGender v-model="q2CGroup1Gender"/>
-                <SelectRace v-model="q2CGroup1Race"/>
+                <SelectAgeGroups v-model="q2CGroup1AgeRange"/>
+                <SelectGenders v-model="q2CGroup1Gender"/>
+                <SelectRaces v-model="q2CGroup1Race"/>
               </div>
               <div class="col-span-1 flex flex-col gap-4 text-body-3 font-medium">
                 <h4 class="text-body-3 font-medium flex gap-2 items-center">
                   Group 2
                   <div class="demographic-group-square bg-red"></div>
                 </h4>
-                <SelectAgeGroup v-model="q2CGroup2AgeRange"/>
-                <SelectGender v-model="q2CGroup2Gender"/>
-                <SelectRace v-model="q2CGroup2Race"/>
+                <SelectAgeGroups v-model="q2CGroup2AgeRange"/>
+                <SelectGenders v-model="q2CGroup2Gender"/>
+                <SelectRaces v-model="q2CGroup2Race"/>
               </div>
             </div>
           </div>
@@ -198,24 +209,26 @@ import HorizontalLine from '~/components/ui/HorizontalLine.vue';
 import Button from '~/components/ui/Button.vue';
 import Tooltip from '~/components/ui/Tooltip.vue';
 
+const config = useRuntimeConfig()
+
 const selectedLocation = ref('Philadelphia')
 const selectedTimeGranularity = ref('year')
 const q1BQuarterStart = ref(new Quarter(2023, QuarterMonths['Jan-Mar']))
 const q1BQuarterEnd = ref(new Quarter(2023, QuarterMonths['Oct-Dec']))
 const q1CQuarters = ref(['Jan-Mar'])
 const q2ADemographicCategory = ref('race')
-const q2CGroup1AgeRange = ref('25-34')
-const q2CGroup2AgeRange = ref('25-34')
-const q2CGroup1Gender = ref('Male')
-const q2CGroup2Gender = ref('Male')
-const q2CGroup1Race = ref('Black')
-const q2CGroup2Race = ref('White')
+const q2CGroup1AgeRange = ref(['25-34'])
+const q2CGroup2AgeRange = ref(['25-34'])
+const q2CGroup1Gender = ref(['Male'])
+const q2CGroup2Gender = ref(['Male'])
+const q2CGroup1Race = ref(['Black'])
+const q2CGroup2Race = ref(['White'])
 
 const isTableShowingAll = ref(false)
 
 const q1AParams = ref([selectedLocation, selectedTimeGranularity])
 const { data: q1A, refresh: refreshQ1A } = await useAsyncData('q1A',
-  () => $fetch(`${apiBaseUrl}/stops/num-stops`, {
+  () => $fetch(`${config.public.apiBaseUrl}/stops/num-stops`, {
     params: {
       location: getLocationParam(selectedLocation.value),
       time_aggregation: selectedTimeGranularity.value,
@@ -227,7 +240,7 @@ watch(q1AParams, async () => { refreshQ1A() }, { deep: true })
 
 const q1BParams = ref([selectedLocation, q1BQuarterStart, q1BQuarterEnd])
 const { data: q1B, refresh: refreshQ1B } = await useAsyncData('q1B',
-  () => $fetch(`${apiBaseUrl}/stops/num-stops-time-slice`, {
+  () => $fetch(`${config.public.apiBaseUrl}/stops/num-stops-time-slice`, {
     params: {
       location: getLocationParam(selectedLocation.value),
       start_qyear: q1BQuarterStart.value.toParamString(),
@@ -240,7 +253,7 @@ watch(q1BParams, async () => { refreshQ1B() }, { deep: true })
 
 const q1CParams = ref([selectedLocation, q1CQuarters])
 const { data: q1C, refresh: refreshQ1C } = await useAsyncData('q1C',
-  () => $fetch(`${apiBaseUrl}/stops/seasonal`, {
+  () => $fetch(`${config.public.apiBaseUrl}/stops/seasonal`, {
     params: {
       location: getLocationParam(selectedLocation.value),
       q_over_year_select: q1CQuarters.value.map(q => getQuarterParam(q)),
@@ -252,7 +265,7 @@ watch(q1CParams, async () => { refreshQ1C() }, { deep: true })
 
 const q2AParams = ref([selectedLocation, q1BQuarterStart, q1BQuarterEnd, q2ADemographicCategory])
 const { data: q2A, refresh: refreshQ2A } = await useAsyncData('q2A',
-  () => $fetch(`${apiBaseUrl}/stops/by-demographic-category`, {
+  () => $fetch(`${config.public.apiBaseUrl}/stops/by-demographic-category`, {
     params: {
       location: getLocationParam(selectedLocation.value),
       start_qyear: q1BQuarterStart.value.toParamString(),
@@ -266,7 +279,7 @@ watch(q2AParams, async () => { refreshQ2A() }, { deep: true })
 
 const q2BParams = ref([selectedLocation, q1BQuarterStart, q1BQuarterEnd])
 const { data: q2B, refresh: refreshQ2B } = await useAsyncData('q2B',
-  () => $fetch(`${apiBaseUrl}/stops/most-frequent-stops`, {
+  () => $fetch(`${config.public.apiBaseUrl}/stops/most-frequent-stops`, {
     params: {
       location: getLocationParam(selectedLocation.value),
       start_qyear: q1BQuarterStart.value.toParamString(),
@@ -279,7 +292,7 @@ watch(q2BParams, async () => { refreshQ2B() }, { deep: true })
 
 const q2CParams = ref([selectedLocation, q1BQuarterStart, q1BQuarterEnd, q2CGroup1AgeRange, q2CGroup2AgeRange, q2CGroup1Gender, q2CGroup2Gender, q2CGroup1Race, q2CGroup2Race])
 const { data: q2C, refresh: refreshQ2C } = await useAsyncData('q2C',
-  () => $fetch(`${apiBaseUrl}/stops/group-comparison`, {
+  () => $fetch(`${config.public.apiBaseUrl}/stops/group-comparison`, {
     params: {
       age_group1: q2CGroup1AgeRange.value,
       gender_group1: q2CGroup1Gender.value,

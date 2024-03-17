@@ -77,6 +77,8 @@ import HorizontalLine from '~/components/ui/HorizontalLine.vue';
 import Button from '~/components/ui/Button.vue';
 import Tooltip from '~/components/ui/Tooltip.vue';
 
+const config = useRuntimeConfig()
+
 const selectedLocation = ref('Philadelphia')
 const selectedTimeGranularity = ref('year')
 const q2ADemographicCategory = ref('race')
@@ -90,7 +92,7 @@ const selectedDistricts = ref(['District 25', 'District 05'])
 
 const q1AParams = ref([selectedLocation, selectedTimeGranularity])
 const { data: q1A, refresh: refreshQ1A } = await useAsyncData('q1A',
-  () => $fetch(`${apiBaseUrl}/snapshot/annual-summary`, {
+  () => $fetch(`${config.public.apiBaseUrl}/snapshot/annual-summary`, {
     params: {
       location: getLocationParam(selectedLocation.value),
       time_aggregation: selectedTimeGranularity.value,

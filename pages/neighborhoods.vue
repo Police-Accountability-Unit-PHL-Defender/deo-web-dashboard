@@ -55,9 +55,17 @@
               <h4>{{ q1A.figures.barplot.properties.title }}</h4>
             </Graph>
             <AnswerText>
-              <div class="text-body-3 text-left whitespace-pre-line">
-                <span v-for="sentence in q1A.text.slice(1)"><span class="result-text" v-html="sentence"></span>&nbsp;</span>
+              <div class="result-text">
+                <p v-html="q1A.text[1]"></p>
+                <ul class="pl-4">
+                  <li v-for="text in q1A.text.slice(2)">
+                    <p v-html="text"></p>
+                  </li>
+                </ul>
               </div>
+              <!-- <div class="text-body-3 text-left whitespace-pre-line">
+                <span v-for="sentence in q1A.text.slice(1)"><span class="result-text" v-html="sentence"></span>&nbsp;</span>
+              </div> -->
             </AnswerText>
           </Answer>
         </section>
@@ -105,7 +113,14 @@
               <h4>{{ q2A.figures.barplot3.properties.title }}</h4>
             </Graph>
             <AnswerText>
-              <div v-html="q2A.text[0]" class="result-text"></div>
+              <div class="result-text">
+                <p v-html="q2A.text[0]"></p>
+                <ul class="pl-4">
+                  <li v-for="text in q2A.text.slice(1)">
+                    <p v-html="text"></p>
+                  </li>
+                </ul>
+              </div>
             </AnswerText>
           </Answer>
         </section>
@@ -115,7 +130,7 @@
           <QuestionHeader>
             <h3>
               Is traffic enforcement different in districts<Tooltip term="District"/> where most residents are white, compared to districts where most residents are people of color?
-              Comparing majority white districts to majority non-white districts, how many <SelectEvent v-model="q3AEvent" /> did Philadelphia police make from the start of <SelectQuarter2 v-model="q2AQuarterStart" item-label-end="start"/> to the end of <SelectQuarter2 v-model="q2AQuarterEnd" item-label-end="end"/>?
+              Comparing majority white districts to majority non-white districts, how many <SelectEvent v-model="q3AEvent" /> did Philadelphia police make from the start of quarter <SelectQuarter2 v-model="q2AQuarterStart" item-label-end="start"/> to the end of <SelectQuarter2 v-model="q2AQuarterEnd" item-label-end="end"/>?
             </h3>
           </QuestionHeader>
           <Answer v-if="q3A" :arrow="true">
@@ -141,7 +156,7 @@
         <section>
           <QuestionHeader>
             <h3>
-              How does traffic enforcement compare in different districts? How many <SelectEvent v-model="q3AEvent" /> did Philadelphia police make from the start of <SelectQuarter2 v-model="q2AQuarterStart" item-label-end="start"/> through the end of <SelectQuarter2 v-model="q2AQuarterEnd" item-label-end="end"/> in these districts: <SelectDistricts v-model="selectedDistricts" />?
+              How does traffic enforcement compare in different districts? How many <SelectEvent v-model="q3AEvent" /> did Philadelphia police make from the start of quarter <SelectQuarter2 v-model="q2AQuarterStart" item-label-end="start"/> through the end of <SelectQuarter2 v-model="q2AQuarterEnd" item-label-end="end"/> in these districts: <SelectDistricts v-model="selectedDistricts" />?
             </h3>
           </QuestionHeader>
           <Answer v-if="q3B" :arrow="true">
@@ -166,6 +181,8 @@ import Tooltip from '~/components/ui/Tooltip.vue';
 import IconsChevron from '~/components/icons/Chevron.vue';
 import { getDemographicGroupParam } from '~/utils';
 
+const config = useRuntimeConfig()
+
 const selectedLocation = ref('Philadelphia')
 const selectedTimeGranularity = ref('year')
 const q2ADemographicCategory = ref('race')
@@ -184,7 +201,7 @@ const selectedDistricts = ref(['District 05', 'District 12'])
 
 const q1AParams = ref([selectedLocation, selectedTimeGranularity])
 const { data: q1A, refresh: refreshQ1A } = await useAsyncData('q1A',
-  () => $fetch(`${apiBaseUrl}/neighborhoods/num-intrusions`, {
+  () => $fetch(`${config.public.apiBaseUrl}/neighborhoods/num-intrusions`, {
     params: {
       location: getLocationParam(selectedLocation.value),
       time_aggregation: selectedTimeGranularity.value,
@@ -196,7 +213,7 @@ watch(q1AParams, async () => { refreshQ1A() }, { deep: true })
 
 const q1BParams = ref([selectedLocation, selectedTimeGranularity])
 const { data: q1B, refresh: refreshQ1B } = await useAsyncData('q1B',
-  () => $fetch(`${apiBaseUrl}/neighborhoods/searches-vs-frisks`, {
+  () => $fetch(`${config.public.apiBaseUrl}/neighborhoods/searches-vs-frisks`, {
     params: {
       location: getLocationParam(selectedLocation.value),
       time_aggregation: selectedTimeGranularity.value,
@@ -209,7 +226,7 @@ console.log(q1B.value)
 
 const q2AParams = ref([q2ADemographicCategory, selectedLocation, q2AQuarterStart, q2AQuarterEnd, q2ARace, q2AGender, q2AAgeGroup])
 const { data: q2A, refresh: refreshQ2A } = await useAsyncData('q2A',
-  () => $fetch(`${apiBaseUrl}/neighborhoods/neighborhoods-by-demographic-category`, {
+  () => $fetch(`${config.public.apiBaseUrl}/neighborhoods/neighborhoods-by-demographic-category`, {
     params: {
       location: getLocationParam(selectedLocation.value),
       demographic_category: getDemographicGroupParam(q2ADemographicCategory.value),
@@ -255,7 +272,7 @@ const q2AData3 = computed(() => {
 
 const q3AParams = ref([q3AEvent, q2AQuarterStart, q2AQuarterEnd])
 const { data: q3A, refresh: refreshQ3A } = await useAsyncData('q3A',
-  () => $fetch(`${apiBaseUrl}/neighborhoods/neighborhoods-by-neighborhood`, {
+  () => $fetch(`${config.public.apiBaseUrl}/neighborhoods/neighborhoods-by-neighborhood`, {
     params: {
       police_action: getEventParam(q3AEvent.value),
       start_qyear: q2AQuarterStart.value.toParamString(),
@@ -268,7 +285,7 @@ watch(q3AParams, async () => { refreshQ3A() }, { deep: true })
 
 const q3BParams = ref([q3AEvent, q2AQuarterStart, q2AQuarterEnd, selectedDistricts])
 const { data: q3B, refresh: refreshQ3B } = await useAsyncData('q3B',
-  () => $fetch(`${apiBaseUrl}/neighborhoods/neighborhoods-compare-districts`, {
+  () => $fetch(`${config.public.apiBaseUrl}/neighborhoods/neighborhoods-compare-districts`, {
     params: {
       police_action: getEventParam(q3AEvent.value),
       start_qyear: q2AQuarterStart.value.toParamString(),

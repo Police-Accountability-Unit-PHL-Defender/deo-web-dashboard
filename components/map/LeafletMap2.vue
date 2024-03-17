@@ -23,13 +23,13 @@
         <svg class="w-6 h-6" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
           <rect width="24" height="24" class="pattern-fill-blue" stroke="#393939" stroke-width="2"/>
         </svg>
-        <div>District with a large increase in traffic stops</div>
+        <div>District with largest % increases in traffic stops</div>
       </div>
       <div class="flex gap-1 items-center">
         <svg class="w-6 h-6" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
           <rect width="24" height="24" class="pattern-fill-red" stroke="#393939" stroke-width="2"/>
         </svg>
-        <div>District with a large decrease in shootings</div>
+        <div>District with largest % decreases in shootings</div>
       </div>
     </div>
     <div v-if="props.hinLegend" class="text-caption p-4 text-neutral-800 flex gap-x-8 gap-y-2 flex-wrap md:justify-center">
@@ -174,7 +174,8 @@ let {
   tilelayers = [
     {
       // url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-      url: `https://api.maptiler.com/maps/positron/256/{z}/{x}/{y}@2x.png?key=${config.public.maptilerKey}`,
+      // url: `https://api.maptiler.com/maps/positron/256/{z}/{x}/{y}@2x.png?key=${config.public.maptilerKey}`,
+      url: 'https://cartodb-basemaps-c.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png',
       attribution:
         '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
       // tileSize: 256,

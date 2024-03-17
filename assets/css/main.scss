@@ -129,6 +129,10 @@ html {
   @apply hover:underline;
 }
 
+a.text-hyperlink-blue {
+  @apply underline text-primary-600 hover:text-primary-800;
+}
+
 .layout-container {
   @apply max-w-[1344px] mx-auto px-4 md:px-8;
 }

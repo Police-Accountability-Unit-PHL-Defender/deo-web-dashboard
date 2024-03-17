@@ -33,7 +33,7 @@
             <li>
               <a href="#part2" class="deo_scroll text-hyperlink flex">
                 <IconsChevron class="fill-black -rotate-90"/>
-                How do police stops relate to shootings?
+                Do changes in traffic stops over time relate to changes in shootings?
               </a>
             </li>
           </ul>
@@ -50,6 +50,7 @@
             <AnswerText>
               Driving Equality came into effect on March 3, 2022. In the year after<Tooltip term="Year after"/> Driving Equality,
               <span v-html="q1A.text[0]" class="result-text"></span>
+              compared to 2021 (see <a href="/driving-equality#10" class="text-hyperlink-blue" target="_blank">What is Driving Equality?</a> to learn more about these date comparisons). However, in 2023, most traffic stops by the Philadelphia police still did not happen on the HIN.
             </AnswerText>
             <LeafletMap2 :geo-aggregation="q1CGeoAggregation" hin-legend="true">
               <h4>Random Sample of 1,000 PPD Traffic Stops in 2023 Mapped on HIN Roads</h4>
@@ -58,7 +59,7 @@
         </section>
         <HorizontalLine class="my-16"/>
         <section>
-          <h2 id="part1" class="text-heading-3 text-left mb-6">How do police stops relate to shootings?</h2>
+          <h2 id="part1" class="text-heading-3 text-left mb-6">Do changes in traffic stops over time relate to changes in shootings?</h2>
           <QuestionHeader>
             <h3>During a surge in traffic stops from 2018 to 2019, which districts had the largest increase in traffic stops? Were these the same districts that had the largest decrease in shootings?</h3>
           </QuestionHeader>
@@ -91,6 +92,8 @@ import Button from '~/components/ui/Button.vue';
 import LeafletMap2 from '~/components/map/LeafletMap2.vue'
 import Tooltip from '~/components/ui/Tooltip.vue';
 
+const config = useRuntimeConfig()
+
 const selectedLocation = ref('Philadelphia')
 const selectedTimeGranularity = ref('year')
 const q1BDemographicCategory = ref('race')
@@ -101,7 +104,7 @@ const selectedDistricts = ref(['District 25', 'District 05'])
 
 const q1AParams = ref([selectedLocation, selectedTimeGranularity])
 const { data: q1A, refresh: refreshQ1A } = await useAsyncData('q1A',
-  () => $fetch(`${apiBaseUrl}/safety/safety-num-accidents`, {
+  () => $fetch(`${config.public.apiBaseUrl}/safety/safety-num-accidents`, {
     params: {
       location: getLocationParam(selectedLocation.value),
       time_aggregation: selectedTimeGranularity.value,
@@ -113,7 +116,7 @@ watch(q1AParams, async () => { refreshQ1A() }, { deep: true })
 
 const q1BParams = ref([selectedLocation, q1BQuarterStart, q1BQuarterEnd, q1BDemographicCategory])
 const { data: q1B, refresh: refreshQ1B } = await useAsyncData('q1B',
-  () => $fetch(`${apiBaseUrl}/safety/safety-by-demographic-category`, {
+  () => $fetch(`${config.public.apiBaseUrl}/safety/safety-by-demographic-category`, {
     params: {
       location: getLocationParam(selectedLocation.value),
       start_qyear: q1BQuarterStart.value.toParamString(),
@@ -126,7 +129,7 @@ const { data: q1B, refresh: refreshQ1B } = await useAsyncData('q1B',
 watch(q1BParams, async () => { refreshQ1B() }, { deep: true })
 
 const { data: q1C, refresh: refreshQ1C } = await useAsyncData('q1C',
-  () => $fetch(`${apiBaseUrl}/safety/safety-hin-map`, {
+  () => $fetch(`${config.public.apiBaseUrl}/safety/safety-hin-map`, {
     options
   })
 )
@@ -144,7 +147,7 @@ const q1CGeoAggregation = computed(() => {
 })
 
 const { data: q2, refresh: refreshQ2 } = await useAsyncData('q2',
-  () => $fetch(`${apiBaseUrl}/safety/safety-shootings-vs-stops-maps`, {
+  () => $fetch(`${config.public.apiBaseUrl}/safety/safety-shootings-vs-stops-maps`, {
     options
   })
 )

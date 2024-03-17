@@ -148,6 +148,9 @@ import SelectLocation from '~/components/SelectLocation.vue'
 import SelectTimeGranularity from '~/components/SelectTimeGranularity.vue'
 import HorizontalLine from '~/components/ui/HorizontalLine.vue';
 
+const config = useRuntimeConfig()
+
+
 const selectedLocation = ref('Philadelphia')
 const selectedTimeGranularity = ref('year')
 const q1BQuarterStart = ref(new Quarter(2023, QuarterMonths['Jan-Mar']))
@@ -161,7 +164,6 @@ const q2CGroup2Genders = ref(['Male'])
 const q2CGroup1Races = ref(['Black'])
 const q2CGroup2Races = ref(['White'])
 
-const apiBaseUrl = 'https://deo-fastapi.onrender.com'
 const options = { mode: 'cors' }
 
 // interface QuestionResponse {
@@ -183,7 +185,7 @@ const options = { mode: 'cors' }
 
 const q2AParams = ref([selectedLocation, q1BQuarterStart, q1BQuarterEnd])
 const { data: q2A, refresh: refreshQ2A } = await useAsyncData('q2A',
-  () => $fetch(`${apiBaseUrl}/stops/by-demographic-category`, {
+  () => $fetch(`${config.public.apiBaseUrl}/stops/by-demographic-category`, {
     params: {
       location: getLocationParam(selectedLocation.value),
       start_date: q1BQuarterStart.value.toParamString(),
@@ -197,7 +199,7 @@ watch(q2AParams, async () => { refreshQ2A() }, { deep: true })
 
 const q2BParams = ref([selectedLocation, q1BQuarterStart, q1BQuarterEnd])
 const { data: q2B, refresh: refreshQ2B } = await useAsyncData('q2B',
-  () => $fetch(`${apiBaseUrl}/stops/most-frequent-stops`, {
+  () => $fetch(`${config.public.apiBaseUrl}/stops/most-frequent-stops`, {
     params: {
       location: getLocationParam(selectedLocation.value),
       start_date: q1BQuarterStart.value.toParamString(),
@@ -210,7 +212,7 @@ watch(q2BParams, async () => { refreshQ2B() }, { deep: true })
 
 const q2CParams = ref([selectedLocation, q1BQuarterStart, q1BQuarterEnd, q2CGroup1AgeRanges, q2CGroup2AgeRanges, q2CGroup1Genders, q2CGroup2Genders, q2CGroup1Races, q2CGroup2Races])
 const { data: q2C, refresh: refreshQ2C } = await useAsyncData('q2C',
-  () => $fetch(`${apiBaseUrl}/stops/group-comparison`, {
+  () => $fetch(`${config.public.apiBaseUrl}/stops/group-comparison`, {
     params: {
       age_group1: q2CGroup1AgeRanges.value,
       gender_group1: q2CGroup1Genders.value,
