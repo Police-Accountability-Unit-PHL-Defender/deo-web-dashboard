@@ -21,9 +21,12 @@
     <div class="grid-container">
       <div class="col-span-10">
         <section>
-          <QuestionHeader>
+          <h2 id="part1" class="text-heading-3 text-left pt-10 mb-6">
+            How many traffic stops<Tooltip term="Traffic Stop"/> did Philadelphia police make in the last year?
+          </h2>
+          <!-- <QuestionHeader>
             <h3>How many traffic stops<Tooltip term="Traffic Stop"/> did Philadelphia police make in the last year?</h3>
-          </QuestionHeader>
+          </QuestionHeader> -->
           <Answer v-if="q1A" :arrow="true">
             <AnswerText>
               <div v-html="q1A.text[0]" class="result-text"></div>

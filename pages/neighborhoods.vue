@@ -156,8 +156,16 @@
         <section>
           <QuestionHeader>
             <h3>
-              How does traffic enforcement compare in different districts? How many <SelectEvent v-model="q3AEvent" /> did Philadelphia police make from the start of quarter <SelectQuarter2 v-model="q2AQuarterStart" item-label-end="start"/> through the end of <SelectQuarter2 v-model="q2AQuarterEnd" item-label-end="end"/> in these districts: <SelectDistricts v-model="selectedDistricts" />?
+              How does traffic enforcement compare in different districts?
+              How many <SelectEvent v-model="q3AEvent" /> did Philadelphia police make
+              from the start of quarter <SelectQuarter2 v-model="q2AQuarterStart" item-label-end="start"/>
+              through the end of <SelectQuarter2 v-model="q2AQuarterEnd" item-label-end="end"/>
+              in the following districts?
             </h3>
+            <div class="max-w-2xl mt-4">
+              <div class="text-body-4 text-left">Select districts</div>
+              <SelectDistricts v-model="selectedDistricts" class="mt-2 max-w-[720px]"/>
+            </div>
           </QuestionHeader>
           <Answer v-if="q3B" :arrow="true">
             <Graph :graph-data="q3B.figures.barplot.data" :axis-properties="{x: q3B.figures.barplot.properties.xAxis, y: q3B.figures.barplot.properties.yAxis}">

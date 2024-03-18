@@ -16,7 +16,7 @@
           <LeafletMap
             :geo-aggregation="selectedGeoBoundary"
             :modelValue="modelValue"
-            @update:modelValue="value => emit('update:modelValue', value)"
+            @update:modelValue="handleSelectGeography"
           />
         </div>
       </div>
@@ -32,4 +32,8 @@ const props = defineProps(['modelValue', 'capitalize'])
 const emit = defineEmits(['update:modelValue'])
 const selectedGeoBoundary = ref('city')
 const locationModalIsOpen = ref(false)
+const handleSelectGeography = (value) => {
+  locationModalIsOpen.value = false
+  emit('update:modelValue', value)
+}
 </script>

@@ -67,6 +67,9 @@ export function getDemographicGroupParam(demographicGroup: string) {
 }
 
 export function formatLocationForSentence(locationValue: string, capitalize=false) {
+  if (locationValue.startsWith('PSA')) {
+    return 'PSA ' + locationValue.substring(4, 6) + '-' + locationValue.substring(6)
+  }
   return `${locationValue}`
 }
 

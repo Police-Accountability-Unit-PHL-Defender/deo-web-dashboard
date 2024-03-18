@@ -344,9 +344,9 @@ function addGeojsonLayer(geojsonLayerProperties) {
       click: zoomAndHighlightFeatureFromClick,
     });
     if (feature.geometry.type === "Polygon") {
-      if (feature.properties.n_shootings_change) {
+      if (feature.properties.is_top_n_shootings_change) {
         layer.options.className = "pattern-fill-red";
-      } else if (feature.properties.n_stopped_change) {
+      } else if (feature.properties.is_top_n_stopped_change) {
         layer.options.className = "pattern-fill-blue";
       }
       // layer.options.className = "pattern-fill-blue";

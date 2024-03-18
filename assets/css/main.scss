@@ -169,8 +169,18 @@ a.text-hyperlink-blue {
   @apply grid grid-cols-6 gap-5 md:grid-cols-12;
 }
 
-.result-text span {
-  @apply bg-primary-100 px-[0.25em] inline-block h-full border-white border;
+.result-text {
+  span {
+    @apply bg-primary-100 px-[0.25em] inline-block h-full border-white border;
+  }
+
+  ul {
+    list-style-type: disc
+  }
+
+  a {
+    @apply underline text-primary-600 hover:text-primary-800;
+  }
 }
 
 .faq {

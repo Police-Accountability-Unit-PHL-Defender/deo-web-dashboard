@@ -1,5 +1,5 @@
 <template>
-  <div class="relative inline-block">
+  <div class="relative inline-block align-text-top">
     <div class="flex h-[1em] items-center justify-center">
       <button
         class="flex size-8 items-center justify-center border-primary-300 pt-[1px] text-primary-300 hover:border-primary-500 hover:text-primary-500"
@@ -19,7 +19,7 @@
         <div>
           <slot />
           <div class="text-primary-600 font-medium mb-1">{{ props.term }}</div>
-          <div>{{ definition }}</div>
+          <div class="font-normal">{{ definition }}</div>
         </div>
       </div>
     </Transition>
