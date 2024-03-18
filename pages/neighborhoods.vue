@@ -51,7 +51,7 @@
             <AnswerText>
               <div v-html="q1A.text[0]" class="result-text"></div>
             </AnswerText>
-            <Graph :graph-data="q1A.figures.barplot.data" :axis-properties="{x: q1A.figures.barplot.properties.xAxis, y: q1A.figures.barplot.properties.yAxis}">
+            <Graph :graph-data="q1A.figures.barplot.data" :axis-properties="{x: q1A.figures.barplot.properties.xAxis, y: q1A.figures.barplot.properties.yAxis}" :quarterlyXAxisTicks="true">
               <h4>{{ q1A.figures.barplot.properties.title }}</h4>
             </Graph>
             <AnswerText>
@@ -75,7 +75,7 @@
             <h3>How have Philadelphia police changed the way they intrude during traffic stops in <SelectLocation v-model="selectedLocation"/> by <SelectTimeGranularity v-model="selectedTimeGranularity"/>? How do frisks<Tooltip term="Frisk"/> and searches<Tooltip term="Search"/> compare over time?</h3>
           </QuestionHeader>
           <Answer v-if="q1B" :arrow="true">
-            <Graph :graph-data="q1B.figures.barplot.data" :axis-properties="{x: q1B.figures.barplot.properties.xAxis, y: q1B.figures.barplot.properties.yAxis}" group-name="group" :group-classes="{'# of searches': 'fill-primary-600', '# of frisks': 'fill-red'}" :chart-legend="['Number of searches', 'Number of frisks']">
+            <Graph :graph-data="q1B.figures.barplot.data" :axis-properties="{x: q1B.figures.barplot.properties.xAxis, y: q1B.figures.barplot.properties.yAxis}" group-name="group" :group-classes="{'# of searches': 'fill-primary-600', '# of frisks': 'fill-red'}" :chart-legend="['Number of searches', 'Number of frisks']" :quarterlyXAxisTicks="true">
               <h4>{{ q1B.figures.barplot.properties.title }}</h4>
             </Graph>
           </Answer>

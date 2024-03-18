@@ -8,7 +8,7 @@
       <div class="tooltip text-caption"></div>
     </div>
     <slot name="footer"></slot>
-    <div v-if="props.chartLegend" class="text-caption pt-4 px-4 text-neutral-800 flex gap-x-8 gap-y-2 flex-wrap md:justify-center">
+    <div v-if="props.chartLegend" class="text-caption pt-4 px-4 text-neutral-800 flex gap-x-8 gap-y-2 flex-wrap md:justify-center md:ml-20">
       <div class="flex gap-1 items-center">
         <div class="bg-primary-600 w-3 h-3"></div>
         <div>{{ chartLegend[0] }}</div>
@@ -62,6 +62,10 @@ const props = defineProps({
     type: Number,
     required: false,
     default: undefined
+  },
+  quarterlyXAxisTicks: {
+    type: Boolean,
+    required: false,
   }
 })
 
@@ -73,6 +77,7 @@ const isGrouped = computed(() => {
 })
 
 onMounted(() => {
+
   drawGraph(props.graphData)
 })
 
@@ -92,41 +97,46 @@ const getGroupClass = (group) => {
   }
 }
 
+const containerWidth = computed(() => {
+  return container.value.clientWidth
+})
+
 const drawGraph = (graphData) => {
-  let barWidth = 64;
-  if (isGrouped.value) { barWidth = 32 }
-  const groupBarGap = 4
-  const groupWidth = barWidth * 2 + groupBarGap
-  let padding = 24;
-  let paddingOuter = 16;
-  if (!isGrouped.value && graphData.length <= 6) {
-    barWidth = 128
-  }
-  if (!isGrouped.value && graphData.length > 12) {
-    barWidth = 16
-    padding = 6
-    paddingOuter = 6
-  }
-  const paddingInnerRatio = isGrouped.value ? (padding/groupWidth) : (padding/barWidth)
-  const paddingOuterRatio = isGrouped.value ? (paddingOuter/groupWidth) : (paddingOuter/barWidth)
-  const height = 370;
   const groups = new Set(graphData.map(d => d.group))
-  const width = isGrouped.value ?
-    (graphData.length / groups.size) * (groupWidth + padding) - padding + (2 * paddingOuter) + margin.left + margin.right :
-    graphData.length * (barWidth + padding) - padding + (2 * paddingOuter) + margin.left + margin.right;
+  const width = containerWidth.value
+  const chartWidth = width - margin.left - margin.right
+  const n = !isGrouped ? graphData.length : Math.ceil(graphData.length / groups.size)
+  const outerPaddingRatio = 0.2 // ratio of padding outside of bars/groups to the width of one bar/group
+  const innerPaddingRatio = 0.3 // ratio of padding between bars/groups to the width of one bar/group
+  const groupGapRatio = 0.1 // ratio of padding between bars within a group, to the width of one bar
+
+  let barWidth = 1
+  let groupWidth = 1
+  
+  if (!isGrouped.value) {
+    // equation: chartWidth = n * barWidth + (n - 1) * barWidth * innerPaddingRatio + 2 * barWidth * outerPaddingRatio
+    barWidth = chartWidth / (n + (n-1)*innerPaddingRatio + 2*outerPaddingRatio)
+  } else {
+    // equation: groupWidth = 2 * barWidth + barWidth * groupGapRatio
+    // equation: chartWidth = n * groupWidth + (n - 1) * groupWidth * innerPaddingRatio + 2 * groupWidth * outerPaddingRatio
+    groupWidth = chartWidth / (n + (n-1)*innerPaddingRatio + 2*outerPaddingRatio)
+    barWidth = groupWidth / (2 + groupGapRatio)
+  }
+  const height = 370;
   const svg = d3.select(graphSvg.value)
     .attr("width", width)
     .attr("height", height)
     .attr("viewBox", [0, 0, width, height])
     .attr("style", "max-width: 100%; height: auto;");
+  
   // reset graph
   svg.selectAll("*").remove();
 
   const x = d3.scaleBand()
     .domain(graphData.map(d => d[props.axisProperties.x]))
     .range([margin.left, width - margin.right])
-    .paddingInner(paddingInnerRatio)
-    .paddingOuter(paddingOuterRatio)
+    .paddingInner(innerPaddingRatio)
+    .paddingOuter(outerPaddingRatio)
   const y = d3.scaleLinear()
     .domain([0, props.yScaleDomainMax ?? d3.max(graphData, (d) => d[props.axisProperties.y])])
     .range([height - margin.bottom, margin.top])
@@ -146,12 +156,14 @@ const drawGraph = (graphData) => {
       .attr("text-anchor", "start")
       .attr("class", "text-body-4")
       .text(props.axisProperties.y));
+  // Add the x-axis
+  const tickValues = n > 10 && props.quarterlyXAxisTicks ? x.domain().filter(function(d,i){ return !(i%8 - 4)}) : x.domain()
   svg.append("g")
     .attr("transform", `translate(0,${height - margin.bottom})`)
     .attr("class", "text-caption")
-    .call(d3.axisBottom(x).tickSizeInner(0).tickSizeOuter(0).tickPadding(12))
+    .call(d3.axisBottom(x).tickSizeInner(0).tickSizeOuter(0).tickPadding(12).tickValues(tickValues))
     .selectAll(".tick text")
-      .call(wrap, x.bandwidth());
+      // .call(wrap, x.bandwidth());
   // Add the x-axis label
   svg.append("text")
     .attr("x", (width + margin.left) / 2)
@@ -224,7 +236,7 @@ const drawGraph = (graphData) => {
 
   // bars
   if (isGrouped.value) {
-    const gx = d3.scaleBand().domain(groups).rangeRound([0, groupWidth]).paddingInner(groupBarGap / groupWidth)
+    const gx = d3.scaleBand().domain(groups).rangeRound([0, groupWidth]).paddingInner(groupGapRatio)
     svg.append("g")
       .selectAll()
       .data(d3.group(graphData, (d) => d[props.axisProperties.x]))
