@@ -7,6 +7,7 @@
     class="relative inline-block text-left"
     :class="{'w-full': props.multiple}"
     v-slot="{ open }"
+    ref="listbox"
   >
     <ListboxButton
       class="flex gap-6 items-center justify-between pl-2 pr-8 font-medium border bg-neutral-100 hover:bg-neutral-200"
@@ -30,7 +31,7 @@
       <IconsChevron classes="fill-black" class="absolute right-1" :class="{'rotate-180': open}"></IconsChevron>
     </ListboxButton>
     <div v-if="needsSelection" class="absolute top-full z-[0] text-error text-caption font-normal">{{ props.needsSelectionWarning }}</div>
-    <ListboxOptions class="bg-neutral-100 border border-neutral-400 absolute z-[1] top-full w-auto mt-0 leading-6 max-h-[50vh] min-w-full overflow-y-auto font-normal">
+    <ListboxOptions class="bg-neutral-100 border border-neutral-400 absolute z-[1] top-full w-auto mt-0 leading-6 max-h-[50vh] min-w-full overflow-y-scroll font-normal">
       <div v-if="props.multiple" class="flex justify-between">
         <button
           @click="emit('update:modelValue', props.items)"
@@ -78,4 +79,5 @@
     emit('update:modelValue', newValue)
   }
   const needsSelection = computed(() => props.multiple && props.needsSelectionWarning && props.modelValue.length === 0)
+  const listbox = ref(null)
 </script>

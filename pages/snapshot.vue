@@ -54,7 +54,7 @@
             <AnswerText>
               Driving Equality came into effect on March 3, 2022. In the year after<Tooltip term="Year after"/> Driving Equality,
               <span v-html="q1A.text.slice(1, 2).join(' ')" class="result-text"></span>,
-              compared to 2021 (see <a class="underline text-primary-600 hover:text-primary-800;" href="http://localhost:3000/driving-equality#10">What is Driving Equality?</a> to learn more about these date comparisons). Concerningly, racial disparities in traffic stops have persisted.
+              compared to 2021 (see <a class="underline text-primary-600 hover:text-primary-800;" href="/driving-equality#10" target="_blank">What is Driving Equality?</a> to learn more about these date comparisons). Concerningly, racial disparities in traffic stops have persisted.
             </AnswerText>
             [Graph]
             <AnswerText>
