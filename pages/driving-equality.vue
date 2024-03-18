@@ -5,7 +5,7 @@
       What is Driving Equality?
     </template>
     <template #image>
-      <img class="w-full h-full object-cover" src="~/assets/images/driving-equality.jpg" alt="A street in Philadelphia"/>
+      <img class="w-full h-full object-cover object-[0%_30%]" src="~/assets/images/driving-equality.jpg" alt="A street in Philadelphia"/>
     </template>
     <template #quote>
       <Quote author="Attorney Nia Holston" source="https://www.facebook.com/CMThomasPHL/videos/578497320999248" backgroundClass="bg-[#E1F8FF]" quoteMarkClass="fill-primary-400" bold-color-class="text-[#C0EEFD]" alignment="center">

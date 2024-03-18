@@ -30,6 +30,7 @@ export default {
       "highlight": "#00B8FF",
       "mint": "#5FEEBB",
       "error": "#EE1616",
+      "errorbg": "rgba(238, 22, 22, 0.15)",
       "pink": "#FEDBDB",
       "purple": "#644CF9",
       "violet": "#A548DE",

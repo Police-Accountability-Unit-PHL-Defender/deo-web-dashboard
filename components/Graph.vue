@@ -57,8 +57,12 @@ const props = defineProps({
   chartLegend: {
     type: Array,
     required: false,
-    default: false
   },
+  yScaleDomainMax: {
+    type: Number,
+    required: false,
+    default: undefined
+  }
 })
 
 const graphSvg = ref(null)
@@ -124,8 +128,9 @@ const drawGraph = (graphData) => {
     .paddingInner(paddingInnerRatio)
     .paddingOuter(paddingOuterRatio)
   const y = d3.scaleLinear()
-    .domain([0, d3.max(graphData, (d) => d[props.axisProperties.y])])
-    .range([height - margin.bottom, margin.top]);
+    .domain([0, props.yScaleDomainMax ?? d3.max(graphData, (d) => d[props.axisProperties.y])])
+    .range([height - margin.bottom, margin.top])
+    .nice();
 
   // axes
   // Add the y-axis and label, and remove the domain line.
@@ -149,7 +154,7 @@ const drawGraph = (graphData) => {
       .call(wrap, x.bandwidth());
   // Add the x-axis label
   svg.append("text")
-    .attr("x", width / 2)
+    .attr("x", (width + margin.left) / 2)
     .attr("y", height - 6)
     .attr("text-anchor", "middle")
     .attr("fill", "currentColor")

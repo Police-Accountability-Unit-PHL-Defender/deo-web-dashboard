@@ -6,6 +6,7 @@
       :modelValue="modelValue"
       :multiple="true"
       @update:modelValue="value => emit('update:modelValue', value)"
+      :needsSelectionWarning="`Please select at least one age group`"
     />
   </div>
 </template>

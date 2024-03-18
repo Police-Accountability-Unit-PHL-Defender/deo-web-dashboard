@@ -17,7 +17,7 @@
     </template>
   </LayoutPageHeader>
 
-  <main class="layout-container -mt-4 text-body-3">
+  <main class="layout-container mt-8 md:-mt-4 text-body-3">
     <div class="grid-container">
       <div class="col-span-10">
         <nav class="flex flex-col gap-3 border-b border-neutral-400 pb-10">
@@ -131,7 +131,7 @@
                       </thead>
                     </table>
                   </div>
-                  <div class="w-full border-b border-neutral-400" :class="{'h-[400px] overflow-y-scroll': isTableShowingAll}, 'h-[280px] overflow-y-hidden'">
+                  <div ref="tableScrollContainer" class="w-full border-b border-neutral-400" :class="{'h-[400px] overflow-y-scroll': isTableShowingAll}, 'h-[280px] overflow-y-hidden'">
                     <table class="text-body-3 relative w-full">
                       <tbody class="w-full">
                         <tr v-for="row in q2B.tables.demo">
@@ -224,7 +224,13 @@ const q2CGroup2Gender = ref(['Male'])
 const q2CGroup1Race = ref(['Black'])
 const q2CGroup2Race = ref(['White'])
 
+const tableScrollContainer = ref(null)
 const isTableShowingAll = ref(false)
+watch(isTableShowingAll, (newValue) => {
+  if (!newValue) {
+    tableScrollContainer.value.scrollTop = 0
+  }
+})
 
 const q1AParams = ref([selectedLocation, selectedTimeGranularity])
 const { data: q1A, refresh: refreshQ1A } = await useAsyncData('q1A',

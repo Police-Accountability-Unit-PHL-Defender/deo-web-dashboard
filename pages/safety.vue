@@ -18,7 +18,7 @@
     </template>
   </LayoutPageHeader>
 
-  <main class="layout-container -mt-4 text-body-3">
+  <main class="layout-container mt-8 md:-mt-4 text-body-3">
     <div class="grid-container">
       <div class="col-span-10">
         <nav class="flex flex-col gap-3 border-b border-neutral-400 pb-10">
@@ -44,7 +44,7 @@
             <h3>How often did Philadelphia police make traffic stops<Tooltip term="Traffic Stop"/> on High Injury Network<Tooltip term="High Injury Network"/> (HIN) roads in <SelectLocation v-model="selectedLocation"/> by <SelectTimeGranularity v-model="selectedTimeGranularity"/> ?</h3>
           </QuestionHeader>
           <Answer v-if="q1A" :arrow="true">
-            <Graph :graph-data="q1A.figures.barplot.data" :axis-properties="{x: q1A.figures.barplot.properties.xAxis, y: q1A.figures.barplot.properties.yAxis}">
+            <Graph :graph-data="q1A.figures.barplot.data" :axis-properties="{x: q1A.figures.barplot.properties.xAxis, y: q1A.figures.barplot.properties.yAxis}" :yScaleDomainMax="100">
               <h4>{{ q1A.figures.barplot.properties.title }}</h4>
             </Graph>
             <AnswerText>
@@ -59,7 +59,7 @@
         </section>
         <HorizontalLine class="my-16"/>
         <section>
-          <h2 id="part1" class="text-heading-3 text-left mb-6">Do changes in traffic stops over time relate to changes in shootings?</h2>
+          <h2 id="part2" class="text-heading-3 text-left mb-6">Do changes in traffic stops over time relate to changes in shootings?</h2>
           <QuestionHeader>
             <h3>During a surge in traffic stops from 2018 to 2019, which districts had the largest increase in traffic stops? Were these the same districts that had the largest decrease in shootings?</h3>
           </QuestionHeader>

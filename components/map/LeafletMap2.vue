@@ -3,7 +3,7 @@
     <div class="w-full text-center mt-1 mb-6 text-body-2 font-semibold text-primary-800 max-w-[800px] mx-auto px-4">
       <slot></slot>
     </div>
-    <div class="h-[480px] relative z-0">
+    <div class="h-[360px] md:h-[480px] relative z-0">
       <div class="map" id="map" ref="mapElement"/>
     </div>
     <svg width="0" height="0">
@@ -165,7 +165,7 @@ let map = "";
 let {
   zoom = 13,
   maxZoom = 19,
-  minZoom = 11,
+  minZoom = 10,
   // mapID = "map",
   attributionControl = true,
   center = [0, 0],
@@ -344,9 +344,9 @@ function addGeojsonLayer(geojsonLayerProperties) {
       click: zoomAndHighlightFeatureFromClick,
     });
     if (feature.geometry.type === "Polygon") {
-      if (feature.properties.shooting_decrease) {
+      if (feature.properties.n_shootings_change) {
         layer.options.className = "pattern-fill-red";
-      } else if (feature.properties.stops_increase) {
+      } else if (feature.properties.n_stopped_change) {
         layer.options.className = "pattern-fill-blue";
       }
       // layer.options.className = "pattern-fill-blue";
