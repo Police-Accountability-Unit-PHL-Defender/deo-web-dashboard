@@ -171,7 +171,7 @@ let {
   center = [0, 0],
   scrollWheelZoom = false,
   selectedFeatureStyle = null,
-  tilelayers = [å
+  tilelayers = [
     {
       url: 'https://cartodb-basemaps-c.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png',
       attribution:
