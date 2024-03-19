@@ -23,13 +23,13 @@
         <svg class="w-6 h-6" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
           <rect width="24" height="24" class="pattern-fill-blue" stroke="#393939" stroke-width="2"/>
         </svg>
-        <div>Districts with largest % increases in traffic stops</div>
+        <div>{{ props.mapLegend[0] }}</div>
       </div>
       <div class="flex gap-1 items-center">
         <svg class="w-6 h-6" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
           <rect width="24" height="24" class="pattern-fill-red" stroke="#393939" stroke-width="2"/>
         </svg>
-        <div>Districts with largest % decreases in shootings</div>
+        <div>{{ props.mapLegend[1] }}</div>
       </div>
     </div>
     <div v-if="props.hinLegend" class="text-caption p-4 text-neutral-800 flex gap-x-8 gap-y-2 flex-wrap md:justify-center">
@@ -120,42 +120,6 @@ function polystyle(feature) {
   }
 }
 
-// const geoAggregations = {
-//   psa: {
-//     url: "https://opendata.arcgis.com/datasets/8dc58605f9dd484295c7d065694cdc0f_0.geojson",
-//     legendSelectedTextFunction: (obj) =>
-//       `<b>District:${obj.PSA_NUM.substr(0, 2)} PSA:${obj.PSA_NUM[2]}</b>`,
-//     tooltipFunction: (obj) => obj.PSA_NUM,
-//   },
-//   district: {
-//     url: "https://opendata.arcgis.com/datasets/62ec63afb8824a15953399b1fa819df2_0.geojson",
-//     legendSelectedTextFunction: (obj) => `<b>District:${obj.DIST_NUM}</b>`,
-//     tooltipFunction: (obj) => obj.DIST_NUMC,
-//   },
-//   division: {
-//     url: "https://opendata.arcgis.com/datasets/4333983fd1e1449ca7fc2d63ad7e0076_0.geojson",
-//     legendSelectedTextFunction: (obj) => `<b>Division:${obj.DIV_NAME}</b>`,
-//     tooltipFunction: (obj) => obj.DIV_NAME,
-//   },
-//   city: {
-//     url: "https://opendata.arcgis.com/datasets/405ec3da942d4e20869d4e1449a2be48_0.geojson",
-//     legendSelectedTextFunction: (obj) => "<b>Philadelphia</b>",
-//     tooltipFunction: (obj) => "Philadelphia",
-//   },
-// };
-
-// function updateSelectedFeature(featureProperties) {
-//   let featureName = 'Philadelphia';
-//   if (featureProperties.DIST_NUM) {
-//     featureName = `District ${featureProperties.DIST_NUM}`
-//   } else if (featureProperties.DIV_NAME) {
-//     featureName = `Division ${featureProperties.DIV_NAME}`
-//   } else if (featureProperties.PSA_NUM) {
-//     featureName = `PSA ${featureProperties.PSA_NUM}`
-//   }
-//   // emit("update:modelValue", featureName);
-// }
-
 let L = {};
 var selectedInfoControlDiv;
 var getTextFromSelectedFeatureProperties;
@@ -197,25 +161,12 @@ function initialise() {
     updateGeojsonLayer(props.geoAggregation);
   }, 1);
 }
-
-// const addMarker = (obj) => {
-//   obj.markers.map((e, i) => {
-//     icon = e.icon ? L.icon(e.icon) : null;
-//     let marker = new L.marker([e.lat, e.lng], icon).addTo(map);
-//     marker.addTo(map);
-//     markersArray[marker._leaflet_id] = marker;
-//   });
-// };
 const removeMarkers = () => {
   Object.values(markersArray).forEach((marker) => {
     map.removeLayer(marker);
     markersArray = {};
   });
 };
-// const updateMarkers = (obj) => {
-//   removeMarkers();
-//   addMarker(obj);
-// };
 
 function createMap() {
   map = L.map(mapElement.value, {
@@ -224,6 +175,11 @@ function createMap() {
     minZoom,
     maxZoom,
   }).setView(center, zoom);
+
+  const northEast = L.latLng(40.15, -74.941);
+  const southWest = L.latLng(39.86, -75.298);
+  const bounds = L.latLngBounds(southWest, northEast);
+  map.setMaxBounds(bounds);
 
   selectedInfoControlDiv = L.control();
   selectedInfoControlDiv.onAdd = function (map) {
@@ -257,39 +213,6 @@ function createMap() {
   resizeMap();
   return map;
 }
-
-// function selectGeojsonUrlFeatureFromMarker(marker) {
-//   function isMarkerInsidePolygon(marker, layerFeature) {
-//     let polyPoints = layerFeature.feature.geometry.coordinates[0];
-//     var x = marker.lat,
-//       y = marker.lng;
-
-//     var inside = false;
-//     for (
-//       var i = 0, j = polyPoints.length - 1;
-//       i < polyPoints.length;
-//       j = i++
-//     ) {
-//       var xi = polyPoints[i][1],
-//         yi = polyPoints[i][0];
-//       var xj = polyPoints[j][1],
-//         yj = polyPoints[j][0];
-
-//       var intersect =
-//         yi > y != yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi;
-
-//       if (intersect) inside = !inside;
-//     }
-//     if (inside) {
-//       zoomAndHighlightFeature(selectedGeojsonLayer, layerFeature);
-//     }
-
-//     return inside;
-//   }
-//   Object.values(selectedGeojsonLayer._layers).forEach((layerFeature) =>
-//     isMarkerInsidePolygon(marker, layerFeature)
-//   );
-// }
 function zoomAndHighlightFeature(geojsonLayer, layerFeature) {
   geojsonLayer.resetStyle();
   map.fitBounds(layerFeature.getBounds());
@@ -347,7 +270,6 @@ function addGeojsonLayer(geojsonLayerProperties) {
       } else if (feature.properties.is_top_n_stopped_change) {
         layer.options.className = "pattern-fill-blue";
       }
-      // layer.options.className = "pattern-fill-blue";
     }
   }
 }

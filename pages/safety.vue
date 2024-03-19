@@ -67,7 +67,7 @@
             <AnswerText>
               <p v-html="q2.text[0]" class="result-text"></p>
             </AnswerText>
-            <LeafletMap2 :geo-aggregation="q2AGeoAggregation" map-legend="true">
+            <LeafletMap2 :geo-aggregation="q2AGeoAggregation" :map-legend="['Districts with largest % increases in traffic stops', 'Districts with largest % decreases in shootings']">
               <h4>Comparing 2018 to 2019: Districts with Largest % Increase in Traffic Stops vs. Districts with Largest % Decrease in Shootings</h4>
             </LeafletMap2>
           </Answer>
@@ -78,8 +78,8 @@
             <AnswerText>
               <p v-html="q2.text[1]" class="result-text mt-2"></p>
             </AnswerText>
-            <LeafletMap2 :geo-aggregation="q2BGeoAggregation" map-legend="true">
-              <h4>Before and After Driving Equality: Districts with Largest % Increase in Traffic Stops vs. Districts with Largest % Decrease in Shootings</h4>
+            <LeafletMap2 :geo-aggregation="q2BGeoAggregation" :map-legend="['Districts with largest % decreases in traffic stops', 'Districts with largest % increases in shootings']">
+              <h4>Before and After Driving Equality: Districts with Largest % Decrease in Traffic Stops vs. Districts with Largest % Increase in Shootings</h4>
             </LeafletMap2>
           </Answer>
         </section>

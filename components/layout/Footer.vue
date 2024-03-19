@@ -43,7 +43,7 @@
       <div class="mt-8 max-w-[847px]">
         <p class="text-caption">
           <span class="font-medium">Please note</span>: This dashboard shows public data from the Philadelphia Police Department, which may at times be incomplete, unreliable, or inaccurate.
-          Learn more about the <a href="/data#11" class="underline">data limitations</a>.
+          Learn more about the <a href="/data#11" class="underline" target="_blank">data limitations</a>.
         </p>
       </div>
       <div class="flex flex-col gap-10 sm:flex-row justify-between pb-12 md:pb-18">

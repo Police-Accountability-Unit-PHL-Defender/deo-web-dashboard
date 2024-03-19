@@ -135,6 +135,11 @@ function createMap() {
     maxZoom,
   }).setView(center, zoom);
 
+  const northEast = L.latLng(40.15, -74.941);
+  const southWest = L.latLng(39.86, -75.298);
+  const bounds = L.latLngBounds(southWest, northEast);
+  map.setMaxBounds(bounds);
+
   selectedInfoControlDiv = L.control();
   selectedInfoControlDiv.onAdd = function (map) {
     this._div = L.DomUtil.create("div", "info"); // create a div with a class "info"
