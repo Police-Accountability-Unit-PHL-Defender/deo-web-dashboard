@@ -23,13 +23,13 @@
         <svg class="w-6 h-6" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
           <rect width="24" height="24" class="pattern-fill-blue" stroke="#393939" stroke-width="2"/>
         </svg>
-        <div>District with largest % increases in traffic stops</div>
+        <div>Districts with largest % increases in traffic stops</div>
       </div>
       <div class="flex gap-1 items-center">
         <svg class="w-6 h-6" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
           <rect width="24" height="24" class="pattern-fill-red" stroke="#393939" stroke-width="2"/>
         </svg>
-        <div>District with largest % decreases in shootings</div>
+        <div>Districts with largest % decreases in shootings</div>
       </div>
     </div>
     <div v-if="props.hinLegend" class="text-caption p-4 text-neutral-800 flex gap-x-8 gap-y-2 flex-wrap md:justify-center">

@@ -210,11 +210,13 @@ import Button from '~/components/ui/Button.vue';
 import Tooltip from '~/components/ui/Tooltip.vue';
 
 const config = useRuntimeConfig()
+const mostRecentQuarter = Quarter.fromParamString(config.public.mostRecentQuarter)
+const defaultStartQuarter = mostRecentQuarter.getPreviousQuarter().getPreviousQuarter().getPreviousQuarter()
 
 const selectedLocation = ref('Philadelphia')
 const selectedTimeGranularity = ref('year')
-const q1BQuarterStart = ref(new Quarter(2023, QuarterMonths['Jan-Mar']))
-const q1BQuarterEnd = ref(new Quarter(2023, QuarterMonths['Oct-Dec']))
+const q1BQuarterStart = ref(defaultStartQuarter)
+const q1BQuarterEnd = ref(mostRecentQuarter)
 const q1CQuarters = ref(['Jan-Mar'])
 const q2ADemographicCategory = ref('race')
 const q2CGroup1AgeRange = ref(['25-34'])

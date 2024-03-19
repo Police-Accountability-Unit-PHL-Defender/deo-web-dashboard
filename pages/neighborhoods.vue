@@ -190,12 +190,13 @@ import IconsChevron from '~/components/icons/Chevron.vue';
 import { getDemographicGroupParam } from '~/utils';
 
 const config = useRuntimeConfig()
+const mostRecentQuarter = Quarter.fromParamString(config.public.mostRecentQuarter)
 
 const selectedLocation = ref('Philadelphia')
 const selectedTimeGranularity = ref('year')
 const q2ADemographicCategory = ref('race')
 const q2AQuarterStart = ref(new Quarter(2014, QuarterMonths['Jan-Mar']))
-const q2AQuarterEnd = ref(new Quarter(2023, QuarterMonths['Oct-Dec']))
+const q2AQuarterEnd = ref(mostRecentQuarter)
 const q2ARace = ref('White')
 const q2AGender = ref('Female')
 const q2AAgeGroup = ref('35-44')

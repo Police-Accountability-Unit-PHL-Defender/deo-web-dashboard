@@ -68,21 +68,18 @@
               <p v-html="q2.text[0]" class="result-text"></p>
             </AnswerText>
             <LeafletMap2 :geo-aggregation="q2AGeoAggregation" map-legend="true">
-              <h4>Comparing 2018 to 2019: Districts with Largest Increase in Traffic Stops vs. Districts with Largest Decrease in Shootings</h4>
+              <h4>Comparing 2018 to 2019: Districts with Largest % Increase in Traffic Stops vs. Districts with Largest % Decrease in Shootings</h4>
             </LeafletMap2>
           </Answer>
           <QuestionHeader>
-            <h3>Comparing the year before Driving Equality to the year after the law was implemented, which districts had the largest increase in traffic stops? Were these the same districts that had the largest decrease in shootings?</h3>
+            <h3>Driving Equality came into effect on March 3, 2022. In the year after<Tooltip term="Year after"/> Driving Equality, which districts had the largest percent decrease in traffic stops, compared to 2021? (See <a href="/driving-equality#10" target="_blank" class="text-hyperlink-blue">What is Driving Equality?</a> to learn more about these date comparisons.) Were these the same districts that had the largest percent increase in shootings?</h3>
           </QuestionHeader>
           <Answer v-if="q2" :arrow="true">
             <AnswerText>
-              <p class="result-text">
-                Driving Equality came into effect on March 3, 2022. In the year after<Tooltip term="Year after"/> Driving Equality, which districts had the largest percent decrease in traffic stops, compared to 2021? (See <a href="/driving-equality#10" target="_blank">What is Driving Equality?</a> to learn more about these date comparisons.) Were these the same districts that had the largest percent increase in shootings?
-              </p>
               <p v-html="q2.text[1]" class="result-text mt-2"></p>
             </AnswerText>
             <LeafletMap2 :geo-aggregation="q2BGeoAggregation" map-legend="true">
-              <h4>Before and After Driving Equality: Districts with Largest Increase in Traffic Stops vs. Districts with Largest Decrease in Shootings</h4>
+              <h4>Before and After Driving Equality: Districts with Largest % Increase in Traffic Stops vs. Districts with Largest % Decrease in Shootings</h4>
             </LeafletMap2>
           </Answer>
         </section>

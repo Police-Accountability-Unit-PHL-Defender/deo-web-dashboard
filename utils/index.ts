@@ -33,6 +33,27 @@ export class Quarter {
   getEndString() {
     return QuarterMonths[this.quarter].split('-')[1] + ' ' + this.year;
   }
+  getNextQuarter() {
+    if (this.quarter === 4) {
+      return new Quarter(this.year + 1, 1);
+    } else {
+      return new Quarter(this.year, this.quarter + 1);
+    }
+  }
+  getPreviousQuarter() {
+    if (this.quarter === 1) {
+      return new Quarter(this.year - 1, 4);
+    } else {
+      return new Quarter(this.year, this.quarter - 1);
+    }
+  }
+  static fromParamString(paramString: string) {
+    const [year, quarter] = paramString.split('-Q');
+    return new Quarter(parseInt(year), parseInt(quarter));
+  }
+  static isSameQuarter(q1: Quarter, q2: Quarter) {
+    return q1.year === q2.year && q1.quarter === q2.quarter;
+  }
 }
 
 export function getLocationParam(location: string) {
