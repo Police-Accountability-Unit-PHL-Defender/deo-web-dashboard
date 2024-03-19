@@ -24,7 +24,6 @@ export default defineNuxtConfig({
   },
   runtimeConfig: {
     public: {
-      maptilerKey: process.env.NUXT_MAPTILER_KEY,
       apiBaseUrl: process.env.NUXT_API_BASE_URL || 'https://deo-fastapi.onrender.com',
       mostRecentQuarter: process.env.NUXT_MOST_RECENT_QUARTER || '2023-Q4'
     }
