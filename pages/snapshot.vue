@@ -61,11 +61,15 @@
               <span v-html="q1A.text.slice(1, 2).join(' ')" class="result-text"></span>,
               compared to 2021 (see <a class="underline text-primary-600 hover:text-primary-800;" href="/driving-equality#10" target="_blank">What is Driving Equality?</a> to learn more about these date comparisons). Concerningly, racial disparities in traffic stops have persisted.
             </AnswerText>
-            [Graph]
+            <Graph :graph-data="q1A.figures.barplot2.data" :axis-properties="{x: q1A.figures.barplot2.properties.xAxis, y: q1A.figures.barplot2.properties.yAxis}" group-name="group" :group-classes="{'% before Driving Equality': 'fill-primary-600', '% after Driving Equality': 'fill-red', '% of city population': 'fill-neutral-600'}" :chart-legend="['% before Driving Equality', '% after Driving Equality', '% of city population']">
+              <h4>{{ q1A.figures.barplot2.properties.title }}</h4>
+            </Graph>
             <AnswerText>
               <span v-html="q1A.text.slice(2, 3).join(' ')" class="result-text"></span>
             </AnswerText>
-            [Graph]
+            <Graph :graph-data="q1A.figures.barplot3.data" :axis-properties="{x: q1A.figures.barplot3.properties.xAxis, y: q1A.figures.barplot3.properties.yAxis}" group-name="group" :group-classes="{'# before Driving Equality': 'fill-primary-600', '# after Driving Equality': 'fill-red'}" :chart-legend="['# before Driving Equality', '# after Driving Equality']">
+              <h4>{{ q1A.figures.barplot3.properties.title }}</h4>
+            </Graph>
           </Answer>
         </section>
       </div>

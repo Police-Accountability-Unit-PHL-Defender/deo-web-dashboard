@@ -17,6 +17,10 @@
         <div class="bg-red w-3 h-3"></div>
         <div>{{ chartLegend[1] }}</div>
       </div>
+      <div v-if="chartLegend.length > 2" class="flex gap-1 items-center">
+        <div class="bg-neutral-600 w-3 h-3"></div>
+        <div>{{ chartLegend[2] }}</div>
+      </div>
     </div>
   </div>
 </template>
@@ -121,7 +125,7 @@ const drawGraph = (graphData) => {
     // equation: groupWidth = 2 * barWidth + barWidth * groupGapRatio
     // equation: chartWidth = n * groupWidth + (n - 1) * groupWidth * innerPaddingRatio + 2 * groupWidth * outerPaddingRatio
     groupWidth = chartWidth / (n + (n-1)*innerPaddingRatio + 2*outerPaddingRatio)
-    barWidth = groupWidth / (2 + groupGapRatio)
+    barWidth = groupWidth / (groups.size + groupGapRatio)
   }
   const height = 370;
   const svg = d3.select(graphSvg.value)
