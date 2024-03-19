@@ -48,13 +48,13 @@
         <span class="block max-w-[252px] mx-auto text-label-1">Reasons for stops</span>
       </a>
     </nav>
-    <menu class="fixed z-[999] w-screen h-screen inset-0 bg-primary-800 py-8 text-left overflow-y-scroll" :class="{'block': isMenuOpen, 'hidden': !isMenuOpen}" ref="menu">
+    <menu class="fixed z-[999] w-screen h-screen inset-0 bg-primary-800 md:py-8 text-left overflow-y-scroll" :class="{'block': isMenuOpen, 'hidden': !isMenuOpen}" ref="menu">
       <div class="layout-container">
         <div class="relative w-full">
-          <button class="absolute top-3 right-3" id="header-menu-close-button" title="Close menu" @click="closePopupMenu"></button>
+          <button class="absolute top-4 right-0 md:top-3 md:right-3" id="header-menu-close-button" title="Close menu" @click="closePopupMenu"></button>
         </div>
         <div class="flex flex-col justify-center gap-3">
-          <ul class="flex flex-col gap-6 order-2 mt-18 md:mt-28">
+          <ul class="flex flex-col gap-4 md:gap-6 order-2 mt-16 md:mt-28">
             <li>
               <a href="/snapshot" class="text-fullscreen-nav font-medium hover:underline hover:text-primary-200">
                 Snapshot of traffic enforcement in Philadelphia
@@ -108,21 +108,17 @@ button#header-menu-button {
   background-image: url('~/assets/icons/menu.svg');
   background-repeat: no-repeat;
   background-position: center;
-  background-size: 40px;
   border: none;
   cursor: pointer;
-  height: 40px;
-  width: 40px;
+  @apply w-8 h-8 md:w-10 md:h-10 bg-[length:32px] md:bg-[length:40px];
 }
 button#header-menu-close-button {
   background-image: url('~/assets/icons/close.svg');
   background-repeat: no-repeat;
   background-position: center;
-  background-size: 40px;
   border: none;
   cursor: pointer;
-  height: 40px;
-  width: 40px;
+  @apply w-8 h-8 md:w-10 md:h-10 bg-[length:32px] md:bg-[length:40px];
 }
 </style>
 

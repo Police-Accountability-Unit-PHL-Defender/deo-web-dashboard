@@ -1,5 +1,5 @@
 <template>
-  <main class="layout-container overflow-hidden pb-8">
+  <main class="layout-container overflow-hidden pb-2">
     <HomeModule ctaLink="/snapshot">
       <template #title>
         Snapshot of traffic enforcement in Philadelphia

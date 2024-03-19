@@ -18,13 +18,13 @@ html {
   line-height: 1.25;
   font-family: 'Poppins', sans-serif;
   font-weight: 600;
-  @apply text-[30px] md:text-[48px];
+  @apply text-[28px] md:text-[48px];
 }
 
 .text-heading-3 {
   font-family: 'Poppins', sans-serif;
   font-weight: 600;
-  @apply text-[24px] md:text-[32px];
+  @apply text-[21px] md:text-[32px];
 }
 
 .text-heading-4 {
@@ -250,11 +250,14 @@ a.text-hyperlink-blue {
     @apply underline text-primary-600 hover:text-primary-800;
   }
   table {
+    tr {
+      @apply grid grid-cols-8;
+    }
     th {
-      @apply font-medium align-top text-left pb-6 pr-6;
+      @apply font-medium align-top text-left md:pb-2 md:pb-6 pr-6 col-span-8 md:col-span-3;
     }
     td {
-      @apply pb-6 align-top;
+      @apply pb-4 md:pb-6 align-top col-span-8 md:col-span-3;
     }
     address {
       @apply not-italic;

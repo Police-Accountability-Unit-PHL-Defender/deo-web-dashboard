@@ -103,7 +103,8 @@ const containerWidth = computed(() => {
 
 const drawGraph = (graphData) => {
   const groups = new Set(graphData.map(d => d.group))
-  const width = containerWidth.value
+  const minContainerWidth = 640
+  const width = Math.max(containerWidth.value, minContainerWidth)
   const chartWidth = width - margin.left - margin.right
   const n = !isGrouped ? graphData.length : Math.ceil(graphData.length / groups.size)
   const outerPaddingRatio = 0.2 // ratio of padding outside of bars/groups to the width of one bar/group

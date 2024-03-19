@@ -41,24 +41,26 @@
         </li>
       </ul>
       <div class="mt-8 max-w-[847px]">
-        <p class="text-body-4">
-          Please note: This dashboard shows public data from the Philadelphia Police Department, which may at times be incomplete, unreliable, or inaccurate.
+        <p class="text-caption">
+          <span class="font-medium">Please note</span>: This dashboard shows public data from the Philadelphia Police Department, which may at times be incomplete, unreliable, or inaccurate.
           Learn more about the <a href="/data#11" class="underline">data limitations</a>.
         </p>
       </div>
-      <div class="flex flex-col gap-10 sm:flex-row justify-between md:pb-18">
+      <div class="flex flex-col gap-10 sm:flex-row justify-between pb-12 md:pb-18">
         <div>
           <Button type="link" href="/contact" class="mt-10 md:mt-20">Contact us</Button>
           <div class="hidden sm:block mt-4 md:mt-8 text-caption text-white">
             Copyright © 2024 Defender Association of Philadelphia. All rights reserved.
           </div>
         </div>
-        <a href="/" class="self-start sm:self-end mb-[6px]">
-          <img src="~/assets/images/defender-logo-white.png" alt="Defender Association of Philadelphia" class="w-[145px] md:w-[182px] mx-auto" />
-        </a>
-      </div>
-      <div class="block sm:hidden mt-4 md:mt-8 text-caption text-white pb-12">
-        Copyright © 2024 Defender Association of Philadelphia. All rights reserved.
+        <div class="flex justify-between items-end gap-4">
+          <a href="/" class="block self-start sm:self-end basis-[104px] md:basis-[145px] shrink-0">
+            <img src="~/assets/images/defender-logo-white.png" alt="Defender Association of Philadelphia" class="w-[145px] md:w-[182px] mx-auto" />
+          </a>
+          <div class="block sm:hidden text-[11px] text-white -mt-2">
+            Copyright © 2024 Defender Association of Philadelphia. All rights reserved.
+          </div>
+        </div>
       </div>
     </div>
   </div>

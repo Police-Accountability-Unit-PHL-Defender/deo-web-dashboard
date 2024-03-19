@@ -1,5 +1,5 @@
 <template>
-  <button class="button-select px-2 inline h-10 text-primary-800 leading-10 font-medium" @click="locationModalIsOpen = true">
+  <button class="button-select px-2 inline-block text-primary-800 font-medium" @click="locationModalIsOpen = true">
     <span>{{ formatLocationForSentence(props.modelValue, props.capitalize)}}</span>
   </button>
   <div v-if="locationModalIsOpen" class="fixed z-10 inset-0 flex justify-center items-center p-2">

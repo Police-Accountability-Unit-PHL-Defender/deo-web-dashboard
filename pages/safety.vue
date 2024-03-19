@@ -57,7 +57,7 @@
             </LeafletMap2>
           </Answer>
         </section>
-        <HorizontalLine class="my-16"/>
+        <HorizontalLine class="my-12"/>
         <section>
           <h2 id="part2" class="text-heading-3 text-left mb-6">Do changes in traffic stops over time relate to changes in shootings?</h2>
           <QuestionHeader>

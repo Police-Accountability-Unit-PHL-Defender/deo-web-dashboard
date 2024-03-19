@@ -64,13 +64,21 @@ const handleClickTooltipButton = (event: Event) => {
     document.addEventListener("click", handleClickOutsideTooltip)
   }
 }
-const handleClickOutsideTooltip = (event: Event) => {
-  // closes tooltip when user clicks outside of tooltip
-  if (tooltip.value && !tooltip.value.contains(event.target as Node)) {
-    tooltipIsVisible.value = false
-    document.removeEventListener("click", handleClickOutsideTooltip)
-  }
-}
+// const handleClickOutsideTooltip = (event: Event) => {
+//   // closes tooltip when user clicks outside of tooltip
+//   if (tooltip.value && !tooltip.value.contains(event.target as Node)) {
+//     tooltipIsVisible.value = false
+//     document.removeEventListener("click", handleClickOutsideTooltip)
+//   }
+// }
+// const tooltipAdjustment = ref({}) 
+// watch(tooltipIsVisible, (newValue) => {
+//   if (newValue) {
+//     document.addEventListener("click", handleClickOutsideTooltip)
+//   } else {
+//     document.removeEventListener("click", handleClickOutsideTooltip)
+//   }
+// })
 const tooltipAdjustment = computed(() => {
   // the tooltip is left-aligned to the icon, so it could go off the right side of the screen. this ensures it doesn't
   if (!tooltipIsVisible.value || !tooltip.value) return
@@ -79,8 +87,8 @@ const tooltipAdjustment = computed(() => {
   if (excess > 0) return { transform: `translateX(-${excess}px)` }
   return {}
 })
-onBeforeUnmount(() => {
-  // removes event listener in case tooltip is open but user navigates away and component is unmounted
-  document.removeEventListener("click", handleClickOutsideTooltip)
-})
+// onBeforeUnmount(() => {
+//   // removes event listener in case tooltip is open but user navigates away and component is unmounted
+//   document.removeEventListener("click", handleClickOutsideTooltip)
+// })
 </script>

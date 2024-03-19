@@ -10,7 +10,7 @@
     ref="listbox"
   >
     <ListboxButton
-      class="flex gap-6 items-center justify-between pl-2 pr-8 font-medium border bg-neutral-100 hover:bg-neutral-200"
+      class="flex gap-6 items-center justify-between pl-2 pr-7 font-medium border bg-neutral-100 hover:bg-neutral-200"
       :class="{
         'w-full': props.multiple,
         'border-primary-600 hover:border-primary-600': open,
@@ -28,7 +28,7 @@
         <div v-if="props.modelValue.length === 0" class="text-neutral-600 font-normal">Select options</div>
       </div>
       <span v-else class="text-primary-800">{{ getDisplayText(props.modelValue) }}</span>
-      <IconsChevron classes="fill-black" class="absolute right-1" :class="{'rotate-180': open}"></IconsChevron>
+      <IconsChevron classes="fill-black" class="absolute right-0" :class="{'rotate-180': open}"></IconsChevron>
     </ListboxButton>
     <div v-if="needsSelection" class="absolute top-full z-[0] text-error text-caption font-normal">{{ props.needsSelectionWarning }}</div>
     <ListboxOptions class="bg-neutral-100 border border-neutral-400 absolute z-[1] top-full w-auto mt-0 leading-6 max-h-[50vh] min-w-full overflow-y-scroll font-normal">

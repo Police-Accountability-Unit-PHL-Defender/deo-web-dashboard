@@ -3,8 +3,8 @@
     <div class="grid-container">
       <div :class="props.alignment === 'center' ? 'md:col-start-3 col-span-8' : 'md:col-start-7 col-span-6 md:pl-[44px]'">
         <div class="relative w-full px-6 pt-8 md:pt-10 pb-4 md:pb-6 font-medium rounded-bl-[50px] rounded-tr-[50px] md:rounded-bl-[100px] md:rounded-tr-[100px] text-center shadow-quotemini md:shadow-quote" :class="boxClasses">
-          <IconsQuoteMark class="absolute -top-14 md:top-[-60px] left-0 md:left-6 scale-50 md:scale-75 rotate-180" :classes="quoteMarkClasses" />
-          <div class="text-black text-body-3 font-normal">
+          <IconsQuoteMark class="absolute -top-14 md:top-[-60px] -left-2 md:left-6 scale-50 md:scale-75 rotate-180" :classes="quoteMarkClasses" />
+          <div class="text-black text-body-4 font-normal">
             <div class="flex justify-center w-full">
               <div :class="props.alignment === 'right' ? 'max-w-[456px]' : ''">
                 <slot name="quoteText"></slot>

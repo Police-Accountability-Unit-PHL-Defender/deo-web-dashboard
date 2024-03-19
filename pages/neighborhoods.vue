@@ -69,7 +69,7 @@
             </AnswerText>
           </Answer>
         </section>
-        <HorizontalLine class="my-16"/>
+        <HorizontalLine class="my-12"/>
         <section>
           <QuestionHeader>
             <h3>How have Philadelphia police changed the way they intrude during traffic stops in <SelectLocation v-model="selectedLocation"/> by <SelectTimeGranularity v-model="selectedTimeGranularity"/>? How do frisks<Tooltip term="Frisk"/> and searches<Tooltip term="Search"/> compare over time?</h3>
@@ -80,7 +80,7 @@
             </Graph>
           </Answer>
         </section>
-        <HorizontalLine class="my-16"/>
+        <HorizontalLine class="my-12"/>
         <section>
           <h2 id="part2" class="text-heading-3 text-left mb-6">During traffic stops, do police treat people differently?</h2>
           <QuestionHeader>
@@ -124,7 +124,7 @@
             </AnswerText>
           </Answer>
         </section>
-        <HorizontalLine class="my-16"/>
+        <HorizontalLine class="my-12"/>
         <section>
           <h2 id="part3" class="text-heading-3 text-left mb-6">During traffic stops, do police treat neighborhoods differently?</h2>
           <QuestionHeader>
@@ -152,7 +152,7 @@
             </Graph>
           </Answer>
         </section>
-        <HorizontalLine class="my-16"/>
+        <HorizontalLine class="my-12"/>
         <section>
           <QuestionHeader>
             <h3>

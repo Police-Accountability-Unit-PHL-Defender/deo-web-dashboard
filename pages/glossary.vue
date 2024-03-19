@@ -2,13 +2,13 @@
   <div class="glossary layout-container text-body-3">
     <div class="grid-container">
       <div class="col-span-6 md:col-span-12">
-        <h2 class="text-heading-1 mt-20 mb-4">Glossary</h2>
+        <h2 class="text-heading-1 mt-6 md:mt-20 mb-4">Glossary</h2>
         <p class="max-w-[800px]">
           These terms and their definitions relate to vehicle stops in Philadelphia, Pennsylvania. Terms, definitions, and relevant case law may differ in other jurisdictions. 
         </p>
       </div>
-      <div class="col-span-10">
-        <dl class="md:grid grid-cols-10 mt-6 md:mt-12 gap-x-5 gap-y-10">
+      <div class="col-span-6 md:col-span-10">
+        <dl class="md:grid grid-cols-10 mt-2 md:mt-12 gap-x-5 gap-y-10">
           <dt>Contraband</dt>
           <dd>Any item that police consider to be evidence of a crime, including drugs and some weapons.</dd>
           <dt>Contraband Hit Rate</dt>
