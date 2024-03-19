@@ -35,7 +35,7 @@
           </FaqQuestion>
           <FaqQuestion id="3" question="Before Driving Equality, what were the racial disparities in traffic stops by Philadelphia police?">
               <p>
-                For as long as Philadelphia police vehicle stop data has been publicly available (since 2014), traffic stops have been racially disparate. Even when traffic stops increased in 2018-2019 and decreased in 2020-2021, police still pulled over a similar proportion of people of color and consistently frisked and searched Black drivers more frequently than any other racial group. In 2021, the year before Driving Equality, Philadelphia police stopped Black drivers 72% of the time they made traffic stops, stopped white drivers 15% of the time, Latino drivers 9% of the time, Asian drivers 2% of the time, and drivers of another race less than 2% of the time. By comparison, during a surge in stops from October 2018 to September 2019, police stopped Black drivers 71% of the time, stopped white drivers 16% of the time, Latino drivers 10% of the time, Asian drivers 3% of the time, and drivers of another race less than 2% of the time.
+                For as long as Philadelphia police vehicle stop data has been publicly available (since 2014), traffic stops have been racially disparate. Even when traffic stops increased in 2018-2019 and decreased in 2020-2021, police still pulled over a similar proportion of people of color and consistently frisked and searched Black drivers more frequently than any other racial group. In 2021, the year before Driving Equality, Philadelphia police stopped Black drivers 72% of the time they made traffic stops, stopped white drivers 15% of the time, Latino drivers 9% of the time, Asian drivers 2% of the time, and drivers of all other races less than 2% of the time. By comparison, during a surge in stops from October 2018 to September 2019, police stopped Black drivers 71% of the time, stopped white drivers 16% of the time, Latino drivers 10% of the time, Asian drivers 3% of the time, and drivers of all other races less than 2% of the time.
               </p>
           </FaqQuestion>
           <FaqQuestion id="4" question="Before Driving Equality, what were the top reasons that Philadelphia police stopped drivers?">
@@ -108,6 +108,9 @@
                   <td>The PPD’s deadline to comply with the section of the companion data ordinance requiring a public database.</td>
                 </tr>
               </table>
+              <p>
+                When comparing the year before Driving Equality to the year after the law was implemented,  this dashboard compares the calendar year 2021 to a 365-day period from April 1, 2022 through March 31, 2023. This comparison—rather than comparing March 3, 2021-March 2, 2022 to March 3, 2022-March 2, 2023—is done for a number of reasons and matches the dashboard’s consistent use of quarters of the year. Although these 2 two-year periods have different starting points, they include all the dates in a year and are comparable for analysis.
+              </p>
           </FaqQuestion>
           <FaqQuestion id="11" question="Which traffic violations are covered by Driving Equality?">
               <p>

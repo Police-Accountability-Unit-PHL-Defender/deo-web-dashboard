@@ -2,9 +2,7 @@
   <li :id="props.id">
     <details class="text-body-3">
       <summary>
-        <h3 class="text-body-2">
-          {{ props.question }}
-        </h3>
+        <h3 class="text-body-2" v-html="props.question"></h3>
       </summary>
       <slot></slot>
     </details>

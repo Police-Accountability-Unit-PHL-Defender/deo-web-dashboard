@@ -61,10 +61,7 @@
                 href="https://opendataphilly.org/datasets/vehicle-pedestrian-investigations/" target="_blank">traffic stop
                 data</a> also anonymizes the location of stops by listing the block number rather than the exact address. Data on
               <a href="https://opendataphilly.org/datasets/shooting-victims/" target="_blank">shootings</a> has basic demographic
-              details of the people involved in shootings. Data on <a href="https://opendataphilly.org/datasets/crime-incidents/"
-                target="_blank">crime incidents</a> has no information on the people involved, and data on <a
-                href="https://opendataphilly.org/datasets/arrests/" target="_blank">arrests</a> includes only the purported race
-               of the person arrested. <a
+              details of the people involved in shootings. <a
                 href="https://data.census.gov/table?g=050XX00US42101$1400000&d=DEC+Demographic+Profile"
                 target="_blank">Census data</a> and the <a
                 href="https://opendataphilly.org/datasets/vision-zero-high-injury-network/" target="_blank">Vision Zero High
@@ -78,50 +75,50 @@
       href="https://opendataphilly.org/datasets/vehicle-pedestrian-investigations/" target="_blank">traffic stop
       data</a> and <a href="https://data.census.gov/table?g=050XX00US42101$1400000&d=DEC+Demographic+Profile"
       target="_blank">Census data</a>.</p>
-  <ul>
-    <li>In traffic stop data: The race, ethnicity, and gender of drivers and passengers is based on limited categories
-      reported by police. Based on police perception, officers report drivers’ and passengers’ genders as “Male” or
-      Female,” and their race as “American Indian,” “Asian,” “Black-Latino,” “Black Non-Latino,” “Unknown,”
-      “White-Latino,” or “White Non-Latino.” </li>
-    <li>In Census data: Race and ethnicity are based on self-identification. Racial identities include “American Indian
-      or Alaska Native,” “Asian,” “Black or African American,” “Native Hawaiian or Other Pacific Islander,” “Some Other
-      Race,” “Two or More Races,” or “White.” Census data separates ethnicity from race, identifying people as either
-      “Hispanic or Latino” or “Not Hispanic or Latino.” Census data does not include gender; it represents people’s sex
-      as either “Male” or “Female.”</li>
-  </ul>
-  <p>To connect traffic stop data and Census data, this dashboard represents gender, race, and ethnicity in the
-    following ways:</p>
-  <ul>
-    <li>This dashboard is limited to representing drivers’ and passengers’ genders as “Male” or “Female.” Although these
-      two genders are not inclusive of all gender identities, they are the only available choices reported by
-      Philadelphia police.</li>
-    <li>This dashboard includes race and ethnicity together, representing people as “Asian,” “Black,” “Latino,” “White,”
-      and “All Other Races.” </li>
-    <li>Consistent with widely-used Census analyses, this dashboard represents Latino identity as a person’s predominant
-      racial and ethnic identity. For example:</li>
-  </ul>
-  <ul>
-    <li>If traffic stop data identifies a driver or passenger as “Black-Latino,” this dashboard represents them as
-      “Latino.” This distinction is similar to the Census representation of Latino identity “<a
-        href="https://www.census.gov/library/stories/2021/08/improved-race-ethnicity-measures-reveal-united-states-population-much-more-multiracial.html"
-        target="_blank">alone or in combination with another group</a>.” </li>
-    <li>If traffic stop data identifies a driver or passenger as “Black Non-Latino,” this dashboard represents them as
-      “Black.” </li>
-    <li>If traffic stop data identifies a driver or passenger as “White Non-Latino,” this dashboard represents them as
-      “White.”</li>
-  </ul>
-  <ul>
-    <li>Since the Census has a wider range of racial identities than traffic stop data, this dashboard’s “All Other
-      Races” category includes the Census’s wider range of identities. </li>
-  </ul>
-  <ul>
-    <li>Drivers and passengers identified as “American Indian” by Philadelphia police represent 0.3% of traffic stops,
-      so this limited sample size is too small for this dashboard to analyze on its own.  </li>
-  </ul>
+      <ul>
+        <li><strong>In traffic stop data:</strong> The race, ethnicity, and gender of drivers and passengers is based on limited categories
+          reported by police. Based on police perception, officers report drivers’ and passengers’ genders as “Male” or
+          Female,” and their race as “American Indian,” “Asian,” “Black-Latino,” “Black Non-Latino,” “Unknown,”
+          “White-Latino,” or “White Non-Latino.” </li>
+        <li><strong>In Census data:</strong> Race and ethnicity are based on self-identification. Racial identities include “American Indian
+          or Alaska Native,” “Asian,” “Black or African American,” “Native Hawaiian or Other Pacific Islander,” “Some Other
+          Race,” “Two or More Races,” or “White.” Census data separates ethnicity from race, identifying people as either
+          “Hispanic or Latino” or “Not Hispanic or Latino.” Census data does not include gender; it represents people’s sex
+          as either “Male” or “Female.”</li>
+      </ul>
+      <p>To connect traffic stop data and Census data, this dashboard represents gender, race, and ethnicity in the
+        following ways:</p>
+      <ul>
+        <li>This dashboard is limited to representing drivers’ and passengers’ genders as “Male” or “Female.” Although these
+          two genders are not inclusive of all gender identities, they are the only available choices reported by
+          Philadelphia police.</li>
+        <li>This dashboard includes race and ethnicity together, representing people as “Asian,” “Black,” “Latino,” “White,”
+          and “All Other Races.” </li>
+        <li>Consistent with widely-used Census analyses, this dashboard represents Latino identity as a person’s predominant
+          racial and ethnic identity. For example:
+          <ul>
+            <li>If traffic stop data identifies a driver or passenger as “Black-Latino,” this dashboard represents them as
+              “Latino.” This distinction is similar to the Census representation of Latino identity “<a
+                href="https://www.census.gov/library/stories/2021/08/improved-race-ethnicity-measures-reveal-united-states-population-much-more-multiracial.html"
+                target="_blank">alone or in combination with another group</a>.” </li>
+            <li>If traffic stop data identifies a driver or passenger as “Black Non-Latino,” this dashboard represents them as
+              “Black.” </li>
+            <li>If traffic stop data identifies a driver or passenger as “White Non-Latino,” this dashboard represents them as
+              “White.”</li>
+          </ul>
+        </li>
+        <li>Since the Census has a wider range of racial identities than traffic stop data, this dashboard’s “All Other
+          Races” category includes the Census’s wider range of identities.
+          <ul>
+            <li>Drivers and passengers identified as “American Indian” by Philadelphia police represent 0.3% of traffic stops,
+              so this limited sample size is too small for this dashboard to analyze on its own.  </li>
+          </ul>
+        </li>
+      </ul>
           </FaqQuestion>
         </ol>
 
-        <h2 class="text-heading-3 text-center mt-18 mb-4 pt-6">Since Driving Equality</h2>
+        <h2 class="text-heading-3 text-center mt-18 mb-4 pt-6">Traffic Stop Data</h2>
         <ol start="7">
           <FaqQuestion id="7" question="Who manages the traffic stop data, and how is data collected?">
             <p><a href="https://opendataphilly.org/datasets/vehicle-pedestrian-investigations/" target="_blank">Traffic stop
@@ -157,14 +154,14 @@
     to make more data public on OpenDataPhilly, including the reason(s) for some traffic stops and whether police found
     a weapon during the stop. </p>
           </FaqQuestion>
-          <FaqQuestion id="10" question="What is the Bailey data, and is the public traffic stop data in this dashboard the same as the Bailey data?">
+          <FaqQuestion id="10" question="What is the <em>Bailey</em> data, and is the public traffic stop data in this dashboard the same as the <em>Bailey</em> data?">
             <p>No, it is not the same. These two datasets are related but distinct. The public <a
       href="https://opendataphilly.org/datasets/vehicle-pedestrian-investigations/" target="_blank">traffic stop
       data</a> in this dashboard is released on OpenDataPhilly and only includes a subset of the data that police
-    collect on each stop. A more comprehensive dataset, known as the Bailey dataset, is confidential and is compiled as
+    collect on each stop. A more comprehensive dataset, known as the <em>Bailey</em> dataset, is confidential and is compiled as
     required by the settlement agreement in the class-action lawsuit <a
-      href="https://www.aclupa.org/en/cases/bailey-et-al-v-city-philadelphia-et-al" target="_blank">Bailey, et al. v.
-      City of Philadelphia</a> (2010). The confidential Bailey dataset contains more information than the PPD publishes
+      href="https://www.aclupa.org/en/cases/bailey-et-al-v-city-philadelphia-et-al" target="_blank"><em>Bailey, et al. v.
+      City of Philadelphia</em></a> (2010). The confidential <em>Bailey</em> dataset contains more information than the PPD publishes
     publicly, including personally identifiable information and information about the officers who made each stop.</p>
           </FaqQuestion>
           <FaqQuestion id="11" question="What are the limitations of the traffic stop data?">
@@ -204,7 +201,7 @@
             <p>Frisks and searches are fields within the <a
       href="https://opendataphilly.org/datasets/vehicle-pedestrian-investigations/" target="_blank">traffic stop
       data</a>. “Intrusions” are not a field in the dataset. Rather, this is a term used in this dashboard to reflect
-    both searches and frisks as intrusions by police on  drivers, passengers, and vehicles. In this dashboard:</p>
+    both searches and frisks as intrusions by police on drivers, passengers, and vehicles. In this dashboard:</p>
   <ul>
     <li>A “frisk” refers to a traffic stop where police frisk the vehicle, any passenger, and/or the driver. Frisks are
       stops involving at least one frisk. </li>
@@ -231,7 +228,7 @@
         <h2 class="text-heading-3 text-center mt-18 mb-4 pt-6">High Injury Network Data</h2>
         <ol start="15">
           <FaqQuestion id="15" question="What is the High Injury Network?">
-            <p>The <a href="https://phl.maps.arcgis.com/apps/MapSeries/index.html?appid%3D2a51d5357e24439996f2aa9cdeae72b9"
+            <p>The <a href="https://phl.maps.arcgis.com/apps/MapSeries/index.html?appid=2a51d5357e24439996f2aa9cdeae72b9"
       target="_blank">High Injury Network</a> (HIN) refers to the Philadelphia streets with the highest rates of
     fatalities and serious injuries per mile. The HIN represents 12% of all roadways in the city where 80% of fatal
     crashes or serious accidents happen. <a href="https://visionzerophl.com/" target="_blank">Vision Zero</a>, a task
@@ -273,7 +270,7 @@
             <p>The only Census data used in this dashboard is <a
       href="https://data.census.gov/table?g=050XX00US42101$1400000&d=DEC+Demographic+Profile"
       target="_blank">demographic data</a> on Philadelphia residents’ racial and ethnic identities, grouped at the
-    census tract level. This dashboard also matches Census tracts to their respective Philadelphia Police Department
+    census tract level. This dashboard also matches census tracts to their respective Philadelphia Police Department
     (PPD) police service areas (PSAs).</p>
           </FaqQuestion>
           <FaqQuestion id="21" question="How does this dashboard join Census data to traffic stop data?">
@@ -337,8 +334,8 @@
     later succumb to their injuries. Data on whether a shooter was injured may not be accurate. These limitations are
     sporadic and assumed to be insignificant.</p>
           </FaqQuestion>
-          <FaqQuestion id="29" question="Where can I download shooting data and any associated documentation?">
-            <p>Shooting data is public and can be downloaded from OpenDataPhilly’s <a
+          <FaqQuestion id="29" question="Where can I download shootings data and any associated documentation?">
+            <p>Shootings data is public and can be downloaded from OpenDataPhilly’s <a
       href="https://opendataphilly.org/datasets/shooting-victims/" target="_blank">Shootings</a> dataset. The
     documentation can be found <a
       href="https://metadata.phila.gov/#home/datasetdetails/5719551277d6389f3005a610/representationdetails/5719551277d6389f3005a614/?view_287_page=1"

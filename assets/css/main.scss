@@ -65,13 +65,13 @@ html {
 
 .text-body-3 {
   font-family: 'Poppins', sans-serif;
-  @apply text-[14px] md:text-[18px];
+  @apply text-[16px] md:text-[18px];
 }
 
 .text-body-4 {
   font-family: 'Poppins', sans-serif;
   line-height: 1.64;
-  @apply text-[16px];
+  @apply text-[14px] md:text-[16px];
 }
 
 .text-label-1 {
@@ -196,7 +196,10 @@ a.text-hyperlink-blue {
     list-style: disc;
     @apply m-0 pl-5;
     & > li {
-      @apply my-4
+      @apply my-4;
+      & > ul {
+        list-style: circle;
+      }
     }
   }
   details {
