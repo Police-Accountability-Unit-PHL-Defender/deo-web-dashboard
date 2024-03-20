@@ -34,7 +34,7 @@
           <a href="/data" class="text-cta-18 text-white">About the Data</a>
         </li>
         <li>
-          <a href="/driving-equality" class="text-cta-18 text-white">About Driving Equality</a>
+          <a href="/driving-equality" class="text-cta-18 text-white">What is Driving Equality?</a>
         </li>
         <li>
           <a href="/glossary" class="text-cta-18 text-white">Glossary</a>

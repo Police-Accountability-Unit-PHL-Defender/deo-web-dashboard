@@ -21,7 +21,7 @@
       <div class="col-span-10">
         <section>
           <QuestionHeader>
-            <h3>When Philadelphia police provided a reason, what were the primary reasons why police stopped Black and white drivers in Philadelphia in <SelectYear v-model="q1Year"/> sorted by <SelectRace v-model="q1Race"/>?</h3>
+            <h3>When Philadelphia police provided a reason, what were the primary reasons why police stopped Black and white drivers in Philadelphia in <SelectYear v-model="q1Year"/> sorted by <span class="whitespace-nowrap"><SelectRace v-model="q1Race"/>?</span></h3>
           </QuestionHeader>
           <Answer v-if="q1" :arrow="true">
             <Graph :graph-data="q1.figures.barplot.data" :axis-properties="{x: q1.figures.barplot.properties.xAxis, y: q1.figures.barplot.properties.yAxis}" group-name="group" :group-classes="{'Black': 'fill-primary-600', 'White': 'fill-red'}" :chart-legend="['Black drivers', 'White drivers']">
@@ -31,7 +31,7 @@
         </section>
         <section>
           <QuestionHeader>
-            <h3>When Philadelphia police provided a reason, what were the primary reasons why police stopped White and Non-white neighborhoods in Philadelphia in <SelectYear v-model="q1Year"/> sorted by <SelectRace v-model="q1Race"/>?</h3>
+            <h3>When Philadelphia police provided a reason, what were the primary reasons why police stopped White and Non-white neighborhoods in Philadelphia in <SelectYear v-model="q1Year"/> sorted by <span class="whitespace-nowrap"><SelectRace v-model="q1Race"/>?</span></h3>
           </QuestionHeader>
           <Answer v-if="q2" :arrow="true">
             <Graph :graph-data="q2.figures.barplot.data" :axis-properties="{x: q2.figures.barplot.properties.xAxis, y: q2.figures.barplot.properties.yAxis}" group-name="group" :group-classes="{'Black': 'fill-primary-600', 'White': 'fill-red'}" :chart-legend="['Black drivers', 'White drivers']">

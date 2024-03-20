@@ -41,7 +41,7 @@
         <section>
           <h2 id="part1" class="text-heading-3 text-left pt-10 mb-6">How many traffic stops do police make?</h2>
           <QuestionHeader>
-            <h3>How many traffic stops<Tooltip term="Traffic Stop"/> did Philadelphia police make in <SelectLocation v-model="selectedLocation"/> by <SelectTimeGranularity v-model="selectedTimeGranularity"/> ?</h3>
+            <h3>How many traffic stops<Tooltip term="Traffic Stop"/> did Philadelphia police make in <SelectLocation v-model="selectedLocation"/> by <span class="whitespace-nowrap"><SelectTimeGranularity v-model="selectedTimeGranularity"/>?</span></h3>
           </QuestionHeader>
           <Answer v-if="q1A" :arrow="true">
             <AnswerText>
@@ -80,7 +80,7 @@
         <HorizontalLine class="my-12"/>
         <section>
           <QuestionHeader>
-            <h3>Does traffic enforcement change depending on the time of year? How many traffic stops did Philadelphia police make in certain times of year in <SelectLocation v-model="selectedLocation"/>?</h3>
+            <h3>Does traffic enforcement change depending on the time of year? How many traffic stops did Philadelphia police make in certain times of year in <span class="whitespace-nowrap"><SelectLocation v-model="selectedLocation"/>?</span></h3>
           </QuestionHeader>
           <div class="max-w-2xl mt-4">
             <div class="text-body-4 text-left">Select time(s) of year</div>
@@ -96,7 +96,7 @@
         <section>
           <h2 id="part2" class="text-heading-3 text-left pt-10 mb-6">Who are police stopping in traffic stops?</h2>
           <QuestionHeader>
-            How often did Philadelphia police stop people of different <SelectDemographicCategory v-model="q2ADemographicCategory" :is-plural="true" /> from the start of quarter <SelectQuarter2 v-model="q1BQuarterStart" item-label-end="start"/> through the end of <SelectQuarter2 v-model="q1BQuarterEnd" item-label-end="end"/> in <SelectLocation v-model="selectedLocation"/>?
+            How often did Philadelphia police stop people of different <SelectDemographicCategory v-model="q2ADemographicCategory" :is-plural="true" /> from the start of quarter <SelectQuarter2 v-model="q1BQuarterStart" item-label-end="start"/> through the end of <SelectQuarter2 v-model="q1BQuarterEnd" item-label-end="end"/> in <span class="whitespace-nowrap"><SelectLocation v-model="selectedLocation"/>?</span>
             </QuestionHeader>
             <Answer>
             <div v-if="q2A">
@@ -109,7 +109,7 @@
         <HorizontalLine class="my-12"/>
         <section>
           <QuestionHeader>
-            <h3>Which demographic groups did Philadelphia police most frequently stop in <SelectLocation v-model="selectedLocation"/> from the start of quarter <SelectQuarter2 v-model="q1BQuarterStart" item-label-end="start"/> through the end of <SelectQuarter2 v-model="q1BQuarterEnd" item-label-end="end"/>?</h3>
+            <h3>Which demographic groups did Philadelphia police most frequently stop in <SelectLocation v-model="selectedLocation"/> from the start of quarter <SelectQuarter2 v-model="q1BQuarterStart" item-label-end="start"/> through the end of <span class="whitespace-nowrap"><SelectQuarter2 v-model="q1BQuarterEnd" item-label-end="end"/>?</span></h3>
           </QuestionHeader>
           <Answer :arrow="true">
             <div v-if="q2B">
@@ -156,7 +156,7 @@
         <HorizontalLine class="my-12"/>
         <section>
           <QuestionHeader>
-            How many times did Philadelphia police stop one demographic group compared to another in <SelectLocation v-model="selectedLocation"/> from the start of quarter <SelectQuarter2 v-model="q1BQuarterStart" item-label-end="start"/> through the end of <SelectQuarter2 v-model="q1BQuarterEnd" item-label-end="end"/>?
+            How many times did Philadelphia police stop one demographic group compared to another in <SelectLocation v-model="selectedLocation"/> from the start of quarter <SelectQuarter2 v-model="q1BQuarterStart" item-label-end="start"/> through the end of <span class="whitespace-nowrap"><SelectQuarter2 v-model="q1BQuarterEnd" item-label-end="end"/>?</span>
           </QuestionHeader>
           <div class="max-w-2xl mt-10 mb-6">
             <div class="text-label-2 text-left">Select two demographic groups and compare</div>

@@ -1,13 +1,13 @@
 <template>
   <LayoutPageHeader>
     <template #header>
-      Do police treat people or neighborhoods differently?
+      Do police treat people and neighborhoods differently?
     </template>
     <template #image>
       <img class="w-full h-full object-cover" src="~/assets/images/neighborhoods.jpg" alt="A police car"/>
     </template>
     <template #quote>
-      <Quote author="Mahari Bailey, Attorney" source="https://phillydefenders.org" backgroundClass="bg-[#D7DCF7]" quoteMarkClass="fill-primary-600" bold-color-class="text-primary-600">
+      <Quote author="Mahari Bailey, Attorney" source="/sources/Bailey-Inquirer-Article.pdf" backgroundClass="bg-[#D7DCF7]" quoteMarkClass="fill-primary-600" bold-color-class="text-primary-600">
         <template #quoteText>
           <p>
             It's very disheartening and very degrading… I should feel comfortable enough going to neighborhoods rather than being fearful of being subjected to disrespectful and unlawful activities by a police officer.
@@ -45,7 +45,7 @@
         <section>
           <h2 id="part1" class="text-heading-3 text-left pt-10 mb-6">How intrusive are police during traffic stops?</h2>
           <QuestionHeader>
-            <h3>How many times did Philadelphia police intrude<Tooltip term="Intrusion"/> during traffic stops<Tooltip term="Traffic Stop"/> in <SelectLocation v-model="selectedLocation"/> by <SelectTimeGranularity v-model="selectedTimeGranularity"/> ?</h3>
+            <h3>How many times did Philadelphia police intrude<Tooltip term="Intrusion"/> during traffic stops<Tooltip term="Traffic Stop"/> in <SelectLocation v-model="selectedLocation"/> by <span class="whitespace-nowrap"><SelectTimeGranularity v-model="selectedTimeGranularity"/>?</span></h3>
           </QuestionHeader>
           <Answer v-if="q1A" :arrow="true">
             <AnswerText>
@@ -72,7 +72,7 @@
         <HorizontalLine class="my-12"/>
         <section>
           <QuestionHeader>
-            <h3>How have Philadelphia police changed the way they intrude during traffic stops in <SelectLocation v-model="selectedLocation"/> by <SelectTimeGranularity v-model="selectedTimeGranularity"/>? How do frisks<Tooltip term="Frisk"/> and searches<Tooltip term="Search"/> compare over time?</h3>
+            <h3>How have Philadelphia police changed the way they intrude during traffic stops in <SelectLocation v-model="selectedLocation"/> by <span class="whitespace-nowrap"><SelectTimeGranularity v-model="selectedTimeGranularity"/>?</span> How do frisks<Tooltip term="Frisk"/> and searches<Tooltip term="Search"/> compare over time?</h3>
           </QuestionHeader>
           <Answer v-if="q1B" :arrow="true">
             <Graph :graph-data="q1B.figures.barplot.data" :axis-properties="{x: q1B.figures.barplot.properties.xAxis, y: q1B.figures.barplot.properties.yAxis}" group-name="group" :group-classes="{'# of searches': 'fill-primary-600', '# of frisks': 'fill-red'}" :chart-legend="['Number of searches', 'Number of frisks']" :quarterlyXAxisTicks="true">
@@ -98,7 +98,7 @@
             </Graph>
           </Answer>
           <QuestionHeader>
-            <h3>How many times do Philadelphia police intrude during traffic stops without finding any contraband<Tooltip term="Contraband"/>?</h3>
+            <h3>How many times do Philadelphia police intrude during traffic stops without finding any <span class="whitespace-nowrap">contraband<Tooltip term="Contraband"/>?</span></h3>
           </QuestionHeader>
           <Answer v-if="q2A" :arrow="true">
             <Graph :graph-data="q2AData2" :axis-properties="{x: q2A.figures.barplot2.properties.xAxis, y: q2A.figures.barplot2.properties.yAxis}" bar-annotation-property="annotation">
@@ -130,7 +130,8 @@
           <QuestionHeader>
             <h3>
               Is traffic enforcement different in districts<Tooltip term="District"/> where most residents are white, compared to districts where most residents are people of color?
-              Comparing majority white districts to majority non-white districts, how many <SelectEvent v-model="q3AEvent" /> did Philadelphia police make from the start of quarter <SelectQuarter2 v-model="q2AQuarterStart" item-label-end="start"/> to the end of <SelectQuarter2 v-model="q2AQuarterEnd" item-label-end="end"/>?
+              Comparing majority white districts to majority non-white districts, how many <SelectEvent v-model="q3AEvent" /> did Philadelphia police make from the start of quarter <SelectQuarter2 v-model="q2AQuarterStart" item-label-end="start"/> to the end of 
+              <span class="whitespace-nowrap"><SelectQuarter2 v-model="q2AQuarterEnd" item-label-end="end"/>?</span>
             </h3>
           </QuestionHeader>
           <Answer v-if="q3A" :arrow="true">

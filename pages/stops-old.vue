@@ -69,7 +69,7 @@
           <h3>
             Does traffic enforcement change depending on the time of year?
             How many traffic stops do Philadelphia police make in certain times of the year in
-            <SelectLocation v-model="selectedLocation"/>?
+            <span class="whitespace-nowrap"><SelectLocation v-model="selectedLocation"/>?</span>
           </h3>
       </QuestionHeader>
       <div class="mx-auto max-w-2xl mt-8">
