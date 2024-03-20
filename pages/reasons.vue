@@ -16,21 +16,27 @@
       </Quote>
     </template>
   </LayoutPageHeader>
-
   <main class="layout-container -mt-4 text-body-3">
     <div class="grid-container">
       <div class="col-span-10">
         <section>
           <QuestionHeader>
-            <h3>When a reason was given, what is the racial breakdown for why police say they stopped people stopped in <SelectLocation v-model="selectedLocation"/> in <SelectYear v-model="q1AYear"/>?</h3>
+            <h3>When Philadelphia police provided a reason, what were the primary reasons why police stopped Black and white drivers in Philadelphia in <SelectYear v-model="q1Year"/> sorted by <SelectRace v-model="q1Race"/>?</h3>
           </QuestionHeader>
-          <Answer v-if="q1A" :arrow="true">
-            <Graph :graph-data="q1A.figures.barplot.data" :axis-properties="{x: q1A.figures.barplot.properties.xAxis, y: q1A.figures.barplot.properties.yAxis}">
-              <h4>{{ q1A.figures.barplot.properties.title }}</h4>
+          <Answer v-if="q1" :arrow="true">
+            <Graph :graph-data="q1.figures.barplot.data" :axis-properties="{x: q1.figures.barplot.properties.xAxis, y: q1.figures.barplot.properties.yAxis}" group-name="group" :group-classes="{'Black': 'fill-primary-600', 'White': 'fill-red'}" :chart-legend="['Black drivers', 'White drivers']">
+              <h4>{{ q1.figures.barplot.properties.title }}</h4>
             </Graph>
-            <AnswerText>
-              <span v-html="q1A.text[0]" class="result-text"></span>
-            </AnswerText>
+          </Answer>
+        </section>
+        <section>
+          <QuestionHeader>
+            <h3>When Philadelphia police provided a reason, what were the primary reasons why police stopped White and Non-white neighborhoods in Philadelphia in <SelectYear v-model="q1Year"/> sorted by <SelectRace v-model="q1Race"/>?</h3>
+          </QuestionHeader>
+          <Answer v-if="q2" :arrow="true">
+            <Graph :graph-data="q2.figures.barplot.data" :axis-properties="{x: q2.figures.barplot.properties.xAxis, y: q2.figures.barplot.properties.yAxis}" group-name="group" :group-classes="{'Black': 'fill-primary-600', 'White': 'fill-red'}" :chart-legend="['Black drivers', 'White drivers']">
+              <h4>{{ q2.figures.barplot.properties.title }}</h4>
+            </Graph>
           </Answer>
         </section>
       </div>
@@ -46,12 +52,35 @@ import SelectTimeGranularity from '~/components/SelectTimeGranularity.vue'
 import HorizontalLine from '~/components/ui/HorizontalLine.vue';
 import Tooltip from '~/components/ui/Tooltip.vue';
 
-const selectedLocation = ref('Philadelphia')
-const q1AYear = ref(2023)
-// const selectedTimeGranularity = ref('year')
-// const q1BDemographicCategory = ref('race')
-// const q1BQuarterStart = ref(new Quarter(2023, QuarterMonths['Jan-Mar']))
-// const q1BQuarterEnd = ref(new Quarter(2023, QuarterMonths['Oct-Dec']))
-// const q3AEvent = ref('traffic stops')
-// const selectedDistricts = ref(['District 25', 'District 05'])
+const config = useRuntimeConfig()
+
+// const selectedLocation = ref('Philadelphia')
+const q1Year = ref(2023)
+const q1Race = ref('Black')
+
+const q1Params = ref([q1Year, q1Race])
+const { data: q1, refresh: refreshQ1 } = await useAsyncData('q1',
+  () => $fetch(`${config.public.apiBaseUrl}/reasons/reasons-comparison-bar-drivers`, {
+    params: {
+      year: q1Year.value,
+      race: q1Race.value,
+    },
+    options
+  })
+)
+watch(q1Params, async () => { refreshQ1() }, { deep: true })
+console.log(q1.value)
+
+const q2Params = ref([q1Year, q1Race])
+const { data: q2, refresh: refreshQ2 } = await useAsyncData('q2',
+  () => $fetch(`${config.public.apiBaseUrl}/reasons/reasons-comparison-bar-neighborhoods`, {
+    params: {
+      year: q1Year.value,
+      race: q1Race.value,
+    },
+    options
+  })
+)
+watch(q2Params, async () => { refreshQ1() }, { deep: true })
+console.log(q2.value)
 </script>

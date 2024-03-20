@@ -16,20 +16,32 @@
           <path stroke="#F94C4C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" pointer-events="none" d="M0 2h8"/>
           <path stroke="#fff" stroke-opacity="0" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none" pointer-events="none" d="M0 2h8"/>
         </pattern>
+        <pattern id="O-pattern-both" x="0" y="0" width="6" height="6" patternUnits="userSpaceOnUse" patternContentUnits="userSpaceOnUse" patternTransform="rotate(45)">
+          <path stroke="#60D9FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" pointer-events="none" d="M0 2h8"/>
+          <path stroke="#fff" stroke-opacity="0" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none" pointer-events="none" d="M0 2h8"/>
+          <path stroke="#F94C4C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" pointer-events="none" d="M0 2v8"/>
+          <path stroke="#fff" stroke-opacity="0" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none" pointer-events="none" d="M0 2v8"/>
+        </pattern>
       </defs>
     </svg>
     <div v-if="props.mapLegend" class="text-caption p-4 text-neutral-800 flex gap-x-8 gap-y-2 flex-wrap md:justify-center">
-      <div class="flex gap-1 items-center">
+      <div class="flex gap-1 items-top">
         <svg class="w-6 h-6" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
           <rect width="24" height="24" class="pattern-fill-blue" stroke="#393939" stroke-width="2"/>
         </svg>
-        <div>{{ props.mapLegend[0] }}</div>
+        <div class="mt-[2px]">{{ props.mapLegend[0] }}</div>
       </div>
-      <div class="flex gap-1 items-center">
+      <div class="flex gap-1 items-top">
         <svg class="w-6 h-6" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
           <rect width="24" height="24" class="pattern-fill-red" stroke="#393939" stroke-width="2"/>
         </svg>
-        <div>{{ props.mapLegend[1] }}</div>
+        <div class="mt-[2px]">{{ props.mapLegend[1] }}</div>
+      </div>
+      <div v-if="props.mapLegend.length > 2" class="flex gap-1 items-top">
+        <svg class="w-6 h-6" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <rect width="24" height="24" class="pattern-fill-both" stroke="#393939" stroke-width="2"/>
+        </svg>
+        <div class="mt-[2px]">{{ props.mapLegend[2] }}</div>
       </div>
     </div>
     <div v-if="props.hinLegend" class="text-caption p-4 text-neutral-800 flex gap-x-8 gap-y-2 flex-wrap md:justify-center">
@@ -53,6 +65,9 @@
   .map {
     width: 100%;
     height: 100%;
+  }
+  .pattern-fill-both {
+    fill: url(#O-pattern-both);
   }
   .pattern-fill-blue {
     fill: url(#O-pattern-blue);
@@ -265,7 +280,9 @@ function addGeojsonLayer(geojsonLayerProperties) {
       click: zoomAndHighlightFeatureFromClick,
     });
     if (feature.geometry.type === "Polygon") {
-      if (feature.properties.is_top_n_shootings_change) {
+      if (feature.properties.is_top_n_stopped_change && feature.properties.is_top_n_shootings_change) {
+        layer.options.className = "pattern-fill-both";
+      } else if (feature.properties.is_top_n_shootings_change) {
         layer.options.className = "pattern-fill-red";
       } else if (feature.properties.is_top_n_stopped_change) {
         layer.options.className = "pattern-fill-blue";

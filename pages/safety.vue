@@ -53,7 +53,7 @@
               compared to 2021 (see <a href="/driving-equality#10" class="text-hyperlink-blue" target="_blank">What is Driving Equality?</a> to learn more about these date comparisons). However, in 2023, most traffic stops by the Philadelphia police still did not happen on the HIN.
             </AnswerText>
             <LeafletMap2 :geo-aggregation="q1CGeoAggregation" hin-legend="true">
-              <h4>Random Sample of 1,000 PPD Traffic Stops in 2023 Mapped on HIN Roads</h4>
+              <h4>{{ q1C.geojsons[0].properties.title }}</h4>
             </LeafletMap2>
           </Answer>
         </section>
@@ -61,25 +61,25 @@
         <section>
           <h2 id="part2" class="text-heading-3 text-left mb-6">Do changes in traffic stops over time relate to changes in shootings?</h2>
           <QuestionHeader>
-            <h3>During a surge in traffic stops from 2018 to 2019, which districts had the largest increase in traffic stops? Were these the same districts that had the largest decrease in shootings?</h3>
+            <h3>During a surge in traffic stops from 2018 to 2019, which districts<Tooltip term="District"/> had the largest percent increases in traffic stops? Were these the same districts that had the largest percent decreases in shootings?</h3>
           </QuestionHeader>
           <Answer v-if="q2" :arrow="true">
             <AnswerText>
               <p v-html="q2.text[0]" class="result-text"></p>
             </AnswerText>
-            <LeafletMap2 :geo-aggregation="q2AGeoAggregation" :map-legend="['Districts with largest % increases in traffic stops', 'Districts with largest % decreases in shootings']">
-              <h4>Comparing 2018 to 2019: Districts with Largest % Increase in Traffic Stops vs. Districts with Largest % Decrease in Shootings</h4>
+            <LeafletMap2 :geo-aggregation="q2AGeoAggregation" :map-legend="['Districts with largest % increases in traffic stops', 'Districts with largest % decreases in shootings', 'Districts with both the largest % increases in traffic stops and decreases in shootings']">
+              <h4>{{ q2.geojsons[0].properties.title }}</h4>
             </LeafletMap2>
           </Answer>
           <QuestionHeader>
-            <h3>Driving Equality came into effect on March 3, 2022. In the year after<Tooltip term="Year after"/> Driving Equality, which districts had the largest percent decrease in traffic stops, compared to 2021? (See <a href="/driving-equality#10" target="_blank" class="text-hyperlink-blue">What is Driving Equality?</a> to learn more about these date comparisons.) Were these the same districts that had the largest percent increase in shootings?</h3>
+            <h3>Driving Equality came into effect on March 3, 2022. In the year after<Tooltip term="Year after"/> Driving Equality, which districts had the largest percent decreases in traffic stops, compared to 2021? (See <a href="/driving-equality#10" target="_blank" class="text-hyperlink-blue">What is Driving Equality?</a> to learn more about these date comparisons.) Were these the same districts that had the largest percent increases in shootings?</h3>
           </QuestionHeader>
           <Answer v-if="q2" :arrow="true">
             <AnswerText>
               <p v-html="q2.text[1]" class="result-text mt-2"></p>
             </AnswerText>
             <LeafletMap2 :geo-aggregation="q2BGeoAggregation" :map-legend="['Districts with largest % decreases in traffic stops', 'Districts with largest % increases in shootings']">
-              <h4>Before and After Driving Equality: Districts with Largest % Decrease in Traffic Stops vs. Districts with Largest % Increase in Shootings</h4>
+              <h4>{{ q2.geojsons[1].properties.title }}</h4>
             </LeafletMap2>
           </Answer>
         </section>
@@ -102,9 +102,6 @@ const config = useRuntimeConfig()
 
 const selectedLocation = ref('Philadelphia')
 const selectedTimeGranularity = ref('year')
-const q1BDemographicCategory = ref('race')
-const q1BQuarterStart = ref(new Quarter(2023, QuarterMonths['Jan-Mar']))
-const q1BQuarterEnd = ref(new Quarter(2023, QuarterMonths['Oct-Dec']))
 const q3AEvent = ref('traffic stops')
 const selectedDistricts = ref(['District 25', 'District 05'])
 
@@ -120,27 +117,14 @@ const { data: q1A, refresh: refreshQ1A } = await useAsyncData('q1A',
 )
 watch(q1AParams, async () => { refreshQ1A() }, { deep: true })
 
-const q1BParams = ref([selectedLocation, q1BQuarterStart, q1BQuarterEnd, q1BDemographicCategory])
-const { data: q1B, refresh: refreshQ1B } = await useAsyncData('q1B',
-  () => $fetch(`${config.public.apiBaseUrl}/safety/safety-by-demographic-category`, {
-    params: {
-      location: getLocationParam(selectedLocation.value),
-      start_qyear: q1BQuarterStart.value.toParamString(),
-      end_qyear: q1BQuarterEnd.value.toParamString(),
-      demographic_category_str: q1BDemographicCategory.value,
-    },
-    options
-  })
-)
-watch(q1BParams, async () => { refreshQ1B() }, { deep: true })
-
 const { data: q1C, refresh: refreshQ1C } = await useAsyncData('q1C',
   () => $fetch(`${config.public.apiBaseUrl}/safety/safety-hin-map`, {
     options
   })
 )
+console.log(q1C.value)
 const q1CGeoAggregation = computed(() => {
-  const reversedData = q1C.value.geojson.features.reverse()
+  const reversedData = q1C.value.geojsons[0].features.reverse()
   const data = {
     type: "FeatureCollection",
     features: reversedData
@@ -161,7 +145,7 @@ console.log(q2.value)
 const q2AGeoAggregation = computed(() => {
   return {
     data: {
-      features: q2.value.geojson.features.slice(0, 10),
+      features: q2.value.geojsons[0].features,
       type: "FeatureCollection"
     },
     legendSelectedTextFunction: (obj) => obj.DIST_NUM,
@@ -171,7 +155,7 @@ const q2AGeoAggregation = computed(() => {
 const q2BGeoAggregation = computed(() => {
   return {
     data: {
-      features: q2.value.geojson.features.slice(10),
+      features: q2.value.geojsons[1].features,
       type: "FeatureCollection"
     },
     legendSelectedTextFunction: (obj) => obj.DIST_NUM,
