@@ -54,6 +54,11 @@ const props = defineProps({
     type: Object,
     required: false
   },
+  stackName: {
+    type: String,
+    required: false,
+    default: undefined
+  },
   trendline: {
     type: Array,
     required: false
@@ -80,8 +85,11 @@ const isGrouped = computed(() => {
   return props.groupName !== undefined
 })
 
-onMounted(() => {
+const isStacked = computed(() => {
+  return props.stackName !== undefined
+})
 
+onMounted(() => {
   drawGraph(props.graphData)
 })
 
@@ -137,13 +145,38 @@ const drawGraph = (graphData) => {
   // reset graph
   svg.selectAll("*").remove();
 
+  // if graph is stacked bar chart, then find the maximum value for each x-axis value
+  let series, color, maxStackHeight
+  if (props.stackName) {
+    series = d3.stack()
+      .keys(d3.union(graphData.map(d => d[props.stackName])))
+      .value(([, group], key) => group.get(key)[props.axisProperties.y])
+      (d3.index(graphData, d => d[props.axisProperties.x], d => d[props.stackName]));
+    console.log(series)
+    maxStackHeight = d3.max(series, (d) => d3.max(d, (d) => d[1]))
+    const keys = series.map(d => d.key)
+    const colors = ["#364ED7", "#644CF9", "#FEDBDB", "#88C715", "#A548DE"]
+    color = d3.scaleOrdinal()
+      .domain(keys)
+      .range(colors)
+  }
+
+  let yScaleDomainMax = undefined
+  if (props.yScaleDomainMax) {
+    yScaleDomainMax = props.yScaleDomainMax
+  } else if (props.stackName) {
+    yScaleDomainMax = maxStackHeight
+  } else {
+    yScaleDomainMax = d3.max(graphData, (d) => d[props.axisProperties.y])
+  }
+
   const x = d3.scaleBand()
     .domain(graphData.map(d => d[props.axisProperties.x]))
     .range([margin.left, width - margin.right])
     .paddingInner(innerPaddingRatio)
     .paddingOuter(outerPaddingRatio)
   const y = d3.scaleLinear()
-    .domain([0, props.yScaleDomainMax ?? d3.max(graphData, (d) => d[props.axisProperties.y])])
+    .domain([0, yScaleDomainMax])
     .range([height - margin.bottom, margin.top])
     .nice();
 
@@ -181,7 +214,8 @@ const drawGraph = (graphData) => {
   const MOUSE_POS_Y_OFFSET = 8;
   const MOUSE_POS_X_OFFSET = 0;
   const tooltipDiv = d3.select(container.value).select('.tooltip')
-  const tooltip = (selectionGroup, tooltipDiv, groupWidth = 0, trendline = false) => {
+  const tooltip = (selectionGroup, tooltipDiv, groupWidth = 0, trendline = false, isStack = false) => {
+    console.log(selectionGroup)
     selectionGroup.each(function () {
       d3.select(this)
         .on("mouseover.tooltip", handleMouseover)
@@ -192,7 +226,13 @@ const drawGraph = (graphData) => {
       // show/reveal the tooltip, set its contents,
       // style the element being hovered on
       showTooltip();
-      setContents(d3.select(this).datum(), tooltipDiv);
+      let datum
+      if (isStack) {
+        datum = graphData.find(d => d[props.axisProperties.x] === d3.select(this).datum().data[0] && d[props.stackName] === d3.select(this.parentNode).datum().key)
+      } else {
+        datum = d3.select(this).datum()
+      }
+      setContents(datum, tooltipDiv);
       setStyle(d3.select(this));
     }
     function handleMousemove(event) {
@@ -238,8 +278,7 @@ const drawGraph = (graphData) => {
       }
     }
 
-
-  // bars
+  // grouped
   if (isGrouped.value) {
     const gx = d3.scaleBand().domain(groups).rangeRound([0, groupWidth]).paddingInner(groupGapRatio)
     svg.append("g")
@@ -256,6 +295,25 @@ const drawGraph = (graphData) => {
         .attr("width", barWidth)
         .attr("class", (d) => getGroupClass(d.group))
       .call(tooltip, tooltipDiv, groupWidth);
+  } else if (isStacked.value) {
+    const testFunction = (d) => {
+      console.log(d)
+    }
+    svg.append("g")
+      .selectAll("g")
+      .data(series)
+      .join("g")
+        .attr("fill", d => color(d.key))
+      .selectAll("rect")
+      .data(D => D)
+      .join("rect")
+        .attr("x", d => x(d.data[0]))
+        .attr("y", d => y(d[1]))
+        .attr("height", d => y(d[0]) - y(d[1]))
+        .attr("width", x.bandwidth())
+        // .call(testFunction);
+        .call(tooltip, tooltipDiv, groupWidth, false, true);
+        // .call(tooltip, tooltipDiv);
   } else {
     // text above bars for baseline comparisons
     const group = svg.append("g")
