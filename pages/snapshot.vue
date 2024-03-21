@@ -20,9 +20,26 @@
   <main class="layout-container text-body-3">
     <div class="grid-container">
       <div class="col-span-10">
+        <nav class="flex flex-col gap-3 border-b border-neutral-400 pb-10">
+          <h2 class="text-label-1">Jump to:</h2>
+          <ul class="flex flex-col gap-3">
+            <li>
+              <a href="#part1" class="deo_scroll text-hyperlink flex">
+                <IconsChevron class="fill-black -rotate-90"/>
+                How many traffic stops did Philadelphia police make in the last year?
+              </a>
+            </li>
+            <li>
+              <a href="#part2" class="deo_scroll text-hyperlink flex">
+                <IconsChevron class="fill-black -rotate-90"/>
+                How did traffic stops change after Driving Equality?
+              </a>
+            </li>
+          </ul>
+        </nav>
         <section>
           <h2 id="part1" class="text-heading-3 text-left pt-10 mb-6">
-            How many traffic stops<Tooltip term="Traffic Stop"/> did Philadelphia police make in the last year?
+            How many traffic stops did Philadelphia police make in the last year?
           </h2>
           <!-- <QuestionHeader>
             <h3>How many traffic stops<Tooltip term="Traffic Stop"/> did Philadelphia police make in the last year?</h3>
@@ -52,7 +69,7 @@
         <section>
           <QuestionHeader>
             <h2 id="part2" class="text-heading-3 text-left mb-6">
-              How many traffic stops<Tooltip term="Traffic Stop"/> did Philadelphia police make in the last year?
+              How did traffic stops change after Driving Equality?
             </h2>
           </QuestionHeader>
           <Answer v-if="q1A" :arrow="true">
@@ -61,13 +78,13 @@
               <span v-html="q1A.text.slice(1, 2).join(' ')" class="result-text"></span>,
               compared to 2021 (see <a class="underline text-primary-600 hover:text-primary-800;" href="/driving-equality#10" target="_blank">What is Driving Equality?</a> to learn more about these date comparisons). Concerningly, racial disparities in traffic stops have persisted.
             </AnswerText>
-            <Graph :graph-data="q1A.figures.barplot2.data" :axis-properties="{x: q1A.figures.barplot2.properties.xAxis, y: q1A.figures.barplot2.properties.yAxis}" group-name="group" :group-classes="{'% before Driving Equality': 'fill-primary-600', '% after Driving Equality': 'fill-red', '% of city population': 'fill-neutral-600'}" :chart-legend="['% before Driving Equality', '% after Driving Equality', '% of city population']">
+            <Graph :graph-data="q1A.figures.barplot2.data" :axis-properties="{x: q1A.figures.barplot2.properties.xAxis, y: q1A.figures.barplot2.properties.yAxis}" group-name="group" :group-classes="{'% before Driving Equality': 'fill-primary-600', '% after Driving Equality': 'fill-red', '% of city population': 'fill-neutral-600'}" :chart-legend="['Before Driving Equality', 'After Driving Equality', 'City population']">
               <h4>{{ q1A.figures.barplot2.properties.title }}</h4>
             </Graph>
             <AnswerText>
               <span v-html="q1A.text.slice(2, 3).join(' ')" class="result-text"></span>
             </AnswerText>
-            <Graph :graph-data="q1A.figures.barplot3.data" :axis-properties="{x: q1A.figures.barplot3.properties.xAxis, y: q1A.figures.barplot3.properties.yAxis}" group-name="group" :group-classes="{'# before Driving Equality': 'fill-primary-600', '# after Driving Equality': 'fill-red'}" :chart-legend="['# before Driving Equality', '# after Driving Equality']">
+            <Graph :graph-data="q1A.figures.barplot3.data" :axis-properties="{x: q1A.figures.barplot3.properties.xAxis, y: q1A.figures.barplot3.properties.yAxis}" group-name="group" :group-classes="{'# before Driving Equality': 'fill-primary-600', '# after Driving Equality': 'fill-red'}" :chart-legend="['Before Driving Equality', 'After Driving Equality']">
               <h4>{{ q1A.figures.barplot3.properties.title }}</h4>
             </Graph>
           </Answer>
