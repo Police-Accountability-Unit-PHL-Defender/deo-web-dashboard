@@ -10,15 +10,15 @@
     <slot name="footer"></slot>
     <div v-if="props.chartLegend" class="text-caption pt-4 px-4 text-neutral-800 flex gap-x-8 gap-y-2 flex-wrap md:justify-center md:ml-20">
       <div class="flex gap-1 items-center">
-        <div class="bg-primary-600 w-3 h-3"></div>
+        <div class="bg-purple w-3 h-3"></div>
         <div>{{ chartLegend[0] }}</div>
       </div>
       <div class="flex gap-1 items-center">
-        <div class="bg-red w-3 h-3"></div>
+        <div class="bg-mint w-3 h-3"></div>
         <div>{{ chartLegend[1] }}</div>
       </div>
       <div v-if="chartLegend.length > 2" class="flex gap-1 items-center">
-        <div class="bg-neutral-600 w-3 h-3"></div>
+        <div class="bg-yellow w-3 h-3"></div>
         <div>{{ chartLegend[2] }}</div>
       </div>
     </div>
@@ -105,7 +105,7 @@ const getGroupClass = (group) => {
   if (props.groupClasses[group]) {
     return props.groupClasses[group]
   } else {
-    return 'fill-primary-600'
+    return 'fill-purple'
   }
 }
 
@@ -317,7 +317,7 @@ const drawGraph = (graphData) => {
   } else {
     // text above bars for baseline comparisons
     const group = svg.append("g")
-      .attr("class", "fill-primary-600")
+      .attr("class", "fill-purple")
       .selectAll()
       .data(graphData)
       .join("g");

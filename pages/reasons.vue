@@ -42,7 +42,7 @@
             <h3>When Philadelphia police gave a reason, what were the primary reasons why police stopped in Philadelphia in <span class="whitespace-nowrap"><SelectYear v-model="q1Year"/>?</span> sorted by <SelectRace v-model="q1Race"/>?</h3>
           </QuestionHeader>
           <Answer v-if="q1" :arrow="true">
-            <Graph :graph-data="q1.figures.barplot.data" :axis-properties="{x: q1.figures.barplot.properties.xAxis, y: q1.figures.barplot.properties.yAxis}" group-name="group" :group-classes="{'Black': 'fill-primary-600', 'White': 'fill-red'}" :chart-legend="['Black drivers', 'White drivers']">
+            <Graph :graph-data="q1.figures.barplot.data" :axis-properties="{x: q1.figures.barplot.properties.xAxis, y: q1.figures.barplot.properties.yAxis}" group-name="group" :group-classes="{'Black': 'fill-purple', 'White': 'fill-mint'}" :chart-legend="['Black drivers', 'White drivers']">
               <h4>{{ q1.figures.barplot.properties.title }}</h4>
             </Graph>
           </Answer>
@@ -53,7 +53,7 @@
             <h3>When Philadelphia police provided a reason, what were the primary reasons why police stopped White and Non-white neighborhoods in Philadelphia in <SelectYear v-model="q1Year"/> sorted by <span class="whitespace-nowrap"><SelectRace v-model="q1Race"/>?</span></h3>
           </QuestionHeader>
           <Answer v-if="q2" :arrow="true">
-            <Graph :graph-data="q2.figures.barplot.data" :axis-properties="{x: q2.figures.barplot.properties.xAxis, y: q2.figures.barplot.properties.yAxis}" group-name="group" :group-classes="{'Black': 'fill-primary-600', 'White': 'fill-red'}" :chart-legend="['Black drivers', 'White drivers']">
+            <Graph :graph-data="q2.figures.barplot.data" :axis-properties="{x: q2.figures.barplot.properties.xAxis, y: q2.figures.barplot.properties.yAxis}" group-name="group" :group-classes="{'Black': 'fill-purple', 'White': 'fill-mint'}" :chart-legend="['Black drivers', 'White drivers']">
               <h4>{{ q2.figures.barplot.properties.title }}</h4>
             </Graph>
           </Answer>

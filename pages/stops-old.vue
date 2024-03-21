@@ -181,7 +181,7 @@
         </div>
       </div>
       <IconsArrow class="text-primary-800 rotate-180 mx-auto my-8 h-6"/>
-      <Graph :graph-data="q2GraphData" :axis-properties="{x: 'time', y: 'amount'}" group-name="group" :group-classes="{'group1': 'fill-primary-600', 'group2': 'fill-red'}">
+      <Graph :graph-data="q2GraphData" :axis-properties="{x: 'time', y: 'amount'}" group-name="group" :group-classes="{'group1': 'fill-purple', 'group2': 'fill-mint'}">
           <h2 class="max-w-[500px] mx-auto">
             Number of PPD Traffic Stops in
             {{ formatLocationForSentence(selectedLocation) }} from {{ selectedTime0 }} through {{ selectedTime1 }}
