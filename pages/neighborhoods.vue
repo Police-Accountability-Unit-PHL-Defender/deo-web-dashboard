@@ -37,7 +37,7 @@
             <li>
               <a href="#part3" class="deo_scroll text-hyperlink flex">
                 <IconsChevron class="fill-black -rotate-90"/>
-                During traffic stops, do police officers treat neighborhoods differently?
+                During traffic stops, do police treat neighborhoods differently?
               </a>
             </li>
           </ul>
@@ -86,7 +86,7 @@
           <QuestionHeader>
             <h3>
               Do Philadelphia police intrude upon some drivers and/or their vehicles more often than others?
-              Show data by <SelectDemographicCategory v-model="q2ADemographicCategory" /> in <SelectLocation v-model="selectedLocation"/> from the start of quarter <SelectQuarter2 v-model="q2AQuarterStart" item-label-end="start"/> to the end of <SelectQuarter2 v-model="q2AQuarterEnd" item-label-end="end"/>, compared to a baseline of people who are
+              Show data by <SelectDemographicCategory v-model="q2ADemographicCategory" /> in <SelectLocation v-model="selectedLocation"/> from the start of quarter <SelectQuarter2 v-model="q2AQuarterStart" item-label-end="start"/> through the end of <SelectQuarter2 v-model="q2AQuarterEnd" item-label-end="end"/>, compared to a baseline of people who are
               <SelectRace v-if="q2ADemographicCategory === 'race'" v-model="q2ARace"/>
               <SelectGender v-if="q2ADemographicCategory ==='gender'" v-model="q2AGender"/>
               <SelectAgeGroup v-if="q2ADemographicCategory === 'age range'" v-model="q2AAgeGroup"/>.
@@ -130,7 +130,7 @@
           <QuestionHeader>
             <h3>
               Is traffic enforcement different in districts<Tooltip term="District"/> where most residents are white, compared to districts where most residents are people of color?
-              Comparing majority white districts to majority non-white districts, how many <SelectEvent v-model="q3AEvent" /> did Philadelphia police make from the start of quarter <SelectQuarter2 v-model="q2AQuarterStart" item-label-end="start"/> to the end of 
+              Comparing majority white districts to majority non-white districts, how many <SelectEvent v-model="q3AEvent" /> did Philadelphia police make from the start of quarter <SelectQuarter2 v-model="q2AQuarterStart" item-label-end="start"/> through the end of 
               <span class="whitespace-nowrap"><SelectQuarter2 v-model="q2AQuarterEnd" item-label-end="end"/>?</span>
             </h3>
           </QuestionHeader>
@@ -249,6 +249,8 @@ const { data: q2A, refresh: refreshQ2A } = await useAsyncData('q2A',
 )
 watch(q2AParams, async () => { refreshQ2A() }, { deep: true })
 
+console.log(q2A.value)
+
 const getQ2AnnotatedData = (barplotKey) => {
   if (!q2A.value) return null
   const yAxisProperty = q2A.value.figures[barplotKey].properties.yAxis
@@ -259,8 +261,12 @@ const getQ2AnnotatedData = (barplotKey) => {
     if (d[getDemographicGroupParam(q2ADemographicCategory.value)] === q2ADemographicBaseline.value) {
       annotation = 'Baseline'
     } else {
-      const multiple = (d[yAxisProperty] / baselineAmount).toFixed(1)
-      annotation = `${multiple}x of Baseline`
+      if (baselineAmount === 0) {
+        annotation = ''
+      } else {
+        const multiple = (d[yAxisProperty] / baselineAmount).toFixed(1)
+        annotation = `${multiple}x of Baseline`
+      }
     }
     return {
       ...d,
@@ -270,7 +276,6 @@ const getQ2AnnotatedData = (barplotKey) => {
 }
 
 const q2AData1 = computed(() => {
-
   return getQ2AnnotatedData('barplot')
 })
 const q2AData2 = computed(() => {

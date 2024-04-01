@@ -37,7 +37,7 @@
         </svg>
         <div class="mt-[2px]">{{ props.mapLegend[1] }}</div>
       </div>
-      <div v-if="props.mapLegend.length > 2" class="flex gap-1 items-top">
+      <div v-if="props.mapLegend.length > 2 && containsPatternBothRegion" class="flex gap-1 items-top">
         <svg class="w-6 h-6" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
           <rect width="24" height="24" class="pattern-fill-both" stroke="#393939" stroke-width="2"/>
         </svg>
@@ -80,13 +80,13 @@
 <script setup>
 const config = useRuntimeConfig()
 const props = defineProps(['geoAggregation', 'mapLegend', 'hinLegend'])
-// const emit = defineEmits(['update:modelValue'])
 
 const mapElement = ref(null)
 
 const mapObj = ref()
 const mapsLoaded = ref()
 const addressSelection = ref()
+const containsPatternBothRegion = ref(false)
 // const selectedFeature = ref()
 
 // Options Setting
@@ -281,6 +281,7 @@ function addGeojsonLayer(geojsonLayerProperties) {
     });
     if (feature.geometry.type === "Polygon") {
       if (feature.properties.is_top_n_stopped_change && feature.properties.is_top_n_shootings_change) {
+        containsPatternBothRegion.value = true;
         layer.options.className = "pattern-fill-both";
       } else if (feature.properties.is_top_n_shootings_change) {
         layer.options.className = "pattern-fill-red";

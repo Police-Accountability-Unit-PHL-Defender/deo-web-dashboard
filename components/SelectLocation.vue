@@ -10,7 +10,7 @@
           <IconsClose class="close-button w-10" @click="locationModalIsOpen = false" />
         </button>
         <div class="relative z-10 mb-4">
-          Select <SelectGeoBoundary v-model="selectedGeoBoundary"></SelectGeoBoundary>
+          Select <SelectGeoBoundary v-model="selectedGeoBoundary" :allowOnlyCityOrDivision="props.allowOnlyCityOrDivision"></SelectGeoBoundary>
         </div>
         <div class="h-[520px] relative z-0">
           <LeafletMap
@@ -28,7 +28,7 @@
 import { ref } from 'vue'
 import LeafletMap from '~/components/map/LeafletMap.vue'
 import SelectGeoBoundary from './SelectGeoBoundary.vue';
-const props = defineProps(['modelValue', 'capitalize'])
+const props = defineProps(['modelValue', 'capitalize', 'allowOnlyCityOrDivision'])
 const emit = defineEmits(['update:modelValue'])
 const selectedGeoBoundary = ref('city')
 const locationModalIsOpen = ref(false)

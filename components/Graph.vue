@@ -195,7 +195,15 @@ const drawGraph = (graphData) => {
       .attr("class", "text-body-4")
       .text(props.axisProperties.y));
   // Add the x-axis
-  const tickValues = n > 10 && props.quarterlyXAxisTicks ? x.domain().filter(function(d,i){ return !(i%8 - 4)}) : x.domain()
+  let tickSkip = 1
+  if (n >= 32) {
+    tickSkip = 8
+  } else if (n >= 16) {
+    tickSkip = 4
+  } else {
+    tickSkip = 2
+  }
+  const tickValues = n >= 8 && props.quarterlyXAxisTicks ? x.domain().filter(function(d,i){ return !(i%tickSkip)}) : x.domain()
   svg.append("g")
     .attr("transform", `translate(0,${height - margin.bottom})`)
     .attr("class", "text-caption")
@@ -215,7 +223,6 @@ const drawGraph = (graphData) => {
   const MOUSE_POS_X_OFFSET = 0;
   const tooltipDiv = d3.select(container.value).select('.tooltip')
   const tooltip = (selectionGroup, tooltipDiv, groupWidth = 0, trendline = false, isStack = false) => {
-    console.log(selectionGroup)
     selectionGroup.each(function () {
       d3.select(this)
         .on("mouseover.tooltip", handleMouseover)

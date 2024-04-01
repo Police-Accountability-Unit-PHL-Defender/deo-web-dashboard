@@ -26,7 +26,7 @@
             <li>
               <a href="#part1" class="deo_scroll text-hyperlink flex">
                 <IconsChevron class="fill-black -rotate-90"/>
-                How many traffic stops did Philadelphia police make in the last year?
+                What is the snapshot of traffic enforcement in the last year?
               </a>
             </li>
             <li>
@@ -39,11 +39,11 @@
         </nav>
         <section>
           <h2 id="part1" class="text-heading-3 text-left pt-10 mb-6">
-            How many traffic stops did Philadelphia police make in the last year?
+            What is the snapshot of traffic enforcement in the last year?
           </h2>
-          <!-- <QuestionHeader>
+          <QuestionHeader>
             <h3>How many traffic stops<Tooltip term="Traffic Stop"/> did Philadelphia police make in the last year?</h3>
-          </QuestionHeader> -->
+          </QuestionHeader>
           <Answer v-if="q1A" :arrow="true">
             <AnswerText>
               <div v-html="q1A.text[0]" class="result-text"></div>

@@ -9,14 +9,26 @@
 
 <script setup>
   import SelectOne from '~/components/ui/SelectOne.vue'
-  // TODO: Options for years should be based on available data
-  const items = ['city', 'division', 'district', 'psa']
-  const itemDisplayText = {
-    city: 'city',
-    division: 'division',
-    district: 'district',
-    psa: 'PSA'
-  }
-  const props = defineProps(['modelValue'])
+  const props = defineProps(['modelValue', 'allowOnlyCityOrDivision'])
   const emit = defineEmits(['update:modelValue'])
+  const items = computed(() => {
+    if (props.allowOnlyCityOrDivision) {
+      return ['city', 'division']
+    }
+    return ['city', 'division', 'district', 'psa']
+  })
+  const itemDisplayText = computed(() => {
+    if (props.allowOnlyCityOrDivision) {
+      return {
+        city: 'city',
+        division: 'division'
+      }
+    }
+    return {
+      city: 'city',
+      division: 'division',
+      district: 'district',
+      psa: 'PSA'
+    }
+  })
 </script>
