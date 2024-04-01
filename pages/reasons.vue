@@ -16,7 +16,7 @@
       </Quote>
     </template>
   </LayoutPageHeader>
-  <main class="layout-container -mt-4 text-body-3">
+  <main class="layout-container mt-8 md:-mt-4 text-body-3">
     <div class="grid-container">
       <div class="col-span-10">
         <nav class="flex flex-col gap-3 border-b border-neutral-400 pb-10">
@@ -39,7 +39,7 @@
         <section>
           <h2 id="part1" class="text-heading-3 text-left pt-10 mb-6">Do Philadelphia police stop Black and white drivers for different reasons?</h2>
           <QuestionHeader>
-            <h3>When Philadelphia police gave a reason, what were the primary reasons why police stopped in Philadelphia in <span class="whitespace-nowrap"><SelectYear v-model="q1Year"/>?</span> sorted by <SelectRace v-model="q1Race"/>?</h3>
+            <h3>When Philadelphia police gave a reason, what were the primary reasons why police stopped <SelectWhiteBlackDriver v-model="q1Race" /> in Philadelphia in <span class="whitespace-nowrap"><SelectYear v-model="q1Year"/>?</span></h3>
           </QuestionHeader>
           <Answer v-if="q1" :arrow="true">
             <Graph :graph-data="q1.figures.barplot.data" :axis-properties="{x: q1.figures.barplot.properties.xAxis, y: q1.figures.barplot.properties.yAxis}" group-name="group" :group-classes="{'Black': 'fill-purple', 'White': 'fill-mint'}" :chart-legend="['Black drivers', 'White drivers']">
@@ -50,7 +50,7 @@
         <HorizontalLine class="my-12"/>
         <section>
           <QuestionHeader>
-            <h3>When Philadelphia police provided a reason, what were the primary reasons why police stopped White and Non-white neighborhoods in Philadelphia in <SelectYear v-model="q1Year"/> sorted by <span class="whitespace-nowrap"><SelectRace v-model="q1Race"/>?</span></h3>
+            <h3>When Philadelphia police gave a reason, what were the primary reasons why police stopped drivers in majority <SelectWhiteMajorityNeighborhood v-model="selectedNeighborhoodMajority"/> in Philadelphia in <SelectYear v-model="q1Year"/>?</h3>
           </QuestionHeader>
           <Answer v-if="q2" :arrow="true">
             <Graph :graph-data="q2.figures.barplot.data" :axis-properties="{x: q2.figures.barplot.properties.xAxis, y: q2.figures.barplot.properties.yAxis}" group-name="group" :group-classes="{'Black': 'fill-purple', 'White': 'fill-mint'}" :chart-legend="['Black drivers', 'White drivers']">
@@ -61,12 +61,15 @@
         <HorizontalLine class="my-12"/>
         <section>
           <QuestionHeader>
-            <h3>Driving Equality came into effect on March 3, 2022. After Driving Equality, did Philadelphia police make fewer traffic stops for the 8 reasons covered by the law? Show primary reasons for traffic stops by <span class="whitespace-nowrap"><SelectTimeGranularity v-model="selectedTimeGranularity"/>?</span></h3>
+            <h3>Driving Equality came into effect on March 3, 2022. After Driving Equality, did Philadelphia police make fewer traffic stops for the 8 reasons covered by the law? Show primary reasons for traffic stops by <span class="whitespace-nowrap"><SelectTimeGranularity v-model="selectedTimeGranularity"/>.</span></h3>
           </QuestionHeader>
           <Answer v-if="q3" :arrow="true">
             <Graph :graph-data="q3.figures.barplot.data" :axis-properties="{x: q3.figures.barplot.properties.xAxis, y: q3.figures.barplot.properties.yAxis}" stack-name="group">
               <h4>{{ q3.figures.barplot.properties.title }}</h4>
             </Graph>
+            <AnswerText>
+              <p>See <a href="driving-equality#7" class="text-hyperlink-blue" target="_bla">What is Driving Equality?</a> to learn more about the 8 reasons covered by the law. Importantly, Philadelphia police can still stop drivers for registration and lighting violations that are not covered by Driving Equality. For example, Philadelphia police can stop drivers for having all lights out, but police cannot stop drivers for a single broken bulb or light.</p>
+            </AnswerText>
           </Answer>
         </section>
         <HorizontalLine class="my-12"/>
@@ -97,6 +100,7 @@ import Tooltip from '~/components/ui/Tooltip.vue';
 const config = useRuntimeConfig()
 
 // const selectedLocation = ref('Philadelphia')
+const selectedNeighborhoodMajority = ref('Non-white')
 const selectedTimeGranularity = ref('quarter')
 const q1Year = ref(2023)
 const q1Race = ref('Black')

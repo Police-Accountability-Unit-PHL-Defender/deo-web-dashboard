@@ -164,7 +164,7 @@
               <div class="col-span-1 flex flex-col gap-4 text-body-3 font-medium">
                 <h4 class="text-body-3 font-medium flex gap-2 items-center">
                   Group 1
-                  <div class="demographic-group-square bg-primary-600"></div>
+                  <div class="demographic-group-square bg-purple"></div>
                 </h4>
                 <SelectAgeGroups v-model="q2CGroup1AgeRange"/>
                 <SelectGenders v-model="q2CGroup1Gender"/>
@@ -173,7 +173,7 @@
               <div class="col-span-1 flex flex-col gap-4 text-body-3 font-medium">
                 <h4 class="text-body-3 font-medium flex gap-2 items-center">
                   Group 2
-                  <div class="demographic-group-square bg-red"></div>
+                  <div class="demographic-group-square bg-mint"></div>
                 </h4>
                 <SelectAgeGroups v-model="q2CGroup2AgeRange"/>
                 <SelectGenders v-model="q2CGroup2Gender"/>

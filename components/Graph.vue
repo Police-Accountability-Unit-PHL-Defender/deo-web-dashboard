@@ -150,7 +150,7 @@ const drawGraph = (graphData) => {
   if (props.stackName) {
     series = d3.stack()
       .keys(d3.union(graphData.map(d => d[props.stackName])))
-      .value(([, group], key) => group.get(key)[props.axisProperties.y])
+      .value(([, group], key) => group.get(key) ? group.get(key)[props.axisProperties.y] : 0)
       (d3.index(graphData, d => d[props.axisProperties.x], d => d[props.stackName]));
     console.log(series)
     maxStackHeight = d3.max(series, (d) => d3.max(d, (d) => d[1]))
