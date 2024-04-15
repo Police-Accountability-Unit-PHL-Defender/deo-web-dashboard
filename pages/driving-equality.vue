@@ -180,3 +180,9 @@
     </div>
   </div>
 </template>
+
+<script setup>
+useHead({
+  title: 'What is Driving Equality?',
+})
+</script>

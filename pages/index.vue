@@ -74,4 +74,10 @@
 
 <script setup lang="ts">
 import HomeModule from '~/components/HomeModule.vue';
+useHead({
+  title: 'Do traffic stops promote safety?',
+  meta: [
+    { name: 'description', content: 'Explore this dashboard to learn more about racial disparities in the Philadelphia Police Department’s traffic enforcement, how traffic stops have changed over time, and the history of Driving Equality.' }
+  ],
+})
 </script>

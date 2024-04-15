@@ -190,6 +190,10 @@ import Tooltip from '~/components/ui/Tooltip.vue';
 import IconsChevron from '~/components/icons/Chevron.vue';
 import { getDemographicGroupParam } from '~/utils';
 
+useHead({
+  title: 'Do police treat people and neighborhoods differently?',
+})
+
 const config = useRuntimeConfig()
 const mostRecentQuarter = Quarter.fromParamString(config.public.mostRecentQuarter)
 

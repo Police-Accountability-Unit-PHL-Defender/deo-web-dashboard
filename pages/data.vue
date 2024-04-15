@@ -165,37 +165,20 @@
     publicly, including personally identifiable information and information about the officers who made each stop.</p>
           </FaqQuestion>
           <FaqQuestion id="11" question="What are the limitations of the traffic stop data?">
-            <p>The race, ethnicity, and gender of drivers and passengers in traffic stop data is based on what is reported by
-    police, rather than how the person identifies. Police officers might not always accurately perceive or properly
-    document information about the stops they make and the people they stop for a variety of reasons including human
-    error. </p>
-  <p>To comply with the <a
-      href="https://codelibrary.amlegal.com/codes/philadelphia/latest/philadelphia_pa/0-0-0-285029#JD_12-201"
-      target="_blank">Driving Equality companion data ordinance</a>, the Philadelphia Police Department (PPD) has begun
-    to make more traffic stop data public on OpenDataPhilly, including partial information on the reason for each
-    traffic stop and whether police found a gun during the stop. However, the PPD is slowly complying with the data requirements, resulting in missing reasons for some traffic stops in the data set at the time of this dashboard’s publication. In addition, for a period of time, OpenDataPhilly recorded the reasons for some traffic stops in 2021. However, that data was subsequently removed from OpenDataPhilly. To perform some analyses, this dashboard uses a saved version of 2021 data that includes the stops with stop reasons.</p>
-  <p>Additionally, the data also has some information that is unreliable. For example, the data includes the latitude
-    and longitude of each stop, but the coordinates sometimes <a
-      href="https://www.inquirer.com/news/philadelphia/police-crime-data-maps-disney-world-20220922.html"
-      target="_blank">wrongly point to Disney World</a> or Erie, PA. </p>
-  <p>While imperfect, <a href="https://opendataphilly.org/datasets/vehicle-pedestrian-investigations/"
-      target="_blank">traffic stop data</a> is the most comprehensive information publicly available on police traffic
-    enforcement in Philadelphia.</p>
+            <p>The race, ethnicity, and gender of drivers and passengers in traffic stop data is based on what is reported by police rather than how the person identifies. Police officers might not always accurately perceive or properly document information about the stops they make and the people they stop for a variety of reasons including human error.</p>
+            <p>To comply with the <a
+              href="https://codelibrary.amlegal.com/codes/philadelphia/latest/philadelphia_pa/0-0-0-285029#JD_12-201"
+              target="_blank">Driving Equality companion data ordinance</a>, the Philadelphia Police Department (PPD) has begun to make more traffic stop data public on OpenDataPhilly, including partial information on the reason for each traffic stop and whether police found a gun during the stop. The PPD is slowly complying with the data requirements; however, this has resulted in missing reasons for some traffic stops in the data set at the time of this dashboard’s publication.</p>
+            <p>Additionally, the data set has some information that is unreliable. For example, the data includes the latitude and longitude of each stop, but the coordinates sometimes <a
+            href="https://www.inquirer.com/news/philadelphia/police-crime-data-maps-disney-world-20220922.html"
+            target="_blank">wrongly point to Disney World</a> or Erie, PA.</p>
+            <p>While imperfect, <a href="https://opendataphilly.org/datasets/vehicle-pedestrian-investigations/"
+              target="_blank">traffic stop data</a> is the most comprehensive information publicly available on police traffic enforcement in Philadelphia.</p>
           </FaqQuestion>
           <FaqQuestion id="12" question="Was the traffic stop data cleaned before analysis?">
-            <p>Yes. Because the <a href="https://opendataphilly.org/datasets/vehicle-pedestrian-investigations/"
-      target="_blank">traffic stop data</a> contains one row per individual who has interacted with police during a
-    vehicle or pedestrian stop, this dashboard filters the data to analyze only vehicle stops, then groups the data from
-    a per-individual to per-vehicle basis. This dashboard uses the data from a per-vehicle basis to count the number of
-    stops, such as stops within a location, stops across a time period, or stops of different demographic groups. For
-    stops involving more than one person, the traffic stop data does not clarify who is a driver or passenger, so this
-    dashboard estimates the driver’s demographic information by choosing the first individual listed as part of the
-    stop. </p>
-  <p>The Defender has performed an in-depth analysis of traffic stop data in the past and determined that the majority
-    of traffic stops consist of a driver and no passengers. When there is one passenger—the second most likely scenario
-    after no passengers—that person is the same race as the driver in the majority of stops. The Defender did not see
-    significant variation in the racial or gender demographics of people stopped, even when choosing the second person
-    listed in a stop as the driver.   </p>
+            <p>Yes. Because the <a href="https://opendataphilly.org/datasets/vehicle-pedestrian-investigations/" target="_blank">traffic stop data</a> contains one row per individual who has interacted with police during a vehicle or pedestrian stop, this dashboard filters the data to analyze only vehicle stops, then groups the data from a per-individual to per-vehicle basis. This dashboard uses the data from a per-vehicle basis to count the number of stops, such as stops within a location, stops across a time period, or stops of different demographic groups. For stops involving more than one person, the traffic stop data does not clarify who is a driver or passenger, so this dashboard estimates the driver’s demographic information by choosing the first individual listed as part of the stop.</p>
+            <p>The Defender has performed an in-depth analysis of traffic stop data in the past and determined that the majority of traffic stops consist of a driver and no passengers. When there is one passenger—the second most likely scenario after no passengers—that person is the same race as the driver in the majority of stops. The Defender did not see significant variation in the racial or gender demographics of people stopped, even when choosing the second person listed in a stop as the driver.</p>
+            <p>In order to analyze motor vehicle code violation data in the context of Driving Equality, the Defender reviewed the motor vehicle code that police used for each traffic stop when it was included.  Because this is a free text field, not all codes are accurate, and often the field is left blank.  The Defender grouped all variants within the statute for each motor vehicle code violation together when possible (for example, 1332 A and 1332A were grouped together). When the violation was not clear because a specific subsection of a statute was not identified or where there were citations to a nonexistent motor vehicle code violation, the Defender did not include that data in the motor vehicle code stop analysis.  The Defender then grouped similar types of violations together.  For example, motor vehicle code violations for careless driving, reckless driving, and speeding were grouped together for analysis. Finally, all motor vehicle code violations impacted by the Driving Equality Ordinance were isolated for analysis.</p>
           </FaqQuestion>
           <FaqQuestion id="13" question="How does this dashboard measure frisks, searches, and intrusions?">
             <p>Frisks and searches are fields within the <a
@@ -408,3 +391,9 @@ table.timeline {
   }
 }
 </style>
+
+<script setup>
+useHead({
+  title: 'About the Data',
+})
+</script>

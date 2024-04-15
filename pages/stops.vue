@@ -47,7 +47,7 @@
             <AnswerText>
               <div v-html="q1A.text[0]" class="result-text"></div>
             </AnswerText>
-            <Graph :graph-data="q1A.figures.barplot.data" :axis-properties="{x: q1A.figures.barplot.properties.xAxis, y: q1A.figures.barplot.properties.yAxis}" :quarterlyXAxisTicks="true">
+            <Graph :graph-data="q1A.figures.barplot.data" :axis-properties="{x: q1A.figures.barplot.properties.xAxis, y: q1A.figures.barplot.properties.yAxis}" :quarterlyXAxisTicks="selectedTimeGranularity === 'quarter'">
               <h4>{{ q1A.figures.barplot.properties.title }}</h4>
             </Graph>
             <AnswerText>
@@ -208,6 +208,10 @@ import SelectTimeGranularity from '~/components/SelectTimeGranularity.vue'
 import HorizontalLine from '~/components/ui/HorizontalLine.vue';
 import Button from '~/components/ui/Button.vue';
 import Tooltip from '~/components/ui/Tooltip.vue';
+
+useHead({
+  title: 'How many stops do police make, and who do they stop?',
+})
 
 const config = useRuntimeConfig()
 const mostRecentQuarter = Quarter.fromParamString(config.public.mostRecentQuarter)

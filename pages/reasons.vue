@@ -42,7 +42,7 @@
             <h3>Do Philadelphia police stop Black and white drivers for different reasons? When Philadelphia police gave a reason, what were the primary reasons why police stopped <SelectWhiteBlackDriver v-model="q1Race" /> in Philadelphia in <span class="whitespace-nowrap"><SelectYear v-model="q1Year"/>?</span></h3>
           </QuestionHeader>
           <Answer v-if="q1" :arrow="true">
-            <Graph :graph-data="q1.figures.barplot.data" :axis-properties="{x: q1.figures.barplot.properties.xAxis, y: q1.figures.barplot.properties.yAxis}" group-name="group" :group-classes="{'Black drivers': 'fill-purple', 'White drivers': 'fill-mint'}" :chart-legend="['Black drivers', 'White drivers']" :wrap-x-axis-labels="true" :minimum-container-width="960" :margin="{bottom: 100}">
+            <Graph :graph-data="q1.figures.barplot.data" :axis-properties="{x: q1.figures.barplot.properties.xAxis, y: q1.figures.barplot.properties.yAxis}" group-name="group" :group-classes="{'Black drivers': 'fill-purple', 'White drivers': 'fill-mint'}" :chart-legend="['Black drivers', 'White drivers']" :wrap-x-axis-labels="true" :minimum-container-width="960" :margin="{bottom: 110}">
               <h4>{{ q1.figures.barplot.properties.title }}</h4>
             </Graph>
             <AnswerText>
@@ -55,10 +55,10 @@
         <HorizontalLine class="my-4 md:my-12"/>
         <section>
           <QuestionHeader>
-            <h3>Do Philadelphia police make traffic stops<Tooltip term="Traffic Stop" /> for different reasons in districts<Tooltip term="District" /> where most residents are white, compared to districts where most residents are people of color? When Philadelphia police gave a reason, what were the primary reasons why police stopped drivers in majority <SelectWhiteMajorityNeighborhood v-model="selectedNeighborhoodMajority"/> in Philadelphia in <span class="whitespace-nowrap"><SelectYear v-model="q1Year"/>?</span></h3>
+            <h3>Do Philadelphia police make traffic stops for different reasons in districts<Tooltip term="District" /> where most residents are white, compared to districts where most residents are people of color? When Philadelphia police gave a reason, what were the primary reasons why police stopped drivers in majority <SelectWhiteMajorityNeighborhood v-model="selectedNeighborhoodMajority"/> in Philadelphia in <span class="whitespace-nowrap"><SelectYear v-model="q1Year"/>?</span></h3>
           </QuestionHeader>
           <Answer v-if="q2" :arrow="true">
-            <Graph :graph-data="q2.figures.barplot.data" :axis-properties="{x: q2.figures.barplot.properties.xAxis, y: q2.figures.barplot.properties.yAxis}" group-name="group" :group-classes="{'Majority non-white districts': 'fill-purple', 'Majority white districts': 'fill-mint'}" :chart-legend="['Majority non-white districts', 'Majority white districts']" :wrap-x-axis-labels="true" :minimum-container-width="960" :margin="{bottom: 100}">
+            <Graph :graph-data="q2.figures.barplot.data" :axis-properties="{x: q2.figures.barplot.properties.xAxis, y: q2.figures.barplot.properties.yAxis}" group-name="group" :group-classes="{'Majority non-white districts': 'fill-purple', 'Majority white districts': 'fill-mint'}" :chart-legend="['Majority non-white districts', 'Majority white districts']" :wrap-x-axis-labels="true" :minimum-container-width="960" :margin="{bottom: 110}">
               <h4>{{ q2.figures.barplot.properties.title }}</h4>
             </Graph>
             <AnswerText>
@@ -107,6 +107,10 @@ import SelectLocation from '~/components/SelectLocation.vue'
 import SelectTimeGranularity from '~/components/SelectTimeGranularity.vue'
 import HorizontalLine from '~/components/ui/HorizontalLine.vue';
 import Tooltip from '~/components/ui/Tooltip.vue';
+
+useHead({
+  title: 'What reasons do police give for making traffic stops?',
+})
 
 const config = useRuntimeConfig()
 

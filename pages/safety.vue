@@ -98,6 +98,10 @@ import Button from '~/components/ui/Button.vue';
 import LeafletMap2 from '~/components/map/LeafletMap2.vue'
 import Tooltip from '~/components/ui/Tooltip.vue';
 
+useHead({
+  title: 'Do traffic stops promote safety?',
+})
+
 const config = useRuntimeConfig()
 
 const selectedLocation = ref('Philadelphia')

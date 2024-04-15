@@ -11,6 +11,7 @@ export default defineNuxtConfig({
   },
   app: {
     head: {
+      title: 'Traffic Stops in Philadelphia',
       link: [
         { rel: 'stylesheet', href: 'https://unpkg.com/leaflet@1.7.1/dist/leaflet.css' },
         { rel: "preconnect", href: "https://fonts.googleapis.com" },

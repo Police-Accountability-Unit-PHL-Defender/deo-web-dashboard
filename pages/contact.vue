@@ -38,3 +38,9 @@
     </div>
   </div>
 </template>
+
+<script setup>
+useHead({
+  title: 'Contact Us',
+})
+</script>

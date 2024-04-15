@@ -22,6 +22,13 @@
         <div>{{ chartLegend[2] }}</div>
       </div>
     </div>
+
+    <div v-if="isStacked" class="text-caption pt-4 px-4 text-neutral-800 flex gap-x-8 gap-y-2 flex-wrap md:justify-center md:ml-20">
+      <div v-for="colorMap in stackedColorMap" :key="colorMap.key" class="flex gap-1 items-center">
+        <div :style="{ backgroundColor: colorMap.color }" class="w-3 h-3"></div>
+        <div>{{ colorMap.key }}</div>
+      </div>
+    </div>
   </div>
 </template>
 <style scope lang="scss">
@@ -95,6 +102,7 @@ const props = defineProps({
 
 const graphSvg = ref(null)
 const container = ref(null)
+let stackedColorMap = ref([])
 
 const isGrouped = computed(() => {
   return props.groupName !== undefined
@@ -179,6 +187,7 @@ const drawGraph = (graphData) => {
     color = d3.scaleOrdinal()
       .domain(keys)
       .range(colors)
+    stackedColorMap.value = keys.map((key, index) => ({ key: key, color: colors[index] }))
   }
 
   let yScaleDomainMax = undefined

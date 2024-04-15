@@ -103,6 +103,10 @@ import HorizontalLine from '~/components/ui/HorizontalLine.vue';
 import Button from '~/components/ui/Button.vue';
 import Tooltip from '~/components/ui/Tooltip.vue';
 
+useHead({
+  title: 'Snapshot of traffic enforcement in Philadelphia',
+})
+
 const config = useRuntimeConfig()
 
 const selectedLocation = ref('Philadelphia')
