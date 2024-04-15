@@ -67,7 +67,7 @@
             <AnswerText>
               <p v-html="q2.text[0]" class="result-text"></p>
             </AnswerText>
-            <LeafletMap2 :geo-aggregation="q2AGeoAggregation" :map-legend="['Districts with largest % increases in traffic stops', 'Districts with largest % decreases in shootings', 'Districts with both the largest % increases in traffic stops and decreases in shootings']">
+            <LeafletMap2 :geo-aggregation="q2AGeoAggregation" :map-legend="['Districts with largest % increases in traffic stops', 'Districts with largest % decreases in shootings', 'Districts with both one of the largest % increases in traffic stops and decreases in shootings']">
               <h4>{{ q2.geojsons[0].properties.title }}</h4>
             </LeafletMap2>
           </Answer>

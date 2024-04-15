@@ -42,7 +42,7 @@
 
     <HomeModule ctaLink="/reasons">
       <template #title>
-        Do police make traffic stops for safety reasons?
+        What reasons do police give for making traffic stops?
       </template>
       <template #image>
         <div class="hidden md:block absolute right-0 -top-[40px] bg-yellow w-1/3 aspect-square"></div>

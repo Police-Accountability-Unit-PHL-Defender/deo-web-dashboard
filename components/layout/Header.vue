@@ -77,7 +77,7 @@
             </li>
             <li>
               <a href="/reasons" class="text-fullscreen-nav font-medium hover:underline hover:text-primary-200">
-                Do police make traffic stops for safety reasons?
+                What reasons do police give for making traffic stops?
               </a>
             </li>
             <li>

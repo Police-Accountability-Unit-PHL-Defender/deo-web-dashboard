@@ -1,7 +1,7 @@
 <template>
   <LayoutPageHeader>
     <template #header>
-      Do police make traffic stops for safety reasons?
+      What reasons do police give for making traffic stops?
     </template>
     <template #image>
       <img class="w-full h-full object-cover object-bottom" src="~/assets/images/reasons.jpg" alt="A street in Philadelphia"/>
@@ -25,19 +25,19 @@
             <li>
               <a href="#part1" class="deo_scroll text-hyperlink flex">
                 <IconsChevron class="fill-black -rotate-90"/>
-                Do police report different reasons for stopping drivers of different races or in different neighborhoods?
+                Do the reasons police stop drivers differ by race or neighborhood?
               </a>
             </li>
             <li>
               <a href="#part2" class="deo_scroll text-hyperlink flex">
                 <IconsChevron class="fill-black -rotate-90"/>
-                How has Driving Equality impacted the reported reasons for traffic stops?
+                How has Driving Equality impacted traffic stops?
               </a>
             </li>
           </ul>
         </nav>
         <section>
-          <h2 id="part1" class="text-heading-3 text-left pt-10 mb-6">Do police report different reasons for stopping drivers of different races or in different neighborhoods?</h2>
+          <h2 id="part1" class="text-heading-3 text-left pt-10 mb-6">Do the reasons police stop drivers differ by race or neighborhood?</h2>
           <QuestionHeader>
             <h3>Do Philadelphia police stop Black and white drivers for different reasons? When Philadelphia police gave a reason, what were the primary reasons why police stopped <SelectWhiteBlackDriver v-model="q1Race" /> in Philadelphia in <span class="whitespace-nowrap"><SelectYear v-model="q1Year"/>?</span></h3>
           </QuestionHeader>
@@ -46,7 +46,9 @@
               <h4>{{ q1.figures.barplot.properties.title }}</h4>
             </Graph>
             <AnswerText>
-              <p class="text-body-4">The Philadelphia police’s reporting of the reasons for traffic stops has been inconsistent. Reasons for stops are often missing from the public vehicle stops data or removed from the data over time. Therefore, many of the percentages reflected in the graph likely underestimate the frequency of certain MVC violations.</p>
+              <p class="text-body-4">
+                Police officers often did not give an MVC<Tooltip term="MVC"/> reason for their traffic stops<Tooltip term="Traffic Stop"/> in 2022 and 2023. Furthermore, the Defender’s review of a separate dataset found that police routinely miscoded MVC stops for tint, mistakenly omitting the MVC reason for a large but unknown number of those stops, skewing the tint stops numbers down dramatically.
+              </p>
             </AnswerText>
           </Answer>
         </section>
@@ -60,29 +62,32 @@
               <h4>{{ q2.figures.barplot.properties.title }}</h4>
             </Graph>
             <AnswerText>
-              <p class="text-body-4">As previously noted above, the Philadelphia police’s reporting of the reasons for traffic stops has been inconsistent. Reasons for stops are often missing from the public vehicle stops data or removed from the data over time. Therefore, many of the percentages reflected in the graph likely underestimate the frequency of certain MVC violations.</p>
+              <p class="text-body-4">
+                As previously noted above, police officers often did not give an MVC reason for their stops in 2022 and 2023.  Furthermore, the Defender’s review of a separate dataset  found that police routinely miscoded MVC stops for tint, mistakenly omitting the MVC reason for a large but unknown number of those stops, skewing the tint stops numbers down dramatically.
+              </p>
             </AnswerText>
           </Answer>
         </section>
         <HorizontalLine class="my-12"/>
         <section>
-          <h2 id="part2" class="text-heading-3 text-left pt-10 mb-6">How has Driving Equality impacted the reported reasons for traffic stops?</h2>
+          <h2 id="part2" class="text-heading-3 text-left pt-10 mb-6">How has Driving Equality impacted traffic stops?</h2>
           <QuestionHeader>
-            <h3>Driving Equality came into effect on March 3, 2022. After Driving Equality, did Philadelphia police make fewer traffic stops for the 8 reasons covered by the law? Show primary reasons for traffic stops by <span class="whitespace-nowrap"><SelectTimeGranularity v-model="selectedTimeGranularity"/>.</span></h3>
+            <h3>Driving Equality came into effect on March 3, 2022. After Driving Equality, how many traffic stops did Philadelphia police make for the 8 reasons covered by the law? Show primary reasons for traffic stops by <span class="whitespace-nowrap"><SelectTimeGranularity v-model="selectedTimeGranularity"/>.</span></h3>
           </QuestionHeader>
           <Answer v-if="q3" :arrow="true">
             <Graph :graph-data="q3.figures.barplot.data" :axis-properties="{x: q3.figures.barplot.properties.xAxis, y: q3.figures.barplot.properties.yAxis}" stack-name="group" :quarterlyXAxisTicks="true">
               <h4>{{ q3.figures.barplot.properties.title }}</h4>
             </Graph>
             <AnswerText>
-              <p class="text-body-4">See <a href="driving-equality#7" class="text-hyperlink-blue" target="_bla">What is Driving Equality?</a> to learn about the 8 secondary violations that on their own are no longer reasons for police to conduct traffic stops (e.g., a single broken bulb or light and recently expired registration). Importantly, Philadelphia police can still stop drivers for registration, lighting, and other violations that are <u>not</u> covered by Driving Equality.</p>
+              <p class="text-body-4">
+                See <a href="driving-equality#7" class="text-hyperlink-blue" target="_bla">What is Driving Equality?</a> to learn about the 8 reasons covered by the law. Importantly, Philadelphia police can still stop drivers for registration and lighting violations that are <u>not</u> covered by Driving Equality. For example, Philadelphia police can stop drivers for having all lights out, but police cannot stop drivers for a single broken bulb or light.</p>
             </AnswerText>
           </Answer>
         </section>
         <HorizontalLine class="my-12"/>
         <section>
           <QuestionHeader>
-            <h3>How often do Philadelphia police stop drivers for operational <span class="whitespace-nowrap">violations<Tooltip term="Operational Violation"/>?</span> Are there racial disparities<Tooltip term="Disparity"/> in these traffic stops? When Philadelphia police gave a reason, how often did police stop people of different races for operational violations in <span class="whitespace-nowrap"><SelectYear v-model="q1Year"/>?</span></h3>
+            <h3>How often do Philadelphia police stop drivers for operational<Tooltip term="Operational"/> violations? Are there racial disparities<Tooltip term="Disparity"/> in these traffic stops? When Philadelphia police gave a reason, how often did police stop people of different races for operational violations in <span class="whitespace-nowrap"><SelectYear v-model="q1Year"/>?</span></h3>
           </QuestionHeader>
           <Answer v-if="q4" :arrow="true">
             <Graph :graph-data="q4.figures.barplot.data" :axis-properties="{x: q4.figures.barplot.properties.xAxis, y: q4.figures.barplot.properties.yAxis}">
@@ -108,7 +113,7 @@ const config = useRuntimeConfig()
 // const selectedLocation = ref('Philadelphia')
 const selectedNeighborhoodMajority = ref('Non-white')
 const selectedTimeGranularity = ref('quarter')
-const q1Year = ref(2023)
+const q1Year = ref(2022)
 const q1Race = ref('Black')
 
 const q1Params = ref([q1Year, q1Race])
