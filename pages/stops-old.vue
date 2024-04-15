@@ -62,7 +62,7 @@
       </QuestionHeader>
     </section>
 
-    <HorizontalLine class="my-12"/>
+    <HorizontalLine class="my-4 md:my-12"/>
 
     <section>
       <QuestionHeader>
@@ -82,7 +82,7 @@
       </Graph>
     </section>
 
-    <HorizontalLine class="mt-12"/>
+    <HorizontalLine class="mt-4 md:mt-12"/>
     <h2 id="part2" class="text-heading-2 text-center pt-20 mb-16">Who are police stopping in traffic stops?</h2>
     <section>
       <QuestionHeader>
@@ -103,7 +103,7 @@
       </Graph>
     </section>
 
-    <HorizontalLine class="my-12"/>
+    <HorizontalLine class="my-4 md:my-12"/>
 
     <section>
       <QuestionHeader>
@@ -148,7 +148,7 @@
       </div>
     </section>
 
-    <HorizontalLine class="my-12"/>
+    <HorizontalLine class="my-4 md:my-12"/>
 
     <section>
       <QuestionHeader>
@@ -198,7 +198,7 @@
     </section>
   </main>
 
-  <HorizontalLine class="my-12"/>
+  <HorizontalLine class="my-4 md:my-12"/>
 </template>
 
 <style>

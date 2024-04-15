@@ -54,7 +54,7 @@
           <button class="absolute top-4 right-0 md:top-3 md:right-3" id="header-menu-close-button" title="Close menu" @click="closePopupMenu"></button>
         </div>
         <div class="flex flex-col justify-center gap-3">
-          <ul class="flex flex-col gap-4 md:gap-6 order-2 mt-16 md:mt-28">
+          <ul class="flex flex-col gap-4 md:gap-6 order-2 mt-16 md:mt-20">
             <li>
               <a href="/snapshot" class="text-fullscreen-nav font-medium hover:underline hover:text-primary-200">
                 Snapshot of traffic enforcement in Philadelphia
@@ -81,13 +81,13 @@
               </a>
             </li>
             <li>
-              <a href="/data" class="text-fullscreen-nav font-medium hover:underline hover:text-primary-200">
-                About the Data
+              <a href="/driving-equality" class="text-fullscreen-nav font-medium hover:underline hover:text-primary-200">
+                What is Driving Equality?
               </a>
             </li>
             <li>
-              <a href="/driving-equality" class="text-fullscreen-nav font-medium hover:underline hover:text-primary-200">
-                What is Driving Equality?
+              <a href="/data" class="text-fullscreen-nav font-medium hover:underline hover:text-primary-200">
+                About the Data
               </a>
             </li>
             <li>

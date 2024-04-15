@@ -75,6 +75,21 @@ const props = defineProps({
   quarterlyXAxisTicks: {
     type: Boolean,
     required: false,
+  },
+  margin: {
+    type: Object,
+    required: false,
+    default: { top: 30, right: 0, bottom: 60, left: 80 }
+  },
+  minimumContainerWidth: {
+    type: Number,
+    required: false,
+    default: 640
+  },
+  wrapXAxisLabels: {
+    type: Boolean,
+    required: false,
+    default: false
   }
 })
 
@@ -99,7 +114,12 @@ watch(() => props.graphData, (graphData) => {
   drawGraph(graphData)
 }, { deep: true })
 
-const margin = { top: 30, right: 0, bottom: 60, left: 80 }
+const margin = {
+  top: props.margin.top ?? 30,
+  right: props.margin.right ?? 0,
+  bottom: props.margin.bottom ?? 60,
+  left: props.margin.left ?? 80
+}
 
 const getGroupClass = (group) => {
   if (props.groupClasses[group]) {
@@ -115,7 +135,7 @@ const containerWidth = computed(() => {
 
 const drawGraph = (graphData) => {
   const groups = new Set(graphData.map(d => d.group))
-  const minContainerWidth = 640
+  const minContainerWidth = props.minimumContainerWidth ?? 640
   const width = Math.max(containerWidth.value, minContainerWidth)
   const chartWidth = width - margin.left - margin.right
   const n = !isGrouped ? graphData.length : Math.ceil(graphData.length / groups.size)
@@ -186,7 +206,6 @@ const drawGraph = (graphData) => {
     .attr("transform", `translate(${margin.left},0)`)
     .attr("class", "text-caption")
     .call(d3.axisLeft(y).tickSizeInner(-width, 0, 0).tickSizeOuter(0).tickPadding(8))
-    // .call(g => g.select(".domain").remove())
     .call(g => g.append("text")
       .attr("x", -margin.left)
       .attr("y", 16)
@@ -209,7 +228,7 @@ const drawGraph = (graphData) => {
     .attr("class", "text-caption")
     .call(d3.axisBottom(x).tickSizeInner(0).tickSizeOuter(0).tickPadding(12).tickValues(tickValues))
     .selectAll(".tick text")
-      // .call(wrap, x.bandwidth());
+      .call(wrap, x.bandwidth() + 30);
   // Add the x-axis label
   svg.append("text")
     .attr("x", (width + margin.left) / 2)
@@ -222,7 +241,7 @@ const drawGraph = (graphData) => {
   const MOUSE_POS_Y_OFFSET = 8;
   const MOUSE_POS_X_OFFSET = 0;
   const tooltipDiv = d3.select(container.value).select('.tooltip')
-  const tooltip = (selectionGroup, tooltipDiv, groupWidth = 0, trendline = false, isStack = false) => {
+  const tooltip = (selectionGroup, tooltipDiv, trendline = false, isStack = false) => {
     selectionGroup.each(function () {
       d3.select(this)
         .on("mouseover.tooltip", handleMouseover)
@@ -245,6 +264,7 @@ const drawGraph = (graphData) => {
     function handleMousemove(event) {
       // update the tooltip's position
       const { offsetX, offsetY } = event
+      console.log(event)
       // add the left & top margin values to account for the SVG g element transform
       setPosition(offsetX, offsetY);
     }
@@ -264,12 +284,14 @@ const drawGraph = (graphData) => {
       tooltipDiv
         .style(
           "top",
-          mouseY < height / 2 ? `${mouseY + MOUSE_POS_Y_OFFSET}px` : "initial"
+          mouseY < height / 2
+            ? `${mouseY + MOUSE_POS_Y_OFFSET}px`
+            : "initial"
         )
         .style(
           "right",
           mouseX > width / 2
-            ? `${width - mouseX + MOUSE_POS_X_OFFSET + groupWidth}px`
+            ? `${width - mouseX + MOUSE_POS_X_OFFSET}px`
             : "initial"
         )
         .style(
@@ -280,7 +302,9 @@ const drawGraph = (graphData) => {
         )
         .style(
           "left",
-          mouseX < width / 2 ? `${mouseX + MOUSE_POS_X_OFFSET + groupWidth}px` : "initial"
+          mouseX < width / 2
+            ? `${mouseX + MOUSE_POS_X_OFFSET}px`
+            : "initial"
         );
       }
     }
@@ -301,7 +325,7 @@ const drawGraph = (graphData) => {
         .attr("height", (d) => y(0) - y(d[props.axisProperties.y]))
         .attr("width", barWidth)
         .attr("class", (d) => getGroupClass(d.group))
-      .call(tooltip, tooltipDiv, groupWidth);
+      .call(tooltip, tooltipDiv);
   } else if (isStacked.value) {
     const testFunction = (d) => {
       console.log(d)
@@ -319,7 +343,7 @@ const drawGraph = (graphData) => {
         .attr("height", d => y(d[0]) - y(d[1]))
         .attr("width", x.bandwidth())
         // .call(testFunction);
-        .call(tooltip, tooltipDiv, groupWidth, false, true);
+        .call(tooltip, tooltipDiv, false, true);
         // .call(tooltip, tooltipDiv);
   } else {
     // text above bars for baseline comparisons
@@ -389,9 +413,14 @@ function resetStyle(selection) {
 
 // modified from source: https://gist.github.com/mbostock/7555321
 function wrap(text, width) {
+  if (!props.wrapXAxisLabels) return
   text.each(function() {
+    var wordsSplitBySlash = d3.select(this).text().split(/\//)
+    wordsSplitBySlash = wordsSplitBySlash.map((word, index) => index < wordsSplitBySlash.length - 1 ? word + '/' : word)
     var text = d3.select(this),
-        words = text.text().split(/\s+/).reverse(),
+        // wordsSplitBySlash = text.text().split(/(?=\/)/)
+        // words = text.text().split(/(?=\/)/).reverse(),
+        words = wordsSplitBySlash.flatMap(w => w.split(/\s+/)).reverse(),
         word,
         line = [],
         lineNumber = 0,
@@ -403,12 +432,12 @@ function wrap(text, width) {
       line.push(word);
       tspan.text(line.join(" "));
       if (tspan.node().getComputedTextLength() > width) {
+        lineNumber++
         line.pop();
         tspan.text(line.join(" "));
         line = [word];
         tspan = text.append("tspan").attr("x", 0).attr("y", y).attr("dy", lineNumber * lineHeight + dy + "em").text(word);
       }
-      lineNumber++
     }
   });
 }

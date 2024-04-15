@@ -68,7 +68,7 @@
             </AnswerText>
           </Answer>
         </section>
-        <HorizontalLine class="my-12"/>
+        <HorizontalLine class="my-4 md:my-12"/>
         <section>
           <QuestionHeader>
             <h3>
@@ -77,7 +77,7 @@
             </h3>
           </QuestionHeader>
         </section>
-        <HorizontalLine class="my-12"/>
+        <HorizontalLine class="my-4 md:my-12"/>
         <section>
           <QuestionHeader>
             <h3>Does traffic enforcement change depending on the time of year? How many traffic stops did Philadelphia police make in certain times of year in <span class="whitespace-nowrap"><SelectLocation v-model="selectedLocation"/>?</span></h3>
@@ -92,7 +92,7 @@
             </Graph>
           </Answer>
         </section>
-        <HorizontalLine class="mt-12"/>
+        <HorizontalLine class="mt-12" :color="true"/>
         <section>
           <h2 id="part2" class="text-heading-3 text-left pt-10 mb-6">Who are police stopping in traffic stops?</h2>
           <QuestionHeader>
@@ -106,7 +106,7 @@
             </div>
           </Answer>
         </section>
-        <HorizontalLine class="my-12"/>
+        <HorizontalLine class="my-4 md:my-12"/>
         <section>
           <QuestionHeader>
             <h3>Which demographic groups did Philadelphia police most frequently stop in <SelectLocation v-model="selectedLocation"/> from the start of quarter <SelectQuarter2 v-model="q1BQuarterStart" item-label-end="start"/> through the end of <span class="whitespace-nowrap"><SelectQuarter2 v-model="q1BQuarterEnd" item-label-end="end"/>?</span></h3>
@@ -153,7 +153,7 @@
             </div>
           </Answer>
         </section>
-        <HorizontalLine class="my-12"/>
+        <HorizontalLine class="my-4 md:my-12"/>
         <section>
           <QuestionHeader>
             How many times did Philadelphia police stop one demographic group compared to another in <SelectLocation v-model="selectedLocation"/> from the start of quarter <SelectQuarter2 v-model="q1BQuarterStart" item-label-end="start"/> through the end of <span class="whitespace-nowrap"><SelectQuarter2 v-model="q1BQuarterEnd" item-label-end="end"/>?</span>

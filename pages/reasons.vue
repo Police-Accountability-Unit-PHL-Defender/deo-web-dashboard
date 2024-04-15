@@ -42,7 +42,7 @@
             <h3>Do Philadelphia police stop Black and white drivers for different reasons? When Philadelphia police gave a reason, what were the primary reasons why police stopped <SelectWhiteBlackDriver v-model="q1Race" /> in Philadelphia in <span class="whitespace-nowrap"><SelectYear v-model="q1Year"/>?</span></h3>
           </QuestionHeader>
           <Answer v-if="q1" :arrow="true">
-            <Graph :graph-data="q1.figures.barplot.data" :axis-properties="{x: q1.figures.barplot.properties.xAxis, y: q1.figures.barplot.properties.yAxis}" group-name="group" :group-classes="{'Black': 'fill-purple', 'White': 'fill-mint'}" :chart-legend="['Black drivers', 'White drivers']">
+            <Graph :graph-data="q1.figures.barplot.data" :axis-properties="{x: q1.figures.barplot.properties.xAxis, y: q1.figures.barplot.properties.yAxis}" group-name="group" :group-classes="{'Black drivers': 'fill-purple', 'White drivers': 'fill-mint'}" :chart-legend="['Black drivers', 'White drivers']" :wrap-x-axis-labels="true" :minimum-container-width="960" :margin="{bottom: 100}">
               <h4>{{ q1.figures.barplot.properties.title }}</h4>
             </Graph>
             <AnswerText>
@@ -52,13 +52,13 @@
             </AnswerText>
           </Answer>
         </section>
-        <HorizontalLine class="my-12"/>
+        <HorizontalLine class="my-4 md:my-12"/>
         <section>
           <QuestionHeader>
             <h3>Do Philadelphia police make traffic stops<Tooltip term="Traffic Stop" /> for different reasons in districts<Tooltip term="District" /> where most residents are white, compared to districts where most residents are people of color? When Philadelphia police gave a reason, what were the primary reasons why police stopped drivers in majority <SelectWhiteMajorityNeighborhood v-model="selectedNeighborhoodMajority"/> in Philadelphia in <span class="whitespace-nowrap"><SelectYear v-model="q1Year"/>?</span></h3>
           </QuestionHeader>
           <Answer v-if="q2" :arrow="true">
-            <Graph :graph-data="q2.figures.barplot.data" :axis-properties="{x: q2.figures.barplot.properties.xAxis, y: q2.figures.barplot.properties.yAxis}" group-name="group" :group-classes="{'Black': 'fill-purple', 'White': 'fill-mint'}" :chart-legend="['Black drivers', 'White drivers']">
+            <Graph :graph-data="q2.figures.barplot.data" :axis-properties="{x: q2.figures.barplot.properties.xAxis, y: q2.figures.barplot.properties.yAxis}" group-name="group" :group-classes="{'Majority non-white districts': 'fill-purple', 'Majority white districts': 'fill-mint'}" :chart-legend="['Majority non-white districts', 'Majority white districts']" :wrap-x-axis-labels="true" :minimum-container-width="960" :margin="{bottom: 100}">
               <h4>{{ q2.figures.barplot.properties.title }}</h4>
             </Graph>
             <AnswerText>
@@ -68,9 +68,9 @@
             </AnswerText>
           </Answer>
         </section>
-        <HorizontalLine class="my-12"/>
+        <HorizontalLine class="my-12" :color="true"/>
         <section>
-          <h2 id="part2" class="text-heading-3 text-left pt-10 mb-6">How has Driving Equality impacted traffic stops?</h2>
+          <h2 id="part2" class="text-heading-3 text-left mb-6">How has Driving Equality impacted traffic stops?</h2>
           <QuestionHeader>
             <h3>Driving Equality came into effect on March 3, 2022. After Driving Equality, how many traffic stops did Philadelphia police make for the 8 reasons covered by the law? Show primary reasons for traffic stops by <span class="whitespace-nowrap"><SelectTimeGranularity v-model="selectedTimeGranularity"/>.</span></h3>
           </QuestionHeader>
@@ -84,7 +84,7 @@
             </AnswerText>
           </Answer>
         </section>
-        <HorizontalLine class="my-12"/>
+        <HorizontalLine class="my-4 md:my-12"/>
         <section>
           <QuestionHeader>
             <h3>How often do Philadelphia police stop drivers for operational<Tooltip term="Operational"/> violations? Are there racial disparities<Tooltip term="Disparity"/> in these traffic stops? When Philadelphia police gave a reason, how often did police stop people of different races for operational violations in <span class="whitespace-nowrap"><SelectYear v-model="q1Year"/>?</span></h3>

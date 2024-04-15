@@ -17,7 +17,7 @@
     </template>
   </LayoutPageHeader>
 
-  <main class="layout-container text-body-3">
+  <main class="layout-container mt-8 md:-mt-4 text-body-3">
     <div class="grid-container">
       <div class="col-span-10">
         <nav class="flex flex-col gap-3 border-b border-neutral-400 pb-10">
@@ -50,7 +50,7 @@
             </AnswerText>
           </Answer>
         </section>
-        <HorizontalLine class="my-12"/>
+        <HorizontalLine class="my-4 md:my-12"/>
         <section>
           <QuestionHeader>
             <h3>In the last year, what were the racial disparities<Tooltip term="Disparity"/> in traffic stops by Philadelphia police? How does the city population compare to who was stopped?</h3>
@@ -65,7 +65,7 @@
             </AnswerText>
           </Answer>
         </section>
-        <HorizontalLine class="my-12"/>
+        <HorizontalLine class="my-12" :color="true"/>
         <section>
           <QuestionHeader>
             <h2 id="part2" class="text-heading-3 text-left mb-6">

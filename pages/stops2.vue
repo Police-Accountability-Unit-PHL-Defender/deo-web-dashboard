@@ -37,7 +37,7 @@
             </li>
           </ul>
         </nav>
-        <HorizontalLine class="mt-12"/>
+        <HorizontalLine class="mt-4 md:mt-12"/>
         <section>
           <h2 id="part2" class="text-heading-3 text-left pt-10 mb-6">Who are police stopping in traffic stops?</h2>
           <QuestionHeader>
@@ -51,7 +51,7 @@
             </div>
           </Answer>
         </section>
-        <HorizontalLine class="my-12"/>
+        <HorizontalLine class="my-4 md:my-12"/>
         <section>
           <QuestionHeader>
             <h3>Which demographic groups did Philadelphia police most frequently stop in <SelectLocation v-model="selectedLocation"/> from the start of <SelectQuarter v-model="q1BQuarterStart"/> to the end of <SelectQuarter v-model="q1BQuarterEnd"/>?</h3>
@@ -93,7 +93,7 @@
             </div>
           </Answer>
         </section>
-        <HorizontalLine class="my-12"/>
+        <HorizontalLine class="my-4 md:my-12"/>
         <section>
           <QuestionHeader>
             How many times did Philadelphia police stop one demographic group compared to another in <SelectLocation v-model="selectedLocation"/> from the start of <SelectQuarter v-model="q1BQuarterStart"/> to the end of <SelectQuarter v-model="q1BQuarterEnd"/>?

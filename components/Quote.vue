@@ -12,8 +12,8 @@
             </div>
             <div class="text-center font-medium mt-2">—{{ props.author }}</div>
             <div class="flex justify-center md:justify-end mt-1">
-              <a class="text-primary-600" :href="props.source" target="_blank">
-                <IconsLinkExternal class="inline mr-1 w-[16px]"/>
+              <a class="text-primary-600 flex items-center" :href="props.source" target="_blank">
+                <IconsLinkExternal class="inline mr-1 w-[16px] -mt-[2px] md:-mt-[1px]"/>
                 <span class="underline text-cta-1">SOURCE</span>
               </a>
             </div>
