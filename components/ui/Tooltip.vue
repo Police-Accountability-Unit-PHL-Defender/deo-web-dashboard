@@ -14,7 +14,7 @@
       <div
         v-if="tooltipIsVisible"
         ref="tooltip"
-        class="text-caption absolute bottom-6 left-0.5 flex w-[312px] gap-[6px] rounded-md bg-neutral-100 px-4 py-3 text-neutral-800 leading-5 tooltip"
+        class="text-caption absolute bottom-6 left-0.5 flex w-[312px] gap-[6px] rounded-md bg-neutral-100 px-4 py-3 text-neutral-800 leading-5 tooltip whitespace-normal"
         :style="tooltipAdjustment">
         <div>
           <slot />

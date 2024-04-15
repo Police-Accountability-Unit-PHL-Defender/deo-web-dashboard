@@ -71,6 +71,9 @@
               <h4>{{ q2.geojsons[0].properties.title }}</h4>
             </LeafletMap2>
           </Answer>
+        </section>
+        <HorizontalLine class="my-4 md:my-12"/>
+        <section>
           <QuestionHeader>
             <h3>Driving Equality came into effect on March 3, 2022. In the year after<Tooltip term="Year after"/> Driving Equality, which districts had the largest percent decreases in traffic stops, compared to 2021? (See <a href="/driving-equality#10" target="_blank" class="text-hyperlink-blue">What is Driving Equality?</a> to learn more about these date comparisons.) Were these the same districts that had the largest percent increases in shootings?</h3>
           </QuestionHeader>

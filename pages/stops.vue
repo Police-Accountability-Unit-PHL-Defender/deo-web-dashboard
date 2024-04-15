@@ -113,9 +113,9 @@
           </QuestionHeader>
           <Answer :arrow="true">
             <div v-if="q2B">
-              <QuestionHeader>
+              <AnswerText>
                 <div v-html="q2B.text[1]" class="result-text"></div>
-              </QuestionHeader>
+              </AnswerText>
               <div class="border border-neutral-400 pt-6">
                 <h4 class="text-center text-body-2 font-semibold text-primary-800">{{ q2B.text[0] }}</h4>
                 <div class="deo-table mt-6 text-body-3">
