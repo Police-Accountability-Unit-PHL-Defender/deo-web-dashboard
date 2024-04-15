@@ -77,6 +77,7 @@ export default {
         quote: "12px 12px 0px currentColor",
         quotemini: "6px 6px 0px currentColor",
         dropdown: "2px 2px 10px rgba(0, 0, 0, 0.16)",
+        graph: "0px 1px 2px rgba(0, 0, 0, 0.3)",
       },
     },
   },

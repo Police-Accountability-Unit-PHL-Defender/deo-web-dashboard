@@ -1,6 +1,6 @@
 <template>
-  <div class="border border-neutral-400 my-6 p-4">
-    <div class="w-full text-center mt-1 mb-6 text-body-2 font-semibold text-primary-800 max-w-[800px] mx-auto">
+  <div class="my-6 p-4 bg-[#FCFCFC] rounded-xl shadow-graph">
+    <div class="w-full text-center mt-1 mb-6 text-body-2 font-semibold text-primary-800 max-w-[630px] mx-auto">
       <slot></slot>
     </div>
     <div ref="container" class="relative">
