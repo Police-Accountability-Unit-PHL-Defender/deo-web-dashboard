@@ -56,7 +56,7 @@
             <h3>In the last year, what were the racial disparities<Tooltip term="Disparity"/> in traffic stops by Philadelphia police? How does the city population compare to who was stopped?</h3>
           </QuestionHeader>
           <Answer v-if="q1A" :arrow="true">
-            <Graph :graph-data="q1A.figures.barplot.data" :axis-properties="{x: q1A.figures.barplot.properties.xAxis, y: q1A.figures.barplot.properties.yAxis}" group-name="group" :group-classes="{'% of traffic stops': 'fill-purple', '% of city population': 'fill-mint'}" :chart-legend="['Percent of traffic stops', 'Percent of city population']">
+            <Graph :graph-data="q1A.figures.barplot.data" :axis-properties="{x: q1A.figures.barplot.properties.xAxis, y: q1A.figures.barplot.properties.yAxis}" group-name="group" :group-classes="{'% of traffic stops': 'fill-purple bg-purple', '% of city population': 'fill-yellow bg-yellow'}" :chart-legend="{'% of traffic stops': 'Percent of traffic stops', '% of city population': 'Percent of city population'}">
               <h4>{{ q1A.figures.barplot.properties.title }}</h4>
             </Graph>
             <AnswerText>
@@ -78,13 +78,13 @@
               <span v-html="q1A.text.slice(1, 2).join(' ')" class="result-text"></span>,
               compared to 2021 (see <a class="underline text-primary-600 hover:text-primary-800;" href="/driving-equality#10" target="_blank">What is Driving Equality?</a> to learn more about these date comparisons). Concerningly, racial disparities in traffic stops have persisted.
             </AnswerText>
-            <Graph :graph-data="q1A.figures.barplot2.data" :axis-properties="{x: q1A.figures.barplot2.properties.xAxis, y: q1A.figures.barplot2.properties.yAxis}" group-name="group" :group-classes="{'% before Driving Equality': 'fill-purple', '% after Driving Equality': 'fill-mint', '% of city population': 'fill-yellow'}" :chart-legend="['Before Driving Equality', 'After Driving Equality', 'City population']">
+            <Graph :graph-data="q1A.figures.barplot2.data" :axis-properties="{x: q1A.figures.barplot2.properties.xAxis, y: q1A.figures.barplot2.properties.yAxis}" group-name="group" :group-classes="{'% before Driving Equality': 'fill-purple bg-purple', '% after Driving Equality': 'fill-mint bg-mint', '% of city population': 'fill-yellow bg-yellow'}" :chart-legend="{'% before Driving Equality': 'Before Driving Equality', '% after Driving Equality': 'After Driving Equality', '% of city population': 'City population'}">
               <h4>{{ q1A.figures.barplot2.properties.title }}</h4>
             </Graph>
             <AnswerText>
               <span v-html="q1A.text.slice(2, 3).join(' ')" class="result-text"></span>
             </AnswerText>
-            <Graph :graph-data="q1A.figures.barplot3.data" :axis-properties="{x: q1A.figures.barplot3.properties.xAxis, y: q1A.figures.barplot3.properties.yAxis}" group-name="group" :group-classes="{'# before Driving Equality': 'fill-purple', '# after Driving Equality': 'fill-mint'}" :chart-legend="['Before Driving Equality', 'After Driving Equality']">
+            <Graph :graph-data="q1A.figures.barplot3.data" :axis-properties="{x: q1A.figures.barplot3.properties.xAxis, y: q1A.figures.barplot3.properties.yAxis}" group-name="group" :group-classes="{'# before Driving Equality': 'fill-purple bg-purple', '# after Driving Equality': 'fill-mint bg-mint'}" :chart-legend="{'# before Driving Equality': 'Before Driving Equality', '# after Driving Equality': 'After Driving Equality'}">
               <h4>{{ q1A.figures.barplot3.properties.title }}</h4>
             </Graph>
           </Answer>

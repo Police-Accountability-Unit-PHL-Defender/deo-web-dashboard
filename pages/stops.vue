@@ -183,7 +183,7 @@
           </div>
           <Answer>
             <div v-if="q2C">
-              <Graph :graph-data="q2C.figures.barplot.data" :axis-properties="{x: q2C.figures.barplot.properties.xAxis, y: q2C.figures.barplot.properties.yAxis}" group-name="group" :group-classes="{'Group 1': 'fill-purple', 'Group 2': 'fill-mint'}" :chart-legend="['Group 1', 'Group 2']">
+              <Graph :graph-data="q2C.figures.barplot.data" :axis-properties="{x: q2C.figures.barplot.properties.xAxis, y: q2C.figures.barplot.properties.yAxis}" group-name="group" :group-classes="{'Group 1': 'fill-purple bg-purple', 'Group 2': 'fill-mint bg-mint'}" :chart-legend="{'Group 1': 'Group 1', 'Group 2': 'Group 2'}">
                 <h4 class="max-w-[550px] mx-auto">{{ q2C.figures.barplot.properties.title }}</h4>
               </Graph>
             </div>

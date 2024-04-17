@@ -75,7 +75,7 @@
             <h3>How have Philadelphia police changed the way they intrude during traffic stops in <SelectLocation v-model="selectedLocation"/> by <span class="whitespace-nowrap"><SelectTimeGranularity v-model="selectedTimeGranularity"/>?</span> How do frisks<Tooltip term="Frisk"/> and searches<Tooltip term="Search"/> compare over time?</h3>
           </QuestionHeader>
           <Answer v-if="q1B" :arrow="true">
-            <Graph :graph-data="q1B.figures.barplot.data" :axis-properties="{x: q1B.figures.barplot.properties.xAxis, y: q1B.figures.barplot.properties.yAxis}" group-name="group" :group-classes="{'# of searches': 'fill-purple', '# of frisks': 'fill-mint'}" :chart-legend="['Number of searches', 'Number of frisks']" :quarterlyXAxisTicks="true">
+            <Graph :graph-data="q1B.figures.barplot.data" :axis-properties="{x: q1B.figures.barplot.properties.xAxis, y: q1B.figures.barplot.properties.yAxis}" group-name="group" :group-classes="{'# of searches': 'fill-purple bg-purple', '# of frisks': 'fill-mint bg-mint'}" :chart-legend="{'# of searches': 'Number of searches', '# of frisks': 'Number of frisks'}" :quarterlyXAxisTicks="true">
               <h4>{{ q1B.figures.barplot.properties.title }}</h4>
             </Graph>
           </Answer>

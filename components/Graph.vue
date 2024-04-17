@@ -9,7 +9,11 @@
     </div>
     <slot name="footer"></slot>
     <div v-if="props.chartLegend" class="text-caption pt-4 px-4 text-neutral-800 flex gap-x-8 gap-y-2 flex-wrap md:justify-center md:ml-20">
-      <div class="flex gap-1 items-center">
+      <div v-for="(item, key) in props.chartLegend" :key="key" class="flex gap-1 items-center">
+        <div :class="props.groupClasses[key]" class="w-3 h-3"></div>
+        <div>{{ item }}</div>
+      </div>
+      <!-- <div class="flex gap-1 items-center">
         <div class="bg-purple w-3 h-3"></div>
         <div>{{ chartLegend[0] }}</div>
       </div>
@@ -20,7 +24,7 @@
       <div v-if="chartLegend.length > 2" class="flex gap-1 items-center">
         <div class="bg-yellow w-3 h-3"></div>
         <div>{{ chartLegend[2] }}</div>
-      </div>
+      </div> -->
     </div>
 
     <div v-if="isStacked" class="text-caption pt-4 px-4 text-neutral-800 flex gap-x-8 gap-y-2 flex-wrap md:justify-center md:ml-20">
@@ -71,7 +75,7 @@ const props = defineProps({
     required: false
   },
   chartLegend: {
-    type: Array,
+    type: Object,
     required: false,
   },
   yScaleDomainMax: {
@@ -237,7 +241,7 @@ const drawGraph = (graphData) => {
     .attr("class", "text-caption")
     .call(d3.axisBottom(x).tickSizeInner(0).tickSizeOuter(0).tickPadding(12).tickValues(tickValues))
     .selectAll(".tick text")
-      .call(wrap, x.bandwidth() + 30);
+      .call(wrap, x.bandwidth() + 29);
   // Add the x-axis label
   svg.append("text")
     .attr("x", (width + margin.left) / 2)
@@ -324,7 +328,7 @@ const drawGraph = (graphData) => {
       .selectAll()
       .data(d3.group(graphData, (d) => d[props.axisProperties.x]))
       .join("g")
-        .attr("transform", ([xAxisProperty]) => `translate(${x(xAxisProperty)},0)`)
+        .attr("transform", ([xAxisProperty]) => `translate(${x(xAxisProperty) - groupGapRatio * barWidth},0)`)
       .selectAll()
       .data(([, values]) => values)
       .join("rect")
