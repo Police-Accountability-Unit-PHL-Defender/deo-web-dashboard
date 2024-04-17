@@ -103,7 +103,6 @@
 <script setup>
 import QuestionHeader from '~/components/QuestionHeader.vue';
 import Graph from '~/components/Graph.vue';
-import SelectLocation from '~/components/SelectLocation.vue'
 import SelectTimeGranularity from '~/components/SelectTimeGranularity.vue'
 import HorizontalLine from '~/components/ui/HorizontalLine.vue';
 import Tooltip from '~/components/ui/Tooltip.vue';
@@ -133,12 +132,12 @@ const { data: q1, refresh: refreshQ1 } = await useAsyncData('q1',
 watch(q1Params, async () => { refreshQ1() }, { deep: true })
 console.log(q1.value)
 
-const q2Params = ref([q1Year, q1Race])
+const q2Params = ref([q1Year, selectedNeighborhoodMajority])
 const { data: q2, refresh: refreshQ2 } = await useAsyncData('q2',
   () => $fetch(`${config.public.apiBaseUrl}/reasons/reasons-comparison-bar-neighborhoods`, {
     params: {
       year: q1Year.value,
-      race: "Non-white",
+      race: selectedNeighborhoodMajority.value,
     },
     options
   })
