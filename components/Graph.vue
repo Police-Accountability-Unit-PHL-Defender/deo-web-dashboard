@@ -183,7 +183,7 @@ const drawGraph = (graphData) => {
     console.log(series)
     maxStackHeight = d3.max(series, (d) => d3.max(d, (d) => d[1]))
     const keys = series.map(d => d.key)
-    const colors = ["#364ED7", "#644CF9", "#FEDBDB", "#88C715", "#A548DE"]
+    const colors = ["#644CF9", "#00B8FF", "#5FEEBB", "#F94C4C", "#FCD034"]
     color = d3.scaleOrdinal()
       .domain(keys)
       .range(colors)

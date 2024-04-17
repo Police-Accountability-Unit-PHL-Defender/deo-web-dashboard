@@ -46,11 +46,11 @@
     </div>
     <div v-if="props.hinLegend" class="text-caption p-4 text-neutral-800 flex gap-x-8 gap-y-2 flex-wrap md:justify-center">
       <div class="flex gap-1 items-center">
-        <div class="bg-primary-600 rounded-full w-2 h-2"></div>
+        <div class="bg-yellowgreen rounded-full w-2 h-2"></div>
         <div>Traffic stop on the HIN</div>
       </div>
       <div class="flex gap-1 items-center">
-        <div class="bg-red rounded-full w-2 h-2"></div>
+        <div class="bg-purple rounded-full w-2 h-2"></div>
         <div>Traffic stop not on the HIN</div>
       </div>
       <div class="flex gap-1 items-center">
@@ -112,7 +112,7 @@ const geojsonMarkerOptions = {
 
 function polystyle(feature) {
   if (feature.geometry.type === "Point") {
-    const pointColor = feature.properties.name === "Traffic stop on the HIN" ? "#364ED7" : "#F94C4C"
+    const pointColor = feature.properties.name === "Traffic stop on the HIN" ? "#88C715" : "#644CF9"
     return {
       radius: 3,
       fillColor: pointColor,

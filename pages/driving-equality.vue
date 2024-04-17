@@ -41,13 +41,13 @@
           <FaqQuestion id="4" question="Before Driving Equality, what were the top reasons that Philadelphia police stopped drivers?">
               <p>
                 Traffic enforcement has consistently been used by police as a pretext to stop, frisk, and/or search Black drivers, rather than target traffic and pedestrian safety. From October 2018 to September 2019:
-                <ul>
-                  <li>Lighting violations were the top reason for traffic stops, followed by failure to stop at a stop sign or red light, window tint, failure to signal or illegal turn, and violations related to registration and inspection.</li>
-                  <li>Stops for these top five reasons made up 88% of traffic stops, totaling 272,486 stops.</li>
-                  <li>Racial disparities in these stops were striking. For example, 73.42% of people stopped by police for lighting violations were Black, and 81.34% of people stopped for window tint were Black.</li>
-                  <li>Officers spent 14.55 years in personnel time making traffic stops.</li>
-                </ul>
               </p>
+              <ul>
+                <li>Lighting violations were the top reason for traffic stops, followed by failure to stop at a stop sign or red light, window tint, failure to signal or illegal turn, and violations related to registration and inspection.</li>
+                <li>Stops for these top five reasons made up 88% of traffic stops, totaling 272,486 stops.</li>
+                <li>Racial disparities in these stops were striking. For example, 73.42% of people stopped by police for lighting violations were Black, and 81.34% of people stopped for window tint were Black.</li>
+                <li>Officers spent 14.55 years in personnel time making traffic stops.</li>
+              </ul>
           </FaqQuestion>
           <FaqQuestion id="5" question="Before Driving Equality, was there any relationship between traffic stops and public safety?">
               <p>
