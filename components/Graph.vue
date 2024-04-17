@@ -1,6 +1,6 @@
 <template>
   <div class="my-6 p-4 bg-[#FCFCFC] rounded-xl shadow-graph">
-    <div class="w-full text-center mt-1 mb-6 text-body-2 font-semibold text-primary-800 max-w-[630px] mx-auto">
+    <div class="w-full text-center mt-1 text-body-2 font-semibold text-primary-800 max-w-[630px] mx-auto">
       <slot></slot>
     </div>
     <div ref="container" class="relative">
@@ -86,7 +86,7 @@ const props = defineProps({
   margin: {
     type: Object,
     required: false,
-    default: { top: 40, right: 0, bottom: 60, left: 80 }
+    default: { top: 75, right: 0, bottom: 60, left: 80 }
   },
   minimumContainerWidth: {
     type: Number,
@@ -123,7 +123,7 @@ watch(() => props.graphData, (graphData) => {
 }, { deep: true })
 
 const margin = {
-  top: props.margin.top ?? 30,
+  top: props.margin.top ?? 75,
   right: props.margin.right ?? 0,
   bottom: props.margin.bottom ?? 60,
   left: props.margin.left ?? 80
@@ -163,7 +163,7 @@ const drawGraph = (graphData) => {
     groupWidth = chartWidth / (n + (n-1)*innerPaddingRatio + 2*outerPaddingRatio)
     barWidth = groupWidth / (groups.size + groupGapRatio)
   }
-  const height = 370;
+  const height = 380;
   const svg = d3.select(graphSvg.value)
     .attr("width", width)
     .attr("height", height)
@@ -214,13 +214,14 @@ const drawGraph = (graphData) => {
     .attr("transform", `translate(${margin.left},0)`)
     .attr("class", "text-caption")
     .call(d3.axisLeft(y).tickSizeInner(-width, 0, 0).tickSizeOuter(0).tickPadding(8))
-    .call(g => g.append("text")
+    .call(g => g.append("foreignObject")
       .attr("x", -margin.left)
-      .attr("y", 16)
-      .attr("fill", "currentColor")
-      .attr("text-anchor", "start")
-      .attr("class", "text-body-4")
-      .text(props.axisProperties.y));
+      .attr("y", 0)
+      .attr("width", margin.left * 2)
+      .attr("height", margin.top)
+      .append("xhtml:div")
+      .attr("class", "text-body-4 graph-y-axis-container font-semibold")
+      .html(applyLineBreaks(props.axisProperties.y)))
   // Add the x-axis
   let tickSkip = 1
   if (n >= 32) {
@@ -243,7 +244,7 @@ const drawGraph = (graphData) => {
     .attr("y", height - 6)
     .attr("text-anchor", "middle")
     .attr("fill", "currentColor")
-    .attr("class", "text-body-4")
+    .attr("class", "text-body-4 font-semibold")
     .text(props.axisProperties.x);
   
   const MOUSE_POS_Y_OFFSET = 8;
@@ -444,6 +445,19 @@ function wrap(text, width) {
       }
     }
   });
+}
+
+function applyLineBreaks(text) {
+  switch (text) {
+    case 'Number of Traffic Stops':
+      return 'Number of\nTraffic Stops'
+    case 'Contraband Hit Rate (%)':
+      return 'Contraband\nHit Rate (%)'
+    case 'District':
+      return 'District'
+    default:
+      return text
+  }
 }
 </script>
 
