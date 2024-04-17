@@ -86,7 +86,7 @@ const props = defineProps({
   margin: {
     type: Object,
     required: false,
-    default: { top: 30, right: 0, bottom: 60, left: 80 }
+    default: { top: 40, right: 0, bottom: 60, left: 80 }
   },
   minimumContainerWidth: {
     type: Number,
@@ -180,7 +180,6 @@ const drawGraph = (graphData) => {
       .keys(d3.union(graphData.map(d => d[props.stackName])))
       .value(([, group], key) => group.get(key) ? group.get(key)[props.axisProperties.y] : 0)
       (d3.index(graphData, d => d[props.axisProperties.x], d => d[props.stackName]));
-    console.log(series)
     maxStackHeight = d3.max(series, (d) => d3.max(d, (d) => d[1]))
     const keys = series.map(d => d.key)
     const colors = ["#644CF9", "#00B8FF", "#5FEEBB", "#F94C4C", "#FCD034"]
@@ -207,7 +206,7 @@ const drawGraph = (graphData) => {
   const y = d3.scaleLinear()
     .domain([0, yScaleDomainMax])
     .range([height - margin.bottom, margin.top])
-    .nice();
+    .nice()
 
   // axes
   // Add the y-axis and label, and remove the domain line.
@@ -273,7 +272,6 @@ const drawGraph = (graphData) => {
     function handleMousemove(event) {
       // update the tooltip's position
       const { offsetX, offsetY } = event
-      console.log(event)
       // add the left & top margin values to account for the SVG g element transform
       setPosition(offsetX, offsetY);
     }
@@ -336,9 +334,6 @@ const drawGraph = (graphData) => {
         .attr("class", (d) => getGroupClass(d.group))
       .call(tooltip, tooltipDiv);
   } else if (isStacked.value) {
-    const testFunction = (d) => {
-      console.log(d)
-    }
     svg.append("g")
       .selectAll("g")
       .data(series)

@@ -4,7 +4,7 @@
       What reasons do police give for making traffic stops?
     </template>
     <template #image>
-      <img class="w-full h-full object-cover object-bottom" src="~/assets/images/reasons.jpg" alt="A street in Philadelphia"/>
+      <img class="w-full h-full object-cover object-bottom" src="~/assets/images/reasons-large.jpg" alt="A street in Philadelphia"/>
     </template>
     <template #quote>
       <Quote author="Councilmember Kendra Brooks" source="https://www.inquirer.com/news/philadelphia-police-racial-bias-vehicle-stops-council-member-isaiah-thomas-black-drivers-20201028.html" backgroundClass="bg-[#FEF1C2]" quoteMarkClass="fill-yellow" bold-color-class="text-yellow">
