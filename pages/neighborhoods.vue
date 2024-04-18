@@ -5,6 +5,7 @@
     </template>
     <template #image>
       <img class="w-full h-full object-cover" src="~/assets/images/neighborhoods.jpg" alt="A police car"/>
+      <div class="absolute inset-0 z-[1] bg-black opacity-50"></div>
     </template>
     <template #quote>
       <Quote author="Mahari Bailey, Attorney" source="/sources/Bailey-Inquirer-Article.pdf" backgroundClass="bg-[#D7DCF7]" quoteMarkClass="fill-primary-600" bold-color-class="text-primary-600">

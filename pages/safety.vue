@@ -6,6 +6,7 @@
     </template>
     <template #image>
       <img class="w-full h-full object-cover" src="~/assets/images/safety.jpg" alt="The side rearview mirror of a car"/>
+      <div class="absolute inset-0 z-[1] bg-black opacity-40"></div>
     </template>
     <template #quote>
       <Quote author="Councilmember Isaiah Thomas" source="https://www.cnn.com/2021/10/30/us/philadelphia-driving-equality-bill/index.html" backgroundClass="bg-[#DBEEB9]" quoteMarkClass="fill-yellowgreen" bold-color-class="text-yellowgreen">

@@ -5,6 +5,7 @@
     </template>
     <template #image>
       <img class="w-full h-full object-cover" src="~/assets/images/data.jpg" alt="A street in Philadelphia"/>
+      <div class="absolute inset-0 z-[1] bg-black opacity-60"></div>
     </template>
     <template #quote>
       <Quote author="Professor Lance Hannon" source="http://www88.homepage.villanova.edu/lance.hannon/TestimonyBills210635and210636Draft.pdf" backgroundClass="bg-[#E9D1F7]" quoteMarkClass="fill-violet" bold-color-class="text-violet" alignment="center">

@@ -5,6 +5,7 @@
     </template>
     <template #image>
       <img class="w-full h-full object-cover" src="~/assets/images/snapshot.jpg" alt="Closeup of police lights at night"/>
+      <div class="absolute inset-0 z-[1] bg-black opacity-50"></div>
     </template>
     <template #quote>
       <Quote author="Elder Melanie DuBouse" source="https://soundcloud.com/speakingfreelyaclupa/a-state-of-perpetual-alert-living-while-black-in-philadelphia" backgroundClass="bg-[#CCF1FF]" quoteMarkClass="fill-highlight" bold-color-class="text-[#00B8FF]">

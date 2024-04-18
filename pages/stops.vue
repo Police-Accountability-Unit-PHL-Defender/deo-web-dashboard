@@ -5,6 +5,7 @@
     </template>
     <template #image>
       <img class="w-full h-full object-cover object-[0%_20%]" src="~/assets/images/stops.jpg" alt="Closeup of police lights at night"/>
+      <div class="absolute inset-0 z-[1] bg-black opacity-40"></div>
     </template>
     <template #quote>
       <Quote author="Pastor Carl Day" source="https://www.facebook.com/CMThomasPHL/videos/578497320999248">
