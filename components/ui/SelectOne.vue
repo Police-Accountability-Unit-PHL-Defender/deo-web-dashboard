@@ -52,10 +52,10 @@
         :key="item"
         :value="item"
         :disabled="props.disabledItems?.includes(item)"
-        class="whitespace-nowrap transition-colors flex items-center gap-2"
+        class="whitespace-nowrap transition-colors"
         v-slot="{ selected, disabled }"
       >
-        <div class="py-2 pl-6 pr-4 w-full cursor-default" :class="disabled ? 'text-neutral-600' : 'cursor-pointer text-black hover:bg-neutral-200 hover:text-primary-800 '">
+        <div class="py-2 pl-6 pr-4 w-full cursor-default flex items-center gap-2" :class="disabled ? 'text-neutral-600' : 'cursor-pointer text-black hover:bg-neutral-200 hover:text-primary-800 '">
           <IconsCheckbox v-if="props.multiple" class="text-primary-600" :selected="props.modelValue.includes(item)"/>
           <span :class="{'text-primary-800': selected}">{{ getDisplayText(item) }}</span>
         </div>
