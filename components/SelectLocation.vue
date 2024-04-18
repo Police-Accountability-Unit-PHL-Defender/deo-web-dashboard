@@ -9,8 +9,8 @@
         <button class="absolute z-20 top-6 right-4 text-neutral-600 hover:text-black">
           <IconsClose class="close-button w-10" @click="locationModalIsOpen = false" />
         </button>
-        <div class="relative z-10 mb-4">
-          Select <SelectGeoBoundary v-model="selectedGeoBoundary" :allowOnlyCityOrDivision="props.allowOnlyCityOrDivision"></SelectGeoBoundary>
+        <div class="relative z-10 mb-4 mr-8">
+          Select a region on the map by <span class="inline-block"><SelectGeoBoundary v-model="selectedGeoBoundary" :allowOnlyCityOrDivision="props.allowOnlyCityOrDivision"/>:</span>
         </div>
         <div class="h-[520px] relative z-0">
           <LeafletMap
