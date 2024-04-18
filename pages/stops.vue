@@ -72,7 +72,7 @@
         <section>
           <QuestionHeader>
             <h3>
-              In <SelectLocation v-model="selectedLocation"/>, from the start of quarter <SelectQuarter2 v-model="q1BQuarterStart" item-label-end="start" /> through the end of <SelectQuarter2 v-model="q1BQuarterEnd" item-label-end="end"/>,
+              In <SelectLocation v-model="selectedLocation"/>, from the start of quarter <SelectQuarter v-model="q1BQuarterStart" item-label-end="start" :max-selectable="q1BQuarterEnd" /> through the end of <SelectQuarter v-model="q1BQuarterEnd" item-label-end="end" :min-selectable="q1BQuarterStart"/>,
               <span v-if="q1B" class="result-text" v-html="q1B.text[0]"></span>
             </h3>
           </QuestionHeader>
@@ -96,7 +96,7 @@
         <section>
           <h2 id="part2" class="text-heading-3 text-left pt-10 mb-6">Who are police stopping in traffic stops?</h2>
           <QuestionHeader>
-            How often did Philadelphia police stop people of different <SelectDemographicCategory v-model="q2ADemographicCategory" :is-plural="true" /> from the start of quarter <SelectQuarter2 v-model="q1BQuarterStart" item-label-end="start"/> through the end of <SelectQuarter2 v-model="q1BQuarterEnd" item-label-end="end"/> in <span class="whitespace-nowrap"><SelectLocation v-model="selectedLocation"/>?</span>
+            How often did Philadelphia police stop people of different <SelectDemographicCategory v-model="q2ADemographicCategory" :is-plural="true" /> from the start of quarter <SelectQuarter v-model="q1BQuarterStart" item-label-end="start" :max-selectable="q1BQuarterEnd"/> through the end of <SelectQuarter v-model="q1BQuarterEnd" item-label-end="end" :min-selectable="q1BQuarterStart"/> in <span class="whitespace-nowrap"><SelectLocation v-model="selectedLocation"/>?</span>
             </QuestionHeader>
             <Answer>
             <div v-if="q2A">
@@ -109,7 +109,7 @@
         <HorizontalLine class="my-4 md:my-12"/>
         <section>
           <QuestionHeader>
-            <h3>Which demographic groups did Philadelphia police most frequently stop in <SelectLocation v-model="selectedLocation"/> from the start of quarter <SelectQuarter2 v-model="q1BQuarterStart" item-label-end="start"/> through the end of <span class="whitespace-nowrap"><SelectQuarter2 v-model="q1BQuarterEnd" item-label-end="end"/>?</span></h3>
+            <h3>Which demographic groups did Philadelphia police most frequently stop in <SelectLocation v-model="selectedLocation"/> from the start of quarter <SelectQuarter v-model="q1BQuarterStart" item-label-end="start" :max-selectable="q1BQuarterEnd"/> through the end of <span class="whitespace-nowrap"><SelectQuarter v-model="q1BQuarterEnd" item-label-end="end" :min-selectable="q1BQuarterStart"/>?</span></h3>
           </QuestionHeader>
           <Answer :arrow="true">
             <div v-if="q2B">
@@ -156,7 +156,7 @@
         <HorizontalLine class="my-4 md:my-12"/>
         <section>
           <QuestionHeader>
-            How many times did Philadelphia police stop one demographic group compared to another in <SelectLocation v-model="selectedLocation"/> from the start of quarter <SelectQuarter2 v-model="q1BQuarterStart" item-label-end="start"/> through the end of <span class="whitespace-nowrap"><SelectQuarter2 v-model="q1BQuarterEnd" item-label-end="end"/>?</span>
+            How many times did Philadelphia police stop one demographic group compared to another in <SelectLocation v-model="selectedLocation"/> from the start of quarter <SelectQuarter v-model="q1BQuarterStart" item-label-end="start" :max-selectable="q1BQuarterEnd"/> through the end of <span class="whitespace-nowrap"><SelectQuarter v-model="q1BQuarterEnd" item-label-end="end" :min-selectable="q1BQuarterStart"/>?</span>
           </QuestionHeader>
           <div class="max-w-2xl mt-10 mb-6">
             <div class="text-label-2 text-left">Select two demographic groups and compare</div>
@@ -183,7 +183,7 @@
           </div>
           <Answer>
             <div v-if="q2C">
-              <Graph :graph-data="q2C.figures.barplot.data" :axis-properties="{x: q2C.figures.barplot.properties.xAxis, y: q2C.figures.barplot.properties.yAxis}" group-name="group" :group-classes="{'Group 1': 'fill-purple bg-purple', 'Group 2': 'fill-mint bg-mint'}" :chart-legend="{'Group 1': 'Group 1', 'Group 2': 'Group 2'}">
+              <Graph :graph-data="q2C.figures.barplot.data" :axis-properties="{x: q2C.figures.barplot.properties.xAxis, y: q2C.figures.barplot.properties.yAxis}" group-name="group" :group-classes="{'Group 1': 'fill-purple bg-purple', 'Group 2': 'fill-mint bg-mint'}" :chart-legend="{'Group 1': 'Group 1', 'Group 2': 'Group 2'}" :quarterly-x-axis-ticks="true" :wrap-x-axis-labels="true">
                 <h4 class="max-w-[550px] mx-auto">{{ q2C.figures.barplot.properties.title }}</h4>
               </Graph>
             </div>

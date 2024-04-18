@@ -86,7 +86,7 @@
           <QuestionHeader>
             <h3>
               Do Philadelphia police intrude upon some drivers and/or their vehicles more often than others?
-              Show data by <SelectDemographicCategory v-model="q2ADemographicCategory" /> in <SelectLocation v-model="selectedLocation"/> from the start of quarter <SelectQuarter2 v-model="q2AQuarterStart" item-label-end="start"/> through the end of <SelectQuarter2 v-model="q2AQuarterEnd" item-label-end="end"/>, compared to a baseline of people who are
+              Show data by <SelectDemographicCategory v-model="q2ADemographicCategory" /> in <SelectLocation v-model="selectedLocation"/> from the start of quarter <SelectQuarter v-model="q2AQuarterStart" item-label-end="start" :max-selectable="q2AQuarterEnd"/> through the end of <SelectQuarter v-model="q2AQuarterEnd" item-label-end="end" :min-selectable="q2AQuarterStart"/>, compared to a baseline of people who are
               <SelectRace v-if="q2ADemographicCategory === 'race'" v-model="q2ARace"/>
               <SelectGender v-if="q2ADemographicCategory ==='gender'" v-model="q2AGender"/>
               <SelectAgeGroup v-if="q2ADemographicCategory === 'age range'" v-model="q2AAgeGroup"/>.
@@ -130,8 +130,8 @@
           <QuestionHeader>
             <h3>
               Is traffic enforcement different in districts<Tooltip term="District"/> where most residents are white, compared to districts where most residents are people of color?
-              Comparing majority white districts to majority non-white districts, how many <SelectEvent v-model="q3AEvent" /> did Philadelphia police make from the start of quarter <SelectQuarter2 v-model="q2AQuarterStart" item-label-end="start"/> through the end of 
-              <span class="whitespace-nowrap"><SelectQuarter2 v-model="q2AQuarterEnd" item-label-end="end"/>?</span>
+              Comparing majority white districts to majority non-white districts, how many <SelectEvent v-model="q3AEvent" /> did Philadelphia police make from the start of quarter <SelectQuarter v-model="q2AQuarterStart" item-label-end="start"  :max-selectable="q2AQuarterEnd"/> through the end of 
+              <span class="whitespace-nowrap"><SelectQuarter v-model="q2AQuarterEnd" item-label-end="end" :min-selectable="q2AQuarterStart"/>?</span>
             </h3>
           </QuestionHeader>
           <Answer v-if="q3A" :arrow="true">
@@ -159,8 +159,8 @@
             <h3>
               How does traffic enforcement compare in different districts?
               How many <SelectEvent v-model="q3AEvent" /> did Philadelphia police make
-              from the start of quarter <SelectQuarter2 v-model="q2AQuarterStart" item-label-end="start"/>
-              through the end of <SelectQuarter2 v-model="q2AQuarterEnd" item-label-end="end"/>
+              from the start of quarter <SelectQuarter v-model="q2AQuarterStart" item-label-end="start"  :max-selectable="q2AQuarterEnd"/>
+              through the end of <SelectQuarter v-model="q2AQuarterEnd" item-label-end="end" :min-selectable="q2AQuarterStart"/>
               in the following districts?
             </h3>
             <div class="max-w-2xl mt-4">

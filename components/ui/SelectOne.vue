@@ -51,11 +51,14 @@
         v-for="item in props.items"
         :key="item"
         :value="item"
-        class="py-2 pl-6 pr-4 cursor-pointer hover:bg-neutral-200 text-black hover:text-primary-800 whitespace-nowrap transition-colors flex items-center gap-2"
-        v-slot="{ selected }"
+        :disabled="props.disabledItems?.includes(item)"
+        class="whitespace-nowrap transition-colors flex items-center gap-2"
+        v-slot="{ selected, disabled }"
       >
-        <IconsCheckbox v-if="props.multiple" class="text-primary-600" :selected="props.modelValue.includes(item)"/>
-        <span :class="{'text-primary-800': selected}">{{ getDisplayText(item) }}</span>
+        <div class="py-2 pl-6 pr-4 w-full cursor-default" :class="disabled ? 'text-neutral-600' : 'cursor-pointer text-black hover:bg-neutral-200 hover:text-primary-800 '">
+          <IconsCheckbox v-if="props.multiple" class="text-primary-600" :selected="props.modelValue.includes(item)"/>
+          <span :class="{'text-primary-800': selected}">{{ getDisplayText(item) }}</span>
+        </div>
       </ListboxOption>
     </ListboxOptions>
   </Listbox>
@@ -68,7 +71,7 @@
     ListboxOptions,
     ListboxOption,
   } from '@headlessui/vue'
-  const props = defineProps(['modelValue', 'items', 'itemDisplayText', 'multiple', 'needsSelectionWarning'])
+  const props = defineProps(['modelValue', 'items', 'itemDisplayText', 'multiple', 'needsSelectionWarning', 'disabledItems'])
   const emit = defineEmits(['update:modelValue'])
   const getDisplayText = (item) => {
     if (!props.itemDisplayText) return item

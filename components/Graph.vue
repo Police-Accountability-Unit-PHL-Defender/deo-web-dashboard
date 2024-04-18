@@ -13,18 +13,6 @@
         <div :class="props.groupClasses[key]" class="w-3 h-3"></div>
         <div>{{ item }}</div>
       </div>
-      <!-- <div class="flex gap-1 items-center">
-        <div class="bg-purple w-3 h-3"></div>
-        <div>{{ chartLegend[0] }}</div>
-      </div>
-      <div class="flex gap-1 items-center">
-        <div class="bg-mint w-3 h-3"></div>
-        <div>{{ chartLegend[1] }}</div>
-      </div>
-      <div v-if="chartLegend.length > 2" class="flex gap-1 items-center">
-        <div class="bg-yellow w-3 h-3"></div>
-        <div>{{ chartLegend[2] }}</div>
-      </div> -->
     </div>
 
     <div v-if="isStacked" class="text-caption pt-4 px-4 text-neutral-800 flex gap-x-8 gap-y-2 flex-wrap md:justify-center md:ml-20">
@@ -207,37 +195,19 @@ const drawGraph = (graphData) => {
     .range([margin.left, width - margin.right])
     .paddingInner(innerPaddingRatio)
     .paddingOuter(outerPaddingRatio)
-  const y = d3.scaleLinear()
-    .domain([0, yScaleDomainMax])
-    .range([height - margin.bottom, margin.top])
-    .nice()
-
-  // axes
-  // Add the y-axis and label, and remove the domain line.
-  svg.append("g")
-    .attr("transform", `translate(${margin.left},0)`)
-    .attr("class", "text-caption")
-    .call(d3.axisLeft(y).tickSizeInner(-width, 0, 0).tickSizeOuter(0).tickPadding(8))
-    .call(g => g.append("foreignObject")
-      .attr("x", -margin.left)
-      .attr("y", 0)
-      .attr("width", margin.left * 2)
-      .attr("height", margin.top)
-      .append("xhtml:div")
-      .attr("class", "text-body-4 graph-y-axis-container font-semibold")
-      .html(applyLineBreaks(props.axisProperties.y)))
-  // Add the x-axis
+  // Add the x-axis ticks
   let tickSkip = 1
-  if (n >= 32) {
+  if (n >= 36) {
     tickSkip = 8
   } else if (n >= 16) {
     tickSkip = 4
   } else {
     tickSkip = 2
   }
-  const tickValues = n >= 8 && props.quarterlyXAxisTicks ? x.domain().filter(function(d,i){ return !(i%tickSkip)}) : x.domain()
+  const tickValues = n >= 8 && props.quarterlyXAxisTicks ? x.domain().filter(function(d,i){ console.log(d); return !((i+6)%tickSkip)}) : x.domain()
+  const marginBottomAdjustment = props.quarterlyXAxisTicks && x.bandwidth() < 100 ? 16 : 0
   svg.append("g")
-    .attr("transform", `translate(0,${height - margin.bottom})`)
+    .attr("transform", `translate(0,${height - (margin.bottom + marginBottomAdjustment)})`)
     .attr("class", "text-caption")
     .call(d3.axisBottom(x).tickSizeInner(0).tickSizeOuter(0).tickPadding(12).tickValues(tickValues))
     .selectAll(".tick text")
@@ -250,6 +220,24 @@ const drawGraph = (graphData) => {
     .attr("fill", "currentColor")
     .attr("class", "text-body-4 font-semibold")
     .text(props.axisProperties.x);
+
+  // Add the y-axis and label, and remove the domain line.
+  const y = d3.scaleLinear()
+    .domain([0, yScaleDomainMax])
+    .range([height - (margin.bottom + marginBottomAdjustment), margin.top])
+    .nice()
+  svg.append("g")
+    .attr("transform", `translate(${margin.left},0)`)
+    .attr("class", "text-caption")
+    .call(d3.axisLeft(y).tickSizeInner(-width, 0, 0).tickSizeOuter(0).tickPadding(8))
+    .call(g => g.append("foreignObject")
+      .attr("x", -margin.left)
+      .attr("y", 0)
+      .attr("width", margin.left * 2)
+      .attr("height", margin.top)
+      .append("xhtml:div")
+      .attr("class", "text-body-4 graph-y-axis-container font-semibold")
+      .html(applyLineBreaks(props.axisProperties.y)))
   
   const MOUSE_POS_Y_OFFSET = 8;
   const MOUSE_POS_X_OFFSET = 0;
@@ -390,6 +378,16 @@ const drawGraph = (graphData) => {
       // .call(tooltip, tooltipDiv);
   }
 
+  // Add bottom x-axis zero line
+  // Make it cursor ignored
+  svg.append("line")
+    .attr("x1", margin.left)
+    .attr("x2", width - margin.right)
+    .attr("y1", y(0))
+    .attr("y2", y(0))
+    .attr("stroke", "currentColor")
+    .attr("stroke-width", 1)
+    .style("pointer-events", "none");
 
   // // Create horizontal lines for each tick in the y-axis
   // svg.selectAll('.horizontal-line')
@@ -436,17 +434,19 @@ function wrap(text, width) {
         lineHeight = 1.1, // ems
         y = text.attr("y"),
         dy = parseFloat(text.attr("dy")),
-        tspan = text.text(null) // .append("tspan").attr("x", 0).attr("y", y).attr("dy", dy + "em");
+        tspan = text.text(null) // .append("tspan").attr("x", 0).attr("y", y).attr("dy", dy + "em");  
+    let firstWord = true
     while (word = words.pop()) {
       line.push(word);
       tspan.text(line.join(" "));
-      if (tspan.node().getComputedTextLength() > width) {
+      if (!firstWord && tspan.node().getComputedTextLength() > width) {
         lineNumber++
         line.pop();
         tspan.text(line.join(" "));
         line = [word];
         tspan = text.append("tspan").attr("x", 0).attr("y", y).attr("dy", lineNumber * lineHeight + dy + "em").text(word);
       }
+      firstWord = false
     }
   });
 }
