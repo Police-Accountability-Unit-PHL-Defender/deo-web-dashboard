@@ -3,7 +3,7 @@
     :items="items"
     :modelValue="modelValue"
     :multiple="true"
-    @update:modelValue="value => emit('update:modelValue', value)"
+    @update:modelValue="handleUpdate"
   />
 </template>
 
@@ -34,4 +34,8 @@
   ]
   const props = defineProps(['modelValue'])
   const emit = defineEmits(['update:modelValue'])
+  // when the selected districts changes, sort them alphabetically
+  const handleUpdate = (newValue) => {
+    emit('update:modelValue', newValue.sort())
+  }
 </script>
