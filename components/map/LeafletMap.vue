@@ -33,23 +33,23 @@ const options = {
 };
 const geoAggregations = {
   psa: {
-    url: "https://opendata.arcgis.com/datasets/8dc58605f9dd484295c7d065694cdc0f_0.geojson",
+    url: "/data/police_psas.geojson",
     legendSelectedTextFunction: (obj) =>
       `<b>District:${obj.PSA_NUM.substr(0, 2)} PSA:${obj.PSA_NUM[2]}</b>`,
     tooltipFunction: (obj) => obj.PSA_NUM.substr(0, 2) + '-' + obj.PSA_NUM.substr(2),
   },
   district: {
-    url: "https://opendata.arcgis.com/datasets/62ec63afb8824a15953399b1fa819df2_0.geojson",
+    url: "/data/police_districts.geojson",
     legendSelectedTextFunction: (obj) => `<b>District:${obj.DIST_NUM}</b>`,
     tooltipFunction: (obj) => obj.DIST_NUMC,
   },
   division: {
-    url: "https://opendata.arcgis.com/datasets/4333983fd1e1449ca7fc2d63ad7e0076_0.geojson",
+    url: "/data/police_divisions.geojson",
     legendSelectedTextFunction: (obj) => `<b>Division:${obj.DIV_NAME}</b>`,
     tooltipFunction: (obj) => obj.DIV_NAME,
   },
   city: {
-    url: "https://opendata.arcgis.com/datasets/405ec3da942d4e20869d4e1449a2be48_0.geojson",
+    url: "/data/police_city_limits.geojson",
     legendSelectedTextFunction: (obj) => "<b>Philadelphia</b>",
     tooltipFunction: (obj) => "Philadelphia",
   },
