@@ -8,7 +8,7 @@
       <div class="absolute inset-0 z-[1] bg-black opacity-50"></div>
     </template>
     <template #quote>
-      <Quote author="Mahari Bailey, Attorney" source="/sources/Bailey-Inquirer-Article.pdf" backgroundClass="bg-[#D7DCF7]" quoteMarkClass="fill-primary-600" bold-color-class="text-primary-600">
+      <Quote author="Attorney Mahari Bailey" source="/sources/Bailey-Inquirer-Article.pdf" backgroundClass="bg-[#D7DCF7]" quoteMarkClass="fill-primary-600" bold-color-class="text-primary-600">
         <template #quoteText>
           <p>
             It's very disheartening and very degrading… I should feel comfortable enough going to neighborhoods rather than being fearful of being subjected to disrespectful and unlawful activities by a police officer.
