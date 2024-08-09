@@ -18,7 +18,7 @@
           <dt>Disparity</dt>
           <dd>A difference in outcomes or treatment, particularly one that is considered unfair. </dd>
           <dt>District</dt>
-          <dd>Philadelphia Police District, a numbered geographical division in the city to which police personnel are assigned. There are currently 21 police districts. </dd>
+          <dd>Philadelphia Police District, a numbered geographical division in the city to which police personnel are assigned. There are currently 20 police districts. </dd>
           <dt>Division</dt>
           <dd>Philadelphia Police Detective Division, a broad geographical division of the city to which detectives are assigned. There are six Detective Divisions: East, Southwest, South, Northwest, Northeast, and Central. </dd>
           <dt>Frisk</dt>
