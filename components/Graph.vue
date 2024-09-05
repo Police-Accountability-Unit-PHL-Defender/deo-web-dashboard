@@ -98,7 +98,7 @@ let stackedColorMap = ref([])
 
 const isIncompleteTimeSeries = computed(() => {
   // Figure out if we are in a yearly plot with a completed year
-  return props.axisProperties.x === 'Year' and !config.public.mostRecentQuarter.endsWith('Q4');
+  return props.axisProperties.x === 'Year' && !config.public.mostRecentQuarter.endsWith('Q4');
 })
 
 const isGrouped = computed(() => {
