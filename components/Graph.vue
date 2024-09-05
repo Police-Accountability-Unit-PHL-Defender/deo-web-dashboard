@@ -355,7 +355,7 @@ const drawGraph = (graphData) => {
               return 0.5;  // Partially transparent
             }
             return 1;  // Fully opaque otherwise
-        })
+        });
   } else {
     // text above bars for baseline comparisons
     const group = svg.append("g")
