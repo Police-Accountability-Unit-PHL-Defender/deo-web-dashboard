@@ -92,6 +92,7 @@ const props = defineProps({
   }
 })
 
+const config = useRuntimeConfig()
 const graphSvg = ref(null)
 const container = ref(null)
 let stackedColorMap = ref([])
