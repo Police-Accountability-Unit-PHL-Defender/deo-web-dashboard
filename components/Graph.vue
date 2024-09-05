@@ -337,7 +337,7 @@ const drawGraph = (graphData) => {
         .attr("height", (d) => y(0) - y(d[props.axisProperties.y]))
         .attr("width", barWidth)
         .attr("class", (d) => getGroupClass(d.group))
-      .call(tooltip, tooltipDiv)
+      .call(tooltip, tooltipDiv);
   } else if (isStacked.value) {
     svg.append("g")
       .selectAll("g")
