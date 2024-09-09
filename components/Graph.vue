@@ -92,9 +92,15 @@ const props = defineProps({
   }
 })
 
+const config = useRuntimeConfig()
 const graphSvg = ref(null)
 const container = ref(null)
 let stackedColorMap = ref([])
+
+const isIncompleteTimeSeries = computed(() => {
+  // Figure out if we are in a yearly plot with a completed year
+  return props.axisProperties.x === 'Year' && !config.public.mostRecentQuarter.endsWith('Q4');
+})
 
 const isGrouped = computed(() => {
   return props.groupName !== undefined
@@ -317,6 +323,12 @@ const drawGraph = (graphData) => {
       .data(d3.group(graphData, (d) => d[props.axisProperties.x]))
       .join("g")
         .attr("transform", ([xAxisProperty]) => `translate(${x(xAxisProperty) - groupGapRatio * barWidth},0)`)
+        .attr("opacity", (d, i) => {
+            if (isIncompleteTimeSeries.value && i === graphData.length/groups.size - 1) {
+              return 0.5;  // Partially transparent
+            }
+            return 1;  // Fully opaque otherwise
+          })
       .selectAll()
       .data(([, values]) => values)
       .join("rect")
@@ -339,16 +351,27 @@ const drawGraph = (graphData) => {
         .attr("y", d => y(d[1]))
         .attr("height", d => y(d[0]) - y(d[1]))
         .attr("width", x.bandwidth())
-        // .call(testFunction);
+        .attr("opacity", (d, i, nodes) => {
+            if (isIncompleteTimeSeries.value && i === nodes.length - 1) {
+              return 0.5;  // Partially transparent
+            }
+            return 1;  // Fully opaque otherwise
+        })
         .call(tooltip, tooltipDiv, false, true);
-        // .call(tooltip, tooltipDiv);
   } else {
     // text above bars for baseline comparisons
     const group = svg.append("g")
       .attr("class", "fill-purple")
       .selectAll()
       .data(graphData)
-      .join("g");
+      .join("g")
+      .attr("opacity", (d, i) => {
+        // If it's a time series and this is the last element, make it partially transparent
+        if (isIncompleteTimeSeries.value && i === graphData.length - 1) {
+          return 0.5;  // Partially transparent
+        }
+        return 1;  // Fully opaque otherwise
+      });
     group.append("rect")
       .attr("x", (d) => x(d[props.axisProperties.x]))
       .attr("y", (d) => y(d[props.axisProperties.y]))
