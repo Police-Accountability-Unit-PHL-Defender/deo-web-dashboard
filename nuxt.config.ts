@@ -44,7 +44,7 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       apiBaseUrl: process.env.NUXT_API_BASE_URL || 'https://deo-fastapi.onrender.com',
-      mostRecentQuarter: process.env.NUXT_MOST_RECENT_QUARTER || '2023-Q4'
+      mostRecentQuarter: process.env.NUXT_MOST_RECENT_QUARTER || '2024-Q2'
     }
   }
 })
