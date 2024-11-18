@@ -237,7 +237,6 @@ const { data: q1B, refresh: refreshQ1B } = await useAsyncData('q1B',
   })
 )
 watch(q1BParams, async () => { refreshQ1B() }, { deep: true })
-console.log(q1B.value)
 
 const q2AParams = ref([q2ADemographicCategory, selectedLocation, q2AQuarterStart, q2AQuarterEnd, q2ARace, q2AGender, q2AAgeGroup])
 const { data: q2A, refresh: refreshQ2A } = await useAsyncData('q2A',
@@ -254,7 +253,6 @@ const { data: q2A, refresh: refreshQ2A } = await useAsyncData('q2A',
 )
 watch(q2AParams, async () => { refreshQ2A() }, { deep: true })
 
-console.log(q2A.value)
 
 const getQ2AnnotatedData = (barplotKey) => {
   if (!q2A.value) return null

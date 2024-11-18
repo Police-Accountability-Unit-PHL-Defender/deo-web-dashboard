@@ -131,7 +131,6 @@ const { data: q1, refresh: refreshQ1 } = await useAsyncData('q1',
   })
 )
 watch(q1Params, async () => { refreshQ1() }, { deep: true })
-console.log(q1.value)
 
 const q2Params = ref([q1Year, selectedNeighborhoodMajority])
 const { data: q2, refresh: refreshQ2 } = await useAsyncData('q2',
@@ -144,7 +143,6 @@ const { data: q2, refresh: refreshQ2 } = await useAsyncData('q2',
   })
 )
 watch(q2Params, async () => { refreshQ2() }, { deep: true })
-console.log(q2.value)
 
 const q3Params = ref([selectedTimeGranularity])
 const { data: q3, refresh: refreshQ3 } = await useAsyncData('q3',
@@ -156,7 +154,6 @@ const { data: q3, refresh: refreshQ3 } = await useAsyncData('q3',
   })
 )
 watch(q3Params, async () => { refreshQ3() }, { deep: true })
-console.log(q3.value)
 
 const q4Params = ref([q1Year])
 const { data: q4, refresh: refreshQ4 } = await useAsyncData('q4',
@@ -168,5 +165,4 @@ const { data: q4, refresh: refreshQ4 } = await useAsyncData('q4',
   })
 )
 watch(q4Params, async () => { refreshQ4() }, { deep: true })
-console.log(q4.value)
 </script>
