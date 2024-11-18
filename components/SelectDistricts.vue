@@ -14,7 +14,6 @@
     'District 02',
     'District 03',
     'District 05',
-    'District 06',
     'District 07',
     'District 08',
     'District 09',
