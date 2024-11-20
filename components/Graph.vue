@@ -208,7 +208,7 @@ const drawGraph = (graphData) => {
   } else {
     tickSkip = 2
   }
-  const tickValues = n >= 8 && props.quarterlyXAxisTicks 
+  const tickValues = n >= 36 && props.quarterlyXAxisTicks 
     ? x.domain().filter(function(d, i) {
         const lastTickIndex = x.domain().length - 1; // Index of the last tick
         return !((i + 6) % tickSkip) && (lastTickIndex - i > 4); // Include only valid ticks
