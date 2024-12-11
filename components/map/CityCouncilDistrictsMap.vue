@@ -40,7 +40,6 @@ const handleClickMapRegion = (event: Event) => {
   const target = event.target as HTMLElement;
   const regionId = target.dataset.regionId;
   if (regionId) {
-    console.log(regionId);
     selectedRegion.value = parseInt(regionId)
   }
 }

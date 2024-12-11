@@ -42,8 +42,6 @@ const isGrouped = computed(() => {
 })
 
 watch(() => props.graphData, (graphData) => {
-  console.log('graph data changed')
-  console.log(graphData)
   drawGraph(graphData)
 }, { deep: true })
 

@@ -87,7 +87,7 @@
           <QuestionHeader>
             <h3>
               Do Philadelphia police intrude upon some drivers and/or their vehicles more often than others?
-              Show data by <SelectDemographicCategory v-model="q2ADemographicCategory" /> in <SelectLocation v-model="selectedLocation"/> from the start of quarter <SelectQuarter v-model="q2AQuarterStart" item-label-end="start" :max-selectable="q2AQuarterEnd"/> through the end of <SelectQuarter v-model="q2AQuarterEnd" item-label-end="end" :min-selectable="q2AQuarterStart"/>, compared to a baseline of people who are
+              Show data by <SelectDemographicCategory v-model="q2ADemographicCategory" /> in <SelectLocation v-model="selectedLocation"/> from the start of <SelectQuarter v-model="q2AQuarterStart" item-label-end="start" :max-selectable="q2AQuarterEnd"/> through the end of <SelectQuarter v-model="q2AQuarterEnd" item-label-end="end" :min-selectable="q2AQuarterStart"/>, compared to a baseline of people who are
               <SelectRace v-if="q2ADemographicCategory === 'race'" v-model="q2ARace"/>
               <SelectGender v-if="q2ADemographicCategory ==='gender'" v-model="q2AGender"/>
               <SelectAgeGroup v-if="q2ADemographicCategory === 'age range'" v-model="q2AAgeGroup"/>.
@@ -131,7 +131,7 @@
           <QuestionHeader>
             <h3>
               Is traffic enforcement different in districts<Tooltip term="District"/> where most residents are white, compared to districts where most residents are people of color?
-              Comparing majority white districts to majority non-white districts, how many <SelectEvent v-model="q3AEvent" /> did Philadelphia police make from the start of quarter <SelectQuarter v-model="q2AQuarterStart" item-label-end="start"  :max-selectable="q2AQuarterEnd"/> through the end of 
+              Comparing majority white districts to majority non-white districts, how many <SelectEvent v-model="q3AEvent" /> did Philadelphia police make from the start of <SelectQuarter v-model="q2AQuarterStart" item-label-end="start"  :max-selectable="q2AQuarterEnd"/> through the end of 
               <span class="whitespace-nowrap"><SelectQuarter v-model="q2AQuarterEnd" item-label-end="end" :min-selectable="q2AQuarterStart"/>?</span>
             </h3>
           </QuestionHeader>
@@ -160,7 +160,7 @@
             <h3>
               How does traffic enforcement compare in different districts?
               How many <SelectEvent v-model="q3AEvent" /> did Philadelphia police make
-              from the start of quarter <SelectQuarter v-model="q2AQuarterStart" item-label-end="start"  :max-selectable="q2AQuarterEnd"/>
+              from the start of <SelectQuarter v-model="q2AQuarterStart" item-label-end="start"  :max-selectable="q2AQuarterEnd"/>
               through the end of <SelectQuarter v-model="q2AQuarterEnd" item-label-end="end" :min-selectable="q2AQuarterStart"/>
               in the following districts?
             </h3>
@@ -237,7 +237,6 @@ const { data: q1B, refresh: refreshQ1B } = await useAsyncData('q1B',
   })
 )
 watch(q1BParams, async () => { refreshQ1B() }, { deep: true })
-console.log(q1B.value)
 
 const q2AParams = ref([q2ADemographicCategory, selectedLocation, q2AQuarterStart, q2AQuarterEnd, q2ARace, q2AGender, q2AAgeGroup])
 const { data: q2A, refresh: refreshQ2A } = await useAsyncData('q2A',
@@ -254,7 +253,6 @@ const { data: q2A, refresh: refreshQ2A } = await useAsyncData('q2A',
 )
 watch(q2AParams, async () => { refreshQ2A() }, { deep: true })
 
-console.log(q2A.value)
 
 const getQ2AnnotatedData = (barplotKey) => {
   if (!q2A.value) return null

@@ -133,5 +133,4 @@ const { data: q1A, refresh: refreshQ1A } = await useAsyncData('q1A',
 )
 watch(q1AParams, async () => { refreshQ1A() }, { deep: true })
 
-console.log(q1A.value)
 </script>

@@ -115,8 +115,6 @@ onMounted(() => {
 })
 
 watch(() => props.graphData, (graphData) => {
-  console.log('graph data changed')
-  console.log(graphData)
   drawGraph(graphData)
 }, { deep: true })
 
@@ -210,7 +208,20 @@ const drawGraph = (graphData) => {
   } else {
     tickSkip = 2
   }
-  const tickValues = n >= 8 && props.quarterlyXAxisTicks ? x.domain().filter(function(d,i){ console.log(d); return !((i+6)%tickSkip)}) : x.domain()
+
+const averageTickLength = x
+  .domain()
+  .reduce((sum, d) => sum + d.toString().length, 0) / x.domain().length;
+const tickValues = averageTickLength > 4 && props.quarterlyXAxisTicks
+  ? x.domain().filter(function(d, i) {
+      const lastTickIndex = x.domain().length - 1; // Index of the last tick
+      const tickStringLength = d.toString().length; // Length of the tick string
+      return (
+        !((i + 6) % tickSkip)
+        && (lastTickIndex - i > n/8)
+      );
+    })
+  : x.domain();
   const marginBottomAdjustment = props.quarterlyXAxisTicks && x.bandwidth() < 100 ? 16 : 0
   svg.append("g")
     .attr("transform", `translate(0,${height - (margin.bottom + marginBottomAdjustment)})`)

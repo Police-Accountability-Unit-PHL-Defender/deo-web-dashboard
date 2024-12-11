@@ -130,7 +130,6 @@ const { data: q1C, refresh: refreshQ1C } = await useAsyncData('q1C',
     options
   })
 )
-console.log(q1C.value)
 const q1CGeoAggregation = computed(() => {
   const reversedData = q1C.value.geojsons[0].features.reverse()
   const data = {
@@ -149,7 +148,6 @@ const { data: q2, refresh: refreshQ2 } = await useAsyncData('q2',
     options
   })
 )
-console.log(q2.value)
 const q2AGeoAggregation = computed(() => {
   return {
     data: {
