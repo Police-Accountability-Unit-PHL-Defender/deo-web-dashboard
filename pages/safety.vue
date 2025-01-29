@@ -51,7 +51,7 @@
             <AnswerText>
               Driving Equality came into effect on March 3, 2022. In the year after<Tooltip term="Year after"/> Driving Equality,
               <span v-html="q1A.text[0]" class="result-text"></span>
-              compared to 2021 (see <a href="/driving-equality#10" class="text-hyperlink-blue" target="_blank">What is Driving Equality?</a> to learn more about these date comparisons). However, in 2023, most traffic stops by the Philadelphia police still did not happen on the HIN.
+              compared to 2021 (see <a href="/driving-equality#10" class="text-hyperlink-blue" target="_blank">What is Driving Equality?</a> to learn more about these date comparisons). However, in 2024, most traffic stops by the Philadelphia police still did not happen on the HIN.
             </AnswerText>
             <LeafletMap2 :geo-aggregation="q1CGeoAggregation" hin-legend="true">
               <h4>{{ q1C.geojsons[0].properties.title }}</h4>
