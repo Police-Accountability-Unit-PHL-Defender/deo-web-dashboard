@@ -1,15 +1,21 @@
 <template>
   <SelectOne
-    :items="years"
+    :items="watchedYears"
     :modelValue="modelValue"
     @update:modelValue="value => emit('update:modelValue', value)"
   />
 </template>
-
 <script setup>
   import SelectOne from '~/components/ui/SelectOne.vue'
-  // TODO: Options for years should be based on available data
-  const years = [2022, 2023]
+  
+  const yearsState = useState("deoYears")
+  const watchedYears = ref(yearsState.value)
+
+  watch(yearsState, (newValue) => {
+    watchedYears.value = newValue
+    console.log('watchedYears', watchedYears.value)
+  }, { immediate: true })
+
   const props = defineProps(['modelValue'])
   const emit = defineEmits(['update:modelValue'])
 </script>

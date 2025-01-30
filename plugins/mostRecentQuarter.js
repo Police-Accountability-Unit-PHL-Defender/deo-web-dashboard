@@ -10,7 +10,9 @@ function getPreviousQuarter() {
 export default defineNuxtPlugin(async (nuxtApp) => {
     const runtimeConfig = useRuntimeConfig();
     const fallbackQuarter = getPreviousQuarter();
+    const fallbackDeoYears = [2022, 2023];
     useState('mostRecentQuarter', () => fallbackQuarter);
+    useState('deoYears', () => fallbackDeoYears);
 
     try {
         const response = await fetch(`${runtimeConfig.public.apiBaseUrl}/settings`);
@@ -20,9 +22,10 @@ export default defineNuxtPlugin(async (nuxtApp) => {
         }
         const data = await response.json();
 
-        // Provide the value globally via useState
-        useState('mostRecentQuarter', () => data.mostRecentQuarter || fallbackQuarter);
+        useState('mostRecentQuarter').value =  data.mostRecentQuarter || fallbackQuarter;
+        useState('deoYears').value =  data.deoYears || fallbackDeoYears;
         console.info(`Data most recently updated for quarter: ${data.mostRecentQuarter}`);
+        console.info(`Data most recently updated for deoYears: ${data.deoYears}`);
     } catch (error) {
         console.error(`Failed to fetch mostRecentQuarter. Using fallback value: ${fallbackQuarter}`, error.message);
     }
