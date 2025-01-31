@@ -64,7 +64,7 @@
             </Graph>
             <AnswerText>
               <p class="text-body-4">
-                As previously noted above, police officers often did not give an MVC reason for their stops in 2022 and 2023.  Furthermore, the Defender’s review of a separate dataset  found that police routinely miscoded MVC stops for tint, mistakenly omitting the MVC reason for a large but unknown number of those stops, skewing the tint stops numbers down dramatically.
+                As noted above, police officers often do not record an MVC reason for their stops.  Furthermore, the Defender’s review of a separate dataset  found that police routinely miscoded MVC stops for tint, mistakenly omitting the MVC reason for a large but unknown number of those stops, skewing the tint stops numbers down dramatically.
               </p>
             </AnswerText>
           </Answer>
@@ -91,7 +91,7 @@
             <h3>How often do Philadelphia police stop drivers for operational<Tooltip term="Operational"/> violations? Are there racial disparities<Tooltip term="Disparity"/> in these traffic stops? When Philadelphia police gave a reason, how often did police stop people of different races for operational violations in <span class="whitespace-nowrap"><SelectYear v-model="q1Year"/>?</span></h3>
           </QuestionHeader>
           <Answer v-if="q4" :arrow="true">
-            <Graph :graph-data="q4.figures.barplot.data" :axis-properties="{x: q4.figures.barplot.properties.xAxis, y: q4.figures.barplot.properties.yAxis}">
+            <Graph :graph-data="q4.figures.barplot.data" :axis-properties="{x: q4.figures.barplot.properties.xAxis, y: q4.figures.barplot.properties.yAxis}" :y-scale-domain-max="100">
               <h4>{{ q4.figures.barplot.properties.title }}</h4>
             </Graph>
           </Answer>
