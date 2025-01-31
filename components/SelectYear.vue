@@ -13,7 +13,6 @@
 
   watch(yearsState, (newValue) => {
     watchedYears.value = newValue
-    console.log('watchedYears', watchedYears.value)
   }, { immediate: true })
 
   const props = defineProps(['modelValue'])
