@@ -48,7 +48,7 @@
             </Graph>
             <AnswerText>
               <p class="text-body-4">
-                Police officers often did not give an MVC<Tooltip term="MVC"/> reason for their traffic stops<Tooltip term="Traffic Stop"/> in 2022 and 2023. Furthermore, the Defender’s review of a separate dataset found that police routinely miscoded MVC stops for tint, mistakenly omitting the MVC reason for a large but unknown number of those stops, skewing the tint stops numbers down dramatically.
+                Police officers often do not record an MVC<Tooltip term="MVC"/> reason for their traffic stops<Tooltip term="Traffic Stop"/>. Furthermore, the Defender’s review of a separate dataset found that police routinely miscoded MVC stops for tint, mistakenly omitting the MVC reason for a large but unknown number of those stops, skewing the tint stops numbers down dramatically.
               </p>
             </AnswerText>
           </Answer>
