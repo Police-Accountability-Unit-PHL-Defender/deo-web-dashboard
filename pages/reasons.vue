@@ -48,7 +48,7 @@
             </Graph>
             <AnswerText>
               <p class="text-body-4">
-                Police officers often do not record an MVC<Tooltip term="MVC"/> reason for their traffic stops<Tooltip term="Traffic Stop"/>. Furthermore, the Defender’s review of a separate dataset found that police routinely miscoded MVC stops for tint, mistakenly omitting the MVC reason for a large but unknown number of tint stops, skewing those numbers down dramatically.
+              A small but significant portion of traffic stops<Tooltip term="Traffic Stop"/> have no reason recorded. Analysis of the <a href="/data#10" class="text-hyperlink-blue" target="_blank"><i>Bailey</i></a> dataset found that police routinely miscoded stops for tint, mistakenly omitting the MVC<Tooltip term="MVC"/> violation for a large but unknown number of tint stops, skewing those numbers down dramatically.
               </p>
             </AnswerText>
           </Answer>
@@ -64,7 +64,7 @@
             </Graph>
             <AnswerText>
               <p class="text-body-4">
-                As noted above, police officers often do not record an MVC reason for their stops.  Furthermore, the Defender’s review of a separate dataset  found that police routinely miscoded MVC stops for tint, mistakenly omitting the MVC reason for a large but unknown number of tint stops, skewing those numbers down dramatically.
+                As noted above, a small but significant portion of traffic stops<Tooltip term="Traffic Stop"/> have no reason recorded. Analysis of the <a href="/data#10" class="text-hyperlink-blue" target="_blank"><i>Bailey</i></a> dataset found that police routinely miscoded stops for tint, mistakenly omitting the MVC<Tooltip term="MVC"/> violation for a large but unknown number of tint stops, skewing those numbers down dramatically.
               </p>
             </AnswerText>
           </Answer>
