@@ -99,7 +99,7 @@ let stackedColorMap = ref([])
 
 const isIncompleteTimeSeries = computed(() => {
   // Figure out if we are in a yearly plot with a completed year
-  return props.axisProperties.x === 'Year' && !config.public.mostRecentQuarter.endsWith('Q4');
+  return props.axisProperties.x === 'Year' && !useState("mostRecentQuarter").value.endsWith('Q4');
 })
 
 const isGrouped = computed(() => {
@@ -205,8 +205,10 @@ const drawGraph = (graphData) => {
     tickSkip = 8
   } else if (n >= 16) {
     tickSkip = 4
-  } else {
+  } else if (n > 8) {
     tickSkip = 2
+  } else {
+    tickSkip = 1
   }
 
 const averageTickLength = x
@@ -216,9 +218,11 @@ const tickValues = averageTickLength > 4 && props.quarterlyXAxisTicks
   ? x.domain().filter(function(d, i) {
       const lastTickIndex = x.domain().length - 1; // Index of the last tick
       const tickStringLength = d.toString().length; // Length of the tick string
+      // Removes last tick if there are more than 48 ticks and the second to last tick is not the last quarter
+      // This should work to do it for as long as there are 4 years of quarters, but not if there are less than 16 years. 
       return (
         !((i + 6) % tickSkip)
-        && (lastTickIndex - i > n/8)
+        && (lastTickIndex - i > n/40 || tickSkip === 1)
       );
     })
   : x.domain();

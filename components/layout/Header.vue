@@ -44,7 +44,7 @@
       <a href="/safety" class="flex items-center hover:bg-primary-400 hover:text-primary-800 py-6 px-4 text-body-3 font-medium" :class="currentRoute === '/safety' ? 'bg-primary-400 text-primary-800' : 'bg-primary-800 text-white'">
         <span class="block max-w-[252px] mx-auto text-label-1">Safety</span>
       </a>
-      <a href="/reasons" class="flex items-center hover:bg-primary-400 hover:text-primary-800 py-6 px-4 text-body-3 font-medium" :class="currentRoute === '/driving-equality' ? 'bg-primary-400 text-primary-800' : 'bg-primary-800 text-white'">
+      <a href="/reasons" class="flex items-center hover:bg-primary-400 hover:text-primary-800 py-6 px-4 text-body-3 font-medium" :class="currentRoute === '/reasons' ? 'bg-primary-400 text-primary-800' : 'bg-primary-800 text-white'">
         <span class="block max-w-[252px] mx-auto text-label-1">Reasons for stops</span>
       </a>
     </nav>

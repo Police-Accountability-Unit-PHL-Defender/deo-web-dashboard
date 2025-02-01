@@ -12,7 +12,7 @@
   import SelectOne from '~/components/ui/SelectOne.vue'
   const config = useRuntimeConfig()
   const firstQuarter = new Quarter(2014, 1)
-  const mostRecentQuarter = Quarter.fromParamString(config.public.mostRecentQuarter)
+  const mostRecentQuarter = Quarter.fromParamString(useState('mostRecentQuarter').value);
   let currentQuarter = firstQuarter
   let availableQuarters = [currentQuarter]
   while (!Quarter.isSameQuarter(currentQuarter, mostRecentQuarter)) {

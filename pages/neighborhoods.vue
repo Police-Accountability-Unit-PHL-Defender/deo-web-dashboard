@@ -196,7 +196,7 @@ useHead({
 })
 
 const config = useRuntimeConfig()
-const mostRecentQuarter = Quarter.fromParamString(config.public.mostRecentQuarter)
+const mostRecentQuarter = Quarter.fromParamString(useState("mostRecentQuarter").value)
 
 const selectedLocation = ref('Philadelphia')
 const selectedTimeGranularity = ref('year')
