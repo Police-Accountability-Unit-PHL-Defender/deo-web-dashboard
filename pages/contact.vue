@@ -32,7 +32,7 @@
           </tr>
         </table>
         <p class="mt-2 md:mt-6">
-          The Police Accountability Unit is grateful to the many people who contributed to the development of this dashboard. This dashboard was supported by the <a href="https://www.urban.org/projects/catalyst-grant-program" target="_blank">Catalyst Grant Program</a>, an initiative by the <a href="https://www.urban.org/" target="_blank">Urban Institute</a> and the <a href="https://www.microsoft.com/en-us/corporate-responsibility/justice-reform-initiative" target="_blank">Microsoft Justice Reform Initiative</a> to support local communities in using data and technology to advance racial equity in the criminal legal system.
+          The Police Accountability Unit is grateful to the many people who contributed to the development of this dashboard. This dashboard was supported by the <a href="https://www.urban.org/projects/catalyst-grant-program" target="_blank">Catalyst Grant Program</a>, an initiative by the <a href="https://www.urban.org/" target="_blank">Urban Institute</a> and the <a href="https://www.microsoft.com/en-us/corporate-responsibility/justice-reform-initiative" target="_blank">Microsoft Justice Reform Initiative</a> to support local communities in using data and technology to advance racial equity in the criminal legal system. Visual design and development was done by <a href="https://hat-studio.com" target="_blank">HaT Studio</a>.
         </p>
       </div>
     </div>
