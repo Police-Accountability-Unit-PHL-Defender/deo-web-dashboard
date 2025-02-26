@@ -163,7 +163,7 @@
                 <li>Concerningly, racial disparities have persisted; when Philadelphia police made traffic stops in 2022, they still stopped Black drivers at a similar rate as they did in 2021.</li>
               </ul>
               <p>
-                Driving Equality has had no demonstrable negative effect on public safety. Instead, Driving Equality makes the city safer by limiting the discretion of police officers to racially profile Black Philadelphians. More data is necessary to understand the long-term effects of Driving Equality.
+                Driving Equality has had no demonstrable negative effect on public safety. Driving Equality aims to make the city safer by limiting the discretion of police officers to racially profile Black Philadelphians.
               </p>
           </FaqQuestion>
           <FaqQuestion id="14" question="Has Driving Equality had an impact beyond Philadelphia?">
