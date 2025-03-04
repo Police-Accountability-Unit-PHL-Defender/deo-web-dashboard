@@ -4,12 +4,14 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   modules: ['@nuxtjs/tailwindcss'],
   css: ['~/assets/css/main.scss'],
+
   postcss: {
     plugins: {
       tailwindcss: {},
       autoprefixer: {},
     },
   },
+
   app: {
     head: {
       title: 'Traffic Stops in Philadelphia',
@@ -42,9 +44,12 @@ export default defineNuxtConfig({
       ]
     }
   },
+
   runtimeConfig: {
     public: {
       apiBaseUrl: process.env.NUXT_API_BASE_URL || 'https://deo-fastapi.onrender.com',
     }
-  }
+  },
+
+  compatibilityDate: '2025-03-04'
 })
