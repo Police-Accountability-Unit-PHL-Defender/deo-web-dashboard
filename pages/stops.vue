@@ -8,7 +8,7 @@
       <div class="absolute inset-0 z-[1] bg-black opacity-40"></div>
     </template>
     <template #quote>
-      <Quote author="Pastor Carl Day" source="https://www.facebook.com/CMThomasPHL/videos/578497320999248">
+      <Quote author="Pastor Carl Day" source="https://vimeo.com/phillydefenders/driving-equality-anniversary">
         <template #quoteText>
           <p>
             As a Black man, you’re just awaiting that moment. You’ll sit in the car and you’re just awaiting that time for the red and blue lights to come on.
@@ -202,12 +202,12 @@
 </style>
 
 <script setup>
-import QuestionHeader from '~/components/QuestionHeader.vue';
 import Graph from '~/components/Graph.vue';
-import SelectLocation from '~/components/SelectLocation.vue'
-import SelectTimeGranularity from '~/components/SelectTimeGranularity.vue'
-import HorizontalLine from '~/components/ui/HorizontalLine.vue';
+import QuestionHeader from '~/components/QuestionHeader.vue';
+import SelectLocation from '~/components/SelectLocation.vue';
+import SelectTimeGranularity from '~/components/SelectTimeGranularity.vue';
 import Button from '~/components/ui/Button.vue';
+import HorizontalLine from '~/components/ui/HorizontalLine.vue';
 import Tooltip from '~/components/ui/Tooltip.vue';
 
 useHead({

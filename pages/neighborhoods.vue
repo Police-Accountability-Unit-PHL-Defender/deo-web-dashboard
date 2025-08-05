@@ -181,14 +181,13 @@
 </template>
 
 <script setup>
-import QuestionHeader from '~/components/QuestionHeader.vue';
 import Graph from '~/components/Graph.vue';
-import SelectLocation from '~/components/SelectLocation.vue'
-import SelectTimeGranularity from '~/components/SelectTimeGranularity.vue'
-import HorizontalLine from '~/components/ui/HorizontalLine.vue';
-import Button from '~/components/ui/Button.vue';
-import Tooltip from '~/components/ui/Tooltip.vue';
 import IconsChevron from '~/components/icons/Chevron.vue';
+import QuestionHeader from '~/components/QuestionHeader.vue';
+import SelectLocation from '~/components/SelectLocation.vue';
+import SelectTimeGranularity from '~/components/SelectTimeGranularity.vue';
+import HorizontalLine from '~/components/ui/HorizontalLine.vue';
+import Tooltip from '~/components/ui/Tooltip.vue';
 import { getDemographicGroupParam } from '~/utils';
 
 useHead({
@@ -260,17 +259,7 @@ const getQ2AnnotatedData = (barplotKey) => {
   const baselineDatum = q2A.value.figures[barplotKey].data.find(d => d[getDemographicGroupParam(q2ADemographicCategory.value)] === q2ADemographicBaseline.value)
   const baselineAmount = baselineDatum[yAxisProperty]
   return q2A.value.figures[barplotKey].data.map(d => {
-    let annotation = ''
-    if (d[getDemographicGroupParam(q2ADemographicCategory.value)] === q2ADemographicBaseline.value) {
-      annotation = 'Baseline'
-    } else {
-      if (baselineAmount === 0) {
-        annotation = ''
-      } else {
-        const multiple = (d[yAxisProperty] / baselineAmount).toFixed(1)
-        annotation = `${multiple}x of Baseline`
-      }
-    }
+    let annotation = d.annotation
     return {
       ...d,
       annotation
