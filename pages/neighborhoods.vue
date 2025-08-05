@@ -259,17 +259,7 @@ const getQ2AnnotatedData = (barplotKey) => {
   const baselineDatum = q2A.value.figures[barplotKey].data.find(d => d[getDemographicGroupParam(q2ADemographicCategory.value)] === q2ADemographicBaseline.value)
   const baselineAmount = baselineDatum[yAxisProperty]
   return q2A.value.figures[barplotKey].data.map(d => {
-    let annotation = ''
-    if (d[getDemographicGroupParam(q2ADemographicCategory.value)] === q2ADemographicBaseline.value) {
-      annotation = 'Baseline'
-    } else {
-      if (baselineAmount === 0) {
-        annotation = 'Infinityx of Baseline'
-      } else {
-        const multiple = (d[yAxisProperty] / baselineAmount).toFixed(1)
-        annotation = `${multiple}x of Baseline`
-      }
-    }
+    let annotation = d.annotation
     return {
       ...d,
       annotation
