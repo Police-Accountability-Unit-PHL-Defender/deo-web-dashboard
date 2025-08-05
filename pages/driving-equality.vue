@@ -9,7 +9,7 @@
       <div class="absolute inset-0 z-[1] bg-black opacity-50"></div>
     </template>
     <template #quote>
-      <Quote author="Attorney Nia Holston" source="https://www.facebook.com/CMThomasPHL/videos/578497320999248" backgroundClass="bg-[#E1F8FF]" quoteMarkClass="fill-primary-400" bold-color-class="text-[#C0EEFD]" alignment="center">
+      <Quote author="Attorney Nia Holston" source="https://vimeo.com/phillydefenders/driving-equality-anniversary" backgroundClass="bg-[#E1F8FF]" quoteMarkClass="fill-primary-400" bold-color-class="text-[#C0EEFD]" alignment="center">
         <template #quoteText>
           <p>
             This law stands as an example for the rest of the nation to follow to reconcile the legacy of racism as it relates to policing, to promote true equality, and to continue the work and the struggle.

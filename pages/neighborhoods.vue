@@ -181,14 +181,13 @@
 </template>
 
 <script setup>
-import QuestionHeader from '~/components/QuestionHeader.vue';
 import Graph from '~/components/Graph.vue';
-import SelectLocation from '~/components/SelectLocation.vue'
-import SelectTimeGranularity from '~/components/SelectTimeGranularity.vue'
-import HorizontalLine from '~/components/ui/HorizontalLine.vue';
-import Button from '~/components/ui/Button.vue';
-import Tooltip from '~/components/ui/Tooltip.vue';
 import IconsChevron from '~/components/icons/Chevron.vue';
+import QuestionHeader from '~/components/QuestionHeader.vue';
+import SelectLocation from '~/components/SelectLocation.vue';
+import SelectTimeGranularity from '~/components/SelectTimeGranularity.vue';
+import HorizontalLine from '~/components/ui/HorizontalLine.vue';
+import Tooltip from '~/components/ui/Tooltip.vue';
 import { getDemographicGroupParam } from '~/utils';
 
 useHead({
@@ -265,7 +264,7 @@ const getQ2AnnotatedData = (barplotKey) => {
       annotation = 'Baseline'
     } else {
       if (baselineAmount === 0) {
-        annotation = ''
+        annotation = 'Infinityx of Baseline'
       } else {
         const multiple = (d[yAxisProperty] / baselineAmount).toFixed(1)
         annotation = `${multiple}x of Baseline`
