@@ -58,6 +58,10 @@ export class Quarter {
 
 export function getLocationParam(location: string) {
   if (location.startsWith('PSA')) {
+    // Hardcode specific case for 77A -> 77-0
+    if (location === 'PSA 77A') {
+      return '77-0'
+    }
     return location.substring(4, 6) + '-' + location.substring(6)
   } else if (location.startsWith('District')) {
     return location.substring(9).padStart(2, '0') + '*'
