@@ -213,13 +213,11 @@
         <h2 class="text-heading-3 text-center mt-18 mb-4 pt-6">High Injury Network Data</h2>
         <ol start="15">
           <FaqQuestion id="15" question="What is the High Injury Network?">
-            <p>The <a href="https://phl.maps.arcgis.com/apps/MapSeries/index.html?appid=2a51d5357e24439996f2aa9cdeae72b9"
+            <p>The <a href="https://experience.arcgis.com/experience/830f34a54cd44ecfae11e7785d36a140/page/High-Injury-Network-2025"
       target="_blank">High Injury Network</a> (HIN) refers to the Philadelphia streets with the highest rates of
     fatalities and serious injuries per mile. The HIN represents 12% of all roadways in the city where 80% of fatal
-    crashes or serious accidents happen. <a href="https://visionzerophl.com/" target="_blank">Vision Zero</a>, a task
-    force created by Mayor Jim Kenney in 2016, maintains HIN data. Vision Zero released the most recent HIN data in 2020
-    based on Street Centerline data from the Philadelphia Streets Department and 2014-2018 traffic crash data from
-    PennDOT. </p>
+    crashes or serious accidents happen. <a href="https://visionzerophl.com/" target="_blank">Vision Zero Philadelphia</a>, a task
+    force created by Mayor Jim Kenney in 2016, maintains and periodically updates HIN data based on PennDOT traffic crash data and Philadelphia Department of Streets’ street centerline data.</p>
           </FaqQuestion>
           <FaqQuestion id="16" question="How does this dashboard join High Injury Network data to traffic stop data?">
             <p>This dashboard uses the police-provided latitude and longitude of each traffic stop to count how many stops took
@@ -227,12 +225,13 @@
     of an HIN roadway is considered to be “on” the HIN. Importantly, this HIN analysis only includes traffic stops with
     valid location data. For example, this analysis excludes traffic stop data that is erroneously geocoded to a null
     location or to a single location in Lake Erie (42.2243359, -80.50237161).</p>
+            <p>Vision Zero updated the HIN in 2020 to reflect PennDOT data from 2014 to 2018, then later updated the HIN in 2025 to reflect PennDOT data from 2019 to 2023. Accordingly, this dashboard joins <a href="https://phl.maps.arcgis.com/apps/MapSeries/index.html?appid=2a51d5357e24439996f2aa9cdeae72b9" target="_blank">HIN 2020 data</a> to 2014-2018 traffic stop data and joins <a href="https://experience.arcgis.com/experience/830f34a54cd44ecfae11e7785d36a140/page/High-Injury-Network-2025" target="_blank">HIN 2025 data</a> to traffic stop data from 2019 to present.</p>
           </FaqQuestion>
           <FaqQuestion id="17" question="Where can I download the High Injury Network data and any associated documentation?">
             <p>High Injury Network (HIN) data is public and can be downloaded from OpenDataPhilly’s <a
       href="https://opendataphilly.org/datasets/vision-zero-high-injury-network/" target="_blank">Vision Zero High
       Injury Network</a> dataset. HIN methodology can be found <a
-      href="https://phl.maps.arcgis.com/apps/MapSeries/index.html?appid=2a51d5357e24439996f2aa9cdeae72b9"
+      href="https://experience.arcgis.com/experience/830f34a54cd44ecfae11e7785d36a140/page/HIN-Methodology"
       target="_blank">here</a>. </p>
           </FaqQuestion>
         </ol>

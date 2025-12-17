@@ -51,7 +51,7 @@
             <AnswerText>
               Driving Equality came into effect on March 3, 2022. In the year after<Tooltip term="Year after"/> Driving Equality,
               <span v-html="q1A.text[0]" class="result-text"></span>
-              compared to 2021 (see <a href="/driving-equality#10" class="text-hyperlink-blue" target="_blank">What is Driving Equality?</a> to learn more about these date comparisons). However, in 2024, most traffic stops by the Philadelphia police still did not happen on the HIN.
+              compared to 2021 (see <a href="/driving-equality#10" class="text-hyperlink-blue" target="_blank">What is Driving Equality?</a> to learn more about these date comparisons). 2023 marked the first time that Philadelphia police made the majority of traffic stops on the HIN since the data was collected. This was also the first full calendar year of Driving Equality.
             </AnswerText>
             <LeafletMap2 :geo-aggregation="q1CGeoAggregation" hin-legend="true">
               <h4>{{ q1C.geojsons[0].properties.title }}</h4>
@@ -93,13 +93,12 @@
 </template>
 
 <script setup>
-import QuestionHeader from '~/components/QuestionHeader.vue';
 import Graph from '~/components/Graph.vue';
-import SelectLocation from '~/components/SelectLocation.vue'
-import SelectTimeGranularity from '~/components/SelectTimeGranularity.vue'
+import LeafletMap2 from '~/components/map/LeafletMap2.vue';
+import QuestionHeader from '~/components/QuestionHeader.vue';
+import SelectLocation from '~/components/SelectLocation.vue';
+import SelectTimeGranularity from '~/components/SelectTimeGranularity.vue';
 import HorizontalLine from '~/components/ui/HorizontalLine.vue';
-import Button from '~/components/ui/Button.vue';
-import LeafletMap2 from '~/components/map/LeafletMap2.vue'
 import Tooltip from '~/components/ui/Tooltip.vue';
 
 useHead({
