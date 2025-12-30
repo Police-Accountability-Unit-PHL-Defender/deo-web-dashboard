@@ -180,7 +180,7 @@
             <p>Yes. Because the <a href="https://opendataphilly.org/datasets/vehicle-pedestrian-investigations/" target="_blank">traffic stop data</a> contains one row per individual who has interacted with police during a vehicle or pedestrian stop, this dashboard filters the data to analyze only vehicle stops, then groups the data from a per-individual to per-vehicle basis. This dashboard uses the data from a per-vehicle basis to count the number of stops, such as stops within a location, stops across a time period, or stops of different demographic groups. For stops involving more than one person, the traffic stop data does not clarify who is a driver or passenger, so this dashboard estimates the driver’s demographic information by choosing the first individual listed as part of the stop.</p>
             <p>The Defender has performed an in-depth analysis of traffic stop data in the past and determined that the majority of traffic stops consist of a driver and no passengers. When there is one passenger—the second most likely scenario after no passengers—that person is the same race as the driver in the majority of stops. The Defender did not see significant variation in the racial or gender demographics of people stopped, even when choosing the second person listed in a stop as the driver.</p>
             <p>In order to analyze motor vehicle code violation data in the context of Driving Equality, the Defender reviewed the motor vehicle code that police used for each traffic stop when it was included.  Because this is a free text field, not all codes are accurate, and often the field is left blank.  The Defender grouped all variants within the statute for each motor vehicle code violation together when possible (for example, 1332 A and 1332A were grouped together). When the violation was not clear because a specific subsection of a statute was not identified or where there were citations to a nonexistent motor vehicle code violation, the Defender did not include that data in the motor vehicle code stop analysis.  The Defender then grouped similar types of violations together.  For example, motor vehicle code violations for careless driving, reckless driving, and speeding were grouped together for analysis. Finally, all motor vehicle code violations impacted by the Driving Equality Ordinance were isolated for analysis.</p>
-            <p>Furthermore, on May 1, 2024, the PPD consolidated two districts, expanding District 9 to include what used to be District 6. To reflect these new borders and create consistency, this dashboard has remapped traffic stops previously belonging to District 6 to reflect the new District 9 borders and PSAs. Unfortunately, the OpenDataPhilly location data is not completely reliable. Therefore, in this dashboard, the total number of traffic stops in District 9 does not match the sum of the number of traffic stops across the PSAs in District 9, as 16% of the District 9 traffic stops were erroneously geocoded to a null location or to a single location in Lake Erie (42.2243359, -80.50237161).</p>
+            <p>Furthermore, on May 1, 2024, the PPD consolidated two districts, expanding District 9 to include what used to be District 6. To reflect these new borders and create consistency, this dashboard has remapped traffic stops previously belonging to District 6 to reflect the new District 9 borders and PSAs. Unfortunately, the OpenDataPhilly location data is not completely reliable. Therefore, in this dashboard, the total number of traffic stops in District 9 does not match the sum of the number of traffic stops across the PSAs in District 9. For example, in 2025, the PPD erroneously geocoded 18% of the District 9 traffic stops to a null location or to a single location in Lake Erie (latitude 42.2243359, longitude -80.50237161).</p>
           </FaqQuestion>
           <FaqQuestion id="13" question="How does this dashboard measure frisks, searches, and intrusions?">
             <p>Frisks and searches are fields within the <a
@@ -213,13 +213,11 @@
         <h2 class="text-heading-3 text-center mt-18 mb-4 pt-6">High Injury Network Data</h2>
         <ol start="15">
           <FaqQuestion id="15" question="What is the High Injury Network?">
-            <p>The <a href="https://phl.maps.arcgis.com/apps/MapSeries/index.html?appid=2a51d5357e24439996f2aa9cdeae72b9"
+            <p>The <a href="https://experience.arcgis.com/experience/830f34a54cd44ecfae11e7785d36a140/page/High-Injury-Network-2025"
       target="_blank">High Injury Network</a> (HIN) refers to the Philadelphia streets with the highest rates of
     fatalities and serious injuries per mile. The HIN represents 12% of all roadways in the city where 80% of fatal
-    crashes or serious accidents happen. <a href="https://visionzerophl.com/" target="_blank">Vision Zero</a>, a task
-    force created by Mayor Jim Kenney in 2016, maintains HIN data. Vision Zero released the most recent HIN data in 2020
-    based on Street Centerline data from the Philadelphia Streets Department and 2014-2018 traffic crash data from
-    PennDOT. </p>
+    crashes or serious accidents happen. <a href="https://visionzerophl.com/" target="_blank">Vision Zero Philadelphia</a>, a task
+    force created by Mayor Jim Kenney in 2016, maintains and periodically updates HIN data based on PennDOT traffic crash data and Philadelphia Department of Streets’ street centerline data.</p>
           </FaqQuestion>
           <FaqQuestion id="16" question="How does this dashboard join High Injury Network data to traffic stop data?">
             <p>This dashboard uses the police-provided latitude and longitude of each traffic stop to count how many stops took
@@ -227,12 +225,13 @@
     of an HIN roadway is considered to be “on” the HIN. Importantly, this HIN analysis only includes traffic stops with
     valid location data. For example, this analysis excludes traffic stop data that is erroneously geocoded to a null
     location or to a single location in Lake Erie (42.2243359, -80.50237161).</p>
+            <p>Vision Zero updated the HIN in 2020 to reflect PennDOT data from 2014 to 2018, then later updated the HIN in 2025 to reflect PennDOT data from 2019 to 2023. Accordingly, this dashboard joins <a href="https://phl.maps.arcgis.com/apps/MapSeries/index.html?appid=2a51d5357e24439996f2aa9cdeae72b9" target="_blank">HIN 2020 data</a> to 2014-2018 traffic stop data and joins <a href="https://experience.arcgis.com/experience/830f34a54cd44ecfae11e7785d36a140/page/High-Injury-Network-2025" target="_blank">HIN 2025 data</a> to traffic stop data from 2019 to present.</p>
           </FaqQuestion>
           <FaqQuestion id="17" question="Where can I download the High Injury Network data and any associated documentation?">
             <p>High Injury Network (HIN) data is public and can be downloaded from OpenDataPhilly’s <a
       href="https://opendataphilly.org/datasets/vision-zero-high-injury-network/" target="_blank">Vision Zero High
       Injury Network</a> dataset. HIN methodology can be found <a
-      href="https://phl.maps.arcgis.com/apps/MapSeries/index.html?appid=2a51d5357e24439996f2aa9cdeae72b9"
+      href="https://experience.arcgis.com/experience/830f34a54cd44ecfae11e7785d36a140/page/HIN-Methodology"
       target="_blank">here</a>. </p>
           </FaqQuestion>
         </ol>
