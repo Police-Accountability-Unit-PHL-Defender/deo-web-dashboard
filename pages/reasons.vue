@@ -102,22 +102,24 @@
 </template>
 
 <script setup>
-import QuestionHeader from '~/components/QuestionHeader.vue';
 import Graph from '~/components/Graph.vue';
-import SelectTimeGranularity from '~/components/SelectTimeGranularity.vue'
+import QuestionHeader from '~/components/QuestionHeader.vue';
+import SelectTimeGranularity from '~/components/SelectTimeGranularity.vue';
 import HorizontalLine from '~/components/ui/HorizontalLine.vue';
 import Tooltip from '~/components/ui/Tooltip.vue';
+import { Quarter } from '~/utils';
 
 useHead({
   title: 'What reasons do police give for making traffic stops?',
 })
 
 const config = useRuntimeConfig()
+const mostRecentQuarter = Quarter.fromParamString(useState('mostRecentQuarter').value)
 
 // const selectedLocation = ref('Philadelphia')
 const selectedNeighborhoodMajority = ref('Non-white')
 const selectedTimeGranularity = ref('quarter')
-const q1Year = ref(2022)
+const q1Year = ref(mostRecentQuarter.year)
 const q1Race = ref('Black')
 
 const q1Params = ref([q1Year, q1Race])
