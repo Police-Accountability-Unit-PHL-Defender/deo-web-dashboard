@@ -48,7 +48,7 @@
             </Graph>
             <AnswerText>
               <p class="text-body-4">
-              A small but significant portion of traffic stops<Tooltip term="Traffic Stop"/> have no reason recorded. Analysis of the <a href="/data#10" class="text-hyperlink-blue" target="_blank"><i>Bailey</i></a> dataset found that police routinely miscoded stops for tint, mistakenly omitting the MVC<Tooltip term="MVC"/> violation for a large but unknown number of tint stops, skewing those numbers down dramatically.
+              Philadelphia police do not record reasons for a small but significant portion of traffic stops<Tooltip term="Traffic Stop"/> in the public traffic stop data. Notably, the public data undercount the number of traffic stops for tint. Per Defender analysis of the <a href="/data#10" class="text-hyperlink-blue" target="_blank"><i>Bailey</i></a> dataset, police have routinely miscoded tint stops since 2023 by mistakenly omitting the MVC<Tooltip term="MVC"/> violation for a large but unknown number of tint stops, skewing those numbers down dramatically.
               </p>
             </AnswerText>
           </Answer>
