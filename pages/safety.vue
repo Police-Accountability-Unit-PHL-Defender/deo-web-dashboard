@@ -135,12 +135,16 @@ const q1CGeoAggregation = computed(() => {
   }
   const features = q1C.value.geojsons[0].features
   const data = { type: 'FeatureCollection', features }
-  // API format: road features use stname; points may use name (e.g. "Traffic stop on the HIN")
-  const textFromProps = (obj) => obj?.stname ?? obj?.street_name ?? obj?.name ?? ''
+  const hinTooltipOrLabel = (obj) => {
+    if (obj.name === 'Traffic stop on the HIN' || obj.name === 'Traffic stop not on the HIN') {
+      return obj.name
+    }
+    return obj.street_name || obj.stname || ''
+  }
   return {
     data,
-    legendSelectedTextFunction: textFromProps,
-    tooltipFunction: textFromProps,
+    legendSelectedTextFunction: hinTooltipOrLabel,
+    tooltipFunction: hinTooltipOrLabel,
   }
 })
 
