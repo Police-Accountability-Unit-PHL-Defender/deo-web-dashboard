@@ -221,7 +221,7 @@
           </FaqQuestion>
           <FaqQuestion id="16" question="How does this dashboard join High Injury Network data to traffic stop data?">
             <p>This dashboard uses the police-provided latitude and longitude of each traffic stop to count how many stops took
-    place on the High Injury Network (HIN). In this dashboard, any traffic stop that is within approximately 10 meters
+    place on the High Injury Network (HIN). In this dashboard, any traffic stop that is within approximately 25 meters
     of an HIN roadway is considered to be “on” the HIN. Importantly, this HIN analysis only includes traffic stops with
     valid location data. For example, this analysis excludes traffic stop data that is erroneously geocoded to a null
     location or to a single location in Lake Erie (42.2243359, -80.50237161).</p>
