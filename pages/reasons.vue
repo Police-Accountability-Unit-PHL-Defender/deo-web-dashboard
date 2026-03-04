@@ -48,7 +48,7 @@
             </Graph>
             <AnswerText>
               <p class="text-body-4">
-              A small but significant portion of traffic stops<Tooltip term="Traffic Stop"/> have no reason recorded. Analysis of the <a href="/data#10" class="text-hyperlink-blue" target="_blank"><i>Bailey</i></a> dataset found that police routinely miscoded stops for tint, mistakenly omitting the MVC<Tooltip term="MVC"/> violation for a large but unknown number of tint stops, skewing those numbers down dramatically.
+              Philadelphia police do not record reasons for a small but significant portion of traffic stops<Tooltip term="Traffic Stop"/> in the public traffic stop data. Notably, the public data undercount the number of traffic stops for tint. Per Defender analysis of the <a href="/data#10" class="text-hyperlink-blue" target="_blank"><i>Bailey</i></a> dataset, police have routinely miscoded tint stops since 2023 by omitting the MVC<Tooltip term="MVC"/> violation for a large but unknown number of tint stops, skewing those numbers down dramatically.
               </p>
             </AnswerText>
           </Answer>
@@ -64,7 +64,7 @@
             </Graph>
             <AnswerText>
               <p class="text-body-4">
-                As noted above, a small but significant portion of traffic stops<Tooltip term="Traffic Stop"/> have no reason recorded. Analysis of the <a href="/data#10" class="text-hyperlink-blue" target="_blank"><i>Bailey</i></a> dataset found that police routinely miscoded stops for tint, mistakenly omitting the MVC<Tooltip term="MVC"/> violation for a large but unknown number of tint stops, skewing those numbers down dramatically.
+                As noted above, a small but significant portion of traffic stops<Tooltip term="Traffic Stop"/> have no reason recorded. Analysis of the <a href="/data#10" class="text-hyperlink-blue" target="_blank"><i>Bailey</i></a> dataset found that police routinely miscoded stops for tint, omitting the MVC<Tooltip term="MVC"/> violation for a large but unknown number of tint stops, skewing those numbers down dramatically.
               </p>
             </AnswerText>
           </Answer>
@@ -102,22 +102,24 @@
 </template>
 
 <script setup>
-import QuestionHeader from '~/components/QuestionHeader.vue';
 import Graph from '~/components/Graph.vue';
-import SelectTimeGranularity from '~/components/SelectTimeGranularity.vue'
+import QuestionHeader from '~/components/QuestionHeader.vue';
+import SelectTimeGranularity from '~/components/SelectTimeGranularity.vue';
 import HorizontalLine from '~/components/ui/HorizontalLine.vue';
 import Tooltip from '~/components/ui/Tooltip.vue';
+import { Quarter } from '~/utils';
 
 useHead({
   title: 'What reasons do police give for making traffic stops?',
 })
 
 const config = useRuntimeConfig()
+const mostRecentQuarter = Quarter.fromParamString(useState('mostRecentQuarter').value)
 
 // const selectedLocation = ref('Philadelphia')
 const selectedNeighborhoodMajority = ref('Non-white')
 const selectedTimeGranularity = ref('quarter')
-const q1Year = ref(2022)
+const q1Year = ref(mostRecentQuarter.year)
 const q1Race = ref('Black')
 
 const q1Params = ref([q1Year, q1Race])

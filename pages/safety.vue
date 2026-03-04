@@ -51,10 +51,10 @@
             <AnswerText>
               Driving Equality came into effect on March 3, 2022. In the year after<Tooltip term="Year after"/> Driving Equality,
               <span v-html="q1A.text[0]" class="result-text"></span>
-              compared to 2021 (see <a href="/driving-equality#10" class="text-hyperlink-blue" target="_blank">What is Driving Equality?</a> to learn more about these date comparisons). 2023 marked the first time that Philadelphia police made the majority of traffic stops on the HIN since the data was collected. This was also the first full calendar year of Driving Equality.
+              compared to 2021 (see <a href="/driving-equality#10" class="text-hyperlink-blue" target="_blank">What is Driving Equality?</a> to learn more about these date comparisons).
             </AnswerText>
             <LeafletMap2 :geo-aggregation="q1CGeoAggregation" hin-legend="true">
-              <h4>{{ q1C.geojsons[0].properties.title }}</h4>
+              <h4>{{ q1C?.geojsons?.[0]?.properties?.title }}</h4>
             </LeafletMap2>
           </Answer>
         </section>
@@ -130,15 +130,21 @@ const { data: q1C, refresh: refreshQ1C } = await useAsyncData('q1C',
   })
 )
 const q1CGeoAggregation = computed(() => {
-  const reversedData = q1C.value.geojsons[0].features.reverse()
-  const data = {
-    type: "FeatureCollection",
-    features: reversedData
+  if (!q1C.value?.geojsons?.[0]?.features) {
+    return { data: { type: 'FeatureCollection', features: [] }, legendSelectedTextFunction: () => '', tooltipFunction: () => '' }
+  }
+  const features = q1C.value.geojsons[0].features
+  const data = { type: 'FeatureCollection', features }
+  const hinTooltipOrLabel = (obj) => {
+    if (obj.name === 'Traffic stop on the HIN' || obj.name === 'Traffic stop not on the HIN') {
+      return obj.name
+    }
+    return obj.street_name || obj.stname || ''
   }
   return {
     data,
-    legendSelectedTextFunction: (obj) => obj.street_name,
-    tooltipFunction: (obj) => obj.street_name,
+    legendSelectedTextFunction: hinTooltipOrLabel,
+    tooltipFunction: hinTooltipOrLabel,
   }
 })
 

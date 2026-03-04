@@ -126,6 +126,11 @@ function polystyle(feature) {
       weight: 1,
       color: "#393939"
     };
+  } else if (feature.geometry.type === "MultiLineString") {
+    return {
+      weight: 1,
+      color: "#393939"
+    };
   } else if (feature.geometry.type === "Polygon") {
     return {
       color: "#393939",
