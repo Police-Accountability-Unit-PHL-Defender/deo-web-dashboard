@@ -225,7 +225,7 @@
     of an HIN roadway is considered to be “on” the HIN. Importantly, this HIN analysis only includes traffic stops with
     valid location data. For example, this analysis excludes traffic stop data that is erroneously geocoded to a null
     location or to a single location in Lake Erie (42.2243359, -80.50237161).</p>
-            <p>Vision Zero updated the HIN in 2020 to reflect PennDOT data from 2014 to 2018, then later updated the HIN in 2025 to reflect PennDOT data from 2019 to 2023. Accordingly, this dashboard joins <a href="https://phl.maps.arcgis.com/apps/MapSeries/index.html?appid=2a51d5357e24439996f2aa9cdeae72b9" target="_blank">HIN 2020 data</a> to 2014-2018 traffic stop data and joins <a href="https://experience.arcgis.com/experience/830f34a54cd44ecfae11e7785d36a140/page/High-Injury-Network-2025" target="_blank">HIN 2025 data</a> to traffic stop data from 2019 to present.</p>
+            <p>Vision Zero updated the HIN in 2020 to reflect PennDOT data from 2014 to 2018, then later updated the HIN in 2025 to reflect PennDOT data from 2019 to 2023. Accordingly, this dashboard joins <a href="https://opendataphilly.org/datasets/vision-zero-high-injury-network/" target="_blank">HIN 2020 data</a> to 2014-2018 traffic stop data and joins <a href="https://experience.arcgis.com/experience/830f34a54cd44ecfae11e7785d36a140/page/High-Injury-Network-2025" target="_blank">HIN 2025 data</a> to traffic stop data from 2019 to present.</p>
           </FaqQuestion>
           <FaqQuestion id="17" question="Where can I download the High Injury Network data and any associated documentation?">
             <p>High Injury Network (HIN) data is public and can be downloaded from OpenDataPhilly’s <a

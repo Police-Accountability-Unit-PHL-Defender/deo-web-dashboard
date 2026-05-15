@@ -217,12 +217,9 @@ const averageTickLength = x
 const tickValues = averageTickLength > 4 && props.quarterlyXAxisTicks
   ? x.domain().filter(function(d, i) {
       const lastTickIndex = x.domain().length - 1; // Index of the last tick
-      const tickStringLength = d.toString().length; // Length of the tick string
-      // Removes last tick if there are more than 48 ticks and the second to last tick is not the last quarter
-      // This should work to do it for as long as there are 4 years of quarters, but not if there are less than 16 years. 
       return (
-        !((i + 6) % tickSkip)
-        && (lastTickIndex - i > n/40 || tickSkip === 1)
+        i === lastTickIndex
+        || (!((i + 6) % tickSkip) && (lastTickIndex - i > n/40 || tickSkip === 1))
       );
     })
   : x.domain();
@@ -395,11 +392,17 @@ const tickValues = averageTickLength > 4 && props.quarterlyXAxisTicks
       .call(tooltip, tooltipDiv);
     group.append("text")
       .attr("x", (d) => x(d[props.axisProperties.x]) + x.bandwidth() / 2)
-      .attr("y", (d) => y(d[props.axisProperties.y]) - 5) // Adjust this value for positioning
+      .attr("y", (d) => {
+        const barTop = y(d[props.axisProperties.y]);
+        return barTop - 5 < margin.top + 16 ? barTop + 16 : barTop - 5;
+      })
       .attr("text-anchor", "middle")
-      .attr("fill", "#393939")
+      .attr("fill", (d) => {
+        const barTop = y(d[props.axisProperties.y]);
+        return barTop - 5 < margin.top + 16 ? "#ffffff" : "#393939";
+      })
       .attr("class", "text-caption")
-      .text((d) => d[props.barAnnotationProperty]); // You can adjust this to show any value you want
+      .text((d) => d[props.barAnnotationProperty]);
   }
 
   // trendline
