@@ -427,22 +427,43 @@ const q2B = computed(() => {
   }
 })
 
-const q2CParams = ref([selectedLocation, q1BQuarterStart, q1BQuarterEnd, q2CGroup1AgeRange, q2CGroup2AgeRange, q2CGroup1Gender, q2CGroup2Gender, q2CGroup1Race, q2CGroup2Race])
-const { data: q2C, refresh: refreshQ2C } = await useAsyncData('q2C',
-  () => $fetch(`${config.public.apiBaseUrl}/stops/group-comparison`, {
-    params: {
-      age_group1: q2CGroup1AgeRange.value,
-      gender_group1: q2CGroup1Gender.value,
-      racial_group1: q2CGroup1Race.value,
-      age_group2: q2CGroup2AgeRange.value,
-      gender_group2: q2CGroup2Gender.value,
-      racial_group2: q2CGroup2Race.value,
-      location: getLocationParam(selectedLocation.value),
-      start_qyear: q1BQuarterStart.value.toParamString(),
-      end_qyear: q1BQuarterEnd.value.toParamString(),
+const q2C = computed(() => {
+  const bundle = stopsBundle.value
+  if (!bundle) return null
+  const { cube } = bundle
+  const loc = getLocationParam(selectedLocation.value)
+  const start = q1BQuarterStart.value.toParamString()
+  const end   = q1BQuarterEnd.value.toParamString()
+
+  const sumGroup = (ages, genders, races) =>
+    sumMeasure(cube, 'n_stopped', {
+      location: loc, startQuarter: start, endQuarter: end,
+      race: races.length ? races : undefined,
+      gender: genders.length ? genders : undefined,
+      ageRange: ages.length ? ages : undefined,
+    })
+
+  const g1 = sumGroup(q2CGroup1AgeRange.value, q2CGroup1Gender.value, q2CGroup1Race.value)
+  const g2 = sumGroup(q2CGroup2AgeRange.value, q2CGroup2Gender.value, q2CGroup2Race.value)
+  const ratio = g2 === 0 ? null : g1 / g2
+
+  return {
+    text: [
+      `Group 1 was stopped <span>${g1.toLocaleString()}</span> times.`,
+      `Group 2 was stopped <span>${g2.toLocaleString()}</span> times.`,
+      ratio === null ? '' : `Group 1 was stopped <span>${ratio.toFixed(2)}×</span> as often as Group 2.`,
+    ],
+    figures: {
+      barplot: {
+        properties: { xAxis: 'Group', yAxis: 'Number of Traffic Stops', title: 'Group Comparison' },
+        trendlines: [],
+        data: [
+          { group: 'Group 1', Group: 'Group 1', 'Number of Traffic Stops': g1, annotation: null, hover_text: ['Group 1', `${g1.toLocaleString()} stops`] },
+          { group: 'Group 2', Group: 'Group 2', 'Number of Traffic Stops': g2, annotation: null, hover_text: ['Group 2', `${g2.toLocaleString()} stops`] },
+        ],
+      },
     },
-    options
-  })
-)
-watch(q2CParams, async () => { refreshQ2C() }, { deep: true })
+    tables: {}, geojsons: [], data: {},
+  }
+})
 </script>
