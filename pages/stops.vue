@@ -351,19 +351,44 @@ const q1C = computed(() => {
   }
 })
 
-const q2AParams = ref([selectedLocation, q1BQuarterStart, q1BQuarterEnd, q2ADemographicCategory])
-const { data: q2A, refresh: refreshQ2A } = await useAsyncData('q2A',
-  () => $fetch(`${config.public.apiBaseUrl}/stops/by-demographic-category`, {
-    params: {
-      location: getLocationParam(selectedLocation.value),
-      start_qyear: q1BQuarterStart.value.toParamString(),
-      end_qyear: q1BQuarterEnd.value.toParamString(),
-      demographic_category: getDemographicGroupParam(q2ADemographicCategory.value),
+const DEMO_DIM_MAP = {
+  'Age Range': 'age_range',
+  'Gender': 'gender',
+  'Race': 'race',
+  'age_range': 'age_range',
+  'gender': 'gender',
+  'race': 'race',
+}
+
+const q2A = computed(() => {
+  const bundle = stopsBundle.value
+  if (!bundle) return null
+  const { cube } = bundle
+  const loc = getLocationParam(selectedLocation.value)
+  const start = q1BQuarterStart.value.toParamString()
+  const end   = q1BQuarterEnd.value.toParamString()
+  const dim = DEMO_DIM_MAP[getDemographicGroupParam(q2ADemographicCategory.value)]
+
+  const groups = groupSum(cube, dim, 'n_stopped', { location: loc, startQuarter: start, endQuarter: end })
+
+  return {
+    text: [],
+    figures: {
+      barplot: {
+        properties: { xAxis: dim, yAxis: 'Number of Traffic Stops', title: `Stops by ${dim}` },
+        trendlines: [],
+        data: groups.map(({ key, value }) => ({
+          group: null,
+          [dim]: key,
+          'Number of Traffic Stops': value,
+          annotation: null,
+          hover_text: [key, `${value.toLocaleString()} stops`],
+        })),
+      },
     },
-    options
-  })
-)
-watch(q2AParams, async () => { refreshQ2A() }, { deep: true })
+    tables: {}, geojsons: [], data: {},
+  }
+})
 
 const q2BParams = ref([selectedLocation, q1BQuarterStart, q1BQuarterEnd])
 const { data: q2B, refresh: refreshQ2B } = await useAsyncData('q2B',
