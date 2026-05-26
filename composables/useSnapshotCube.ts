@@ -37,7 +37,9 @@ export interface SnapshotCube {
 }
 
 export function useSnapshotCube() {
-  return useAsyncData<SnapshotCube>('snapshot-cube', () =>
-    $fetch<SnapshotCube>('/cubes/snapshot.json'),
-  )
+  return useAsyncData<SnapshotCube>('snapshot-cube', () => {
+    const event = typeof useRequestEvent === 'function' ? useRequestEvent() : null
+    const origin = event ? `http://${event.node.req.headers.host}` : ''
+    return $fetch<SnapshotCube>(`${origin}/cubes/snapshot.json`)
+  })
 }

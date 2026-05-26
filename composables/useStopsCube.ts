@@ -14,9 +14,11 @@ export interface StopsCubeBundle {
 
 export function useStopsCube() {
   return useAsyncData<StopsCubeBundle>('stops-cube', async () => {
+    const event = typeof useRequestEvent === 'function' ? useRequestEvent() : null
+    const origin = event ? `http://${event.node.req.headers.host}` : ''
     const [cube, scalars] = await Promise.all([
-      $fetch<Cube>('/cubes/stops.json'),
-      $fetch<Scalars>('/cubes/scalars.json'),
+      $fetch<Cube>(`${origin}/cubes/stops.json`),
+      $fetch<Scalars>(`${origin}/cubes/scalars.json`),
     ])
     return { cube, scalars }
   })

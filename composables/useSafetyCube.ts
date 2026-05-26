@@ -47,7 +47,9 @@ export interface SafetyCubeBundle {
 
 export function useSafetyCube() {
   return useAsyncData<SafetyCubeBundle>('safety-cube', async () => {
-    const cube = await $fetch<SafetyCube>('/cubes/safety.json')
+    const event = typeof useRequestEvent === 'function' ? useRequestEvent() : null
+    const origin = event ? `http://${event.node.req.headers.host}` : ''
+    const cube = await $fetch<SafetyCube>(`${origin}/cubes/safety.json`)
     return { cube }
   })
 }

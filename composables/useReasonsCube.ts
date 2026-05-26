@@ -12,7 +12,9 @@ export interface ReasonsCubeBundle {
 
 export function useReasonsCube() {
   return useAsyncData<ReasonsCubeBundle>('reasons-cube', async () => {
-    const cube = await $fetch<Cube>('/cubes/reasons.json')
+    const event = typeof useRequestEvent === 'function' ? useRequestEvent() : null
+    const origin = event ? `http://${event.node.req.headers.host}` : ''
+    const cube = await $fetch<Cube>(`${origin}/cubes/reasons.json`)
     return { cube }
   })
 }
