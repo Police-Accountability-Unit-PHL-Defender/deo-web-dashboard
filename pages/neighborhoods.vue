@@ -188,13 +188,22 @@ import SelectLocation from '~/components/SelectLocation.vue';
 import SelectTimeGranularity from '~/components/SelectTimeGranularity.vue';
 import HorizontalLine from '~/components/ui/HorizontalLine.vue';
 import Tooltip from '~/components/ui/Tooltip.vue';
-import { getDemographicGroupParam } from '~/utils';
+import { getDemographicGroupParam, getEventParam, getLocationParam, policeEvent } from '~/utils';
+import {
+  sumMeasure,
+  groupSum,
+  groupSumByDistrict,
+  groupAllMeasuresByDistrict,
+  olsTrendline,
+  pct,
+} from '~/utils/cube';
+import { useStopsCube } from '~/composables/useStopsCube';
+import { useDistrictsDemographics } from '~/composables/useDistrictsDemographics';
 
 useHead({
   title: 'Do police treat people and neighborhoods differently?',
 })
 
-const config = useRuntimeConfig()
 const mostRecentQuarter = Quarter.fromParamString(useState("mostRecentQuarter").value)
 
 const selectedLocation = ref('Philadelphia')
@@ -213,94 +222,578 @@ const q2ADemographicBaseline = computed(() => {
 const q3AEvent = ref('traffic stops')
 const selectedDistricts = ref(['District 05', 'District 12'])
 
-const q1AParams = ref([selectedLocation, selectedTimeGranularity])
-const { data: q1A, refresh: refreshQ1A } = await useAsyncData('q1A',
-  () => $fetch(`${config.public.apiBaseUrl}/neighborhoods/num-intrusions`, {
-    params: {
-      location: getLocationParam(selectedLocation.value),
-      time_aggregation: selectedTimeGranularity.value,
-    },
-    options
-  })
-)
-watch(q1AParams, async () => { refreshQ1A() }, { deep: true })
+// Shared cube + districts demographics. Both endpoints are pure derivations.
+const { data: stopsBundle } = await useStopsCube()
+const { data: districtsDemo } = await useDistrictsDemographics()
 
-const q1BParams = ref([selectedLocation, selectedTimeGranularity])
-const { data: q1B, refresh: refreshQ1B } = await useAsyncData('q1B',
-  () => $fetch(`${config.public.apiBaseUrl}/neighborhoods/searches-vs-frisks`, {
-    params: {
-      location: getLocationParam(selectedLocation.value),
-      time_aggregation: selectedTimeGranularity.value,
-    },
-    options
-  })
-)
-watch(q1BParams, async () => { refreshQ1B() }, { deep: true })
+// --- Location helpers -----------------------------------------------------
 
-const q2AParams = ref([q2ADemographicCategory, selectedLocation, q2AQuarterStart, q2AQuarterEnd, q2ARace, q2AGender, q2AAgeGroup])
-const { data: q2A, refresh: refreshQ2A } = await useAsyncData('q2A',
-  () => $fetch(`${config.public.apiBaseUrl}/neighborhoods/neighborhoods-by-demographic-category`, {
-    params: {
-      location: getLocationParam(selectedLocation.value),
-      demographic_category: getDemographicGroupParam(q2ADemographicCategory.value),
-      demographic_baseline: q2ADemographicBaseline.value,
-      start_qyear: q2AQuarterStart.value.toParamString(),
-      end_qyear: q2AQuarterEnd.value.toParamString(),
-    },
-    options
-  })
-)
-watch(q2AParams, async () => { refreshQ2A() }, { deep: true })
-
-
-const getQ2AnnotatedData = (barplotKey) => {
-  if (!q2A.value) return null
-  const yAxisProperty = q2A.value.figures[barplotKey].properties.yAxis
-  const baselineDatum = q2A.value.figures[barplotKey].data.find(d => d[getDemographicGroupParam(q2ADemographicCategory.value)] === q2ADemographicBaseline.value)
-  const baselineAmount = baselineDatum[yAxisProperty]
-  return q2A.value.figures[barplotKey].data.map(d => {
-    let annotation = d.annotation
-    return {
-      ...d,
-      annotation
-    }
-  })
+function locationStringFor(locParam) {
+  if (!locParam || locParam === '*') return 'Philadelphia'
+  // Division
+  if (/^[A-Z]+$/.test(locParam)) return `Division ${locParam}`
+  // Bare district like "22*" or "22"
+  const dMatch = /^(\d{1,2})\*?$/.exec(locParam)
+  if (dMatch) return `District ${dMatch[1].padStart(2, '0')}`
+  // Full PSA "22-1"
+  const psaMatch = /^(\d{1,2})-(.+)$/.exec(locParam)
+  if (psaMatch) return `PSA ${psaMatch[1].padStart(2, '0')}-${psaMatch[2]}`
+  return locParam
 }
 
-const q2AData1 = computed(() => {
-  return getQ2AnnotatedData('barplot')
-})
-const q2AData2 = computed(() => {
-  return getQ2AnnotatedData('barplot2')
-})
-const q2AData3 = computed(() => {
-  return getQ2AnnotatedData('barplot3')
+// Quarter/season formatting (mirrors deo_backend/models.py).
+const SEASON_START = { Q1: 'Jan', Q2: 'Apr', Q3: 'Jul', Q4: 'Oct' }
+const SEASON_END = { Q1: 'Mar', Q2: 'Jun', Q3: 'Sep', Q4: 'Dec' }
+const SEASON_LABEL = { Q1: 'Jan-Mar', Q2: 'Apr-Jun', Q3: 'July-Sep', Q4: 'Oct-Dec' }
+
+function quarterStartStr(qStr) {
+  const [year, q] = qStr.split('-')
+  return `${SEASON_START[q]} ${year}`
+}
+function quarterEndStr(qStr) {
+  const [year, q] = qStr.split('-')
+  return `${SEASON_END[q]} ${year}`
+}
+function seasonAndYear(qStr) {
+  const [year, q] = qStr.split('-')
+  return `${SEASON_LABEL[q]} ${year}`
+}
+
+// Enumerate cube quarters within [start, end] (inclusive). Lexicographic
+// ordering of "YYYY-QN" sorts correctly because Q1..Q4 sort numerically.
+function quartersInRange(cube, start, end) {
+  const qIdx = cube.dimensions.indexOf('quarter')
+  const set = new Set()
+  for (const row of cube.rows) {
+    const q = row[qIdx]
+    if (typeof q !== 'string') continue
+    if (q >= start && q <= end) set.add(q)
+  }
+  return Array.from(set).sort()
+}
+
+// Sum cube measures grouped by year-or-quarter bucket.
+function rollupOverTime(groups, timeGranularity) {
+  const out = new Map()
+  for (const { key, value } of groups) {
+    const bucket = timeGranularity === 'year' ? key.slice(0, 4) : key
+    out.set(bucket, (out.get(bucket) ?? 0) + value)
+  }
+  return Array.from(out, ([key, value]) => ({ key, value })).sort((a, b) =>
+    a.key < b.key ? -1 : a.key > b.key ? 1 : 0,
+  )
+}
+
+// Order-of-group lists mirror DemographicCategory.order_of_group.
+const RACE_ORDER = ['Asian', 'Black', 'Latino', 'White', 'All Other Races']
+const GENDER_ORDER = ['Male', 'Female']
+const AGE_ORDER = ['Under 25', '25-34', '35-44', '45-54', '55-64', '65+']
+
+function demoOrder(dimName) {
+  if (dimName === 'race') return RACE_ORDER
+  if (dimName === 'gender') return GENDER_ORDER
+  if (dimName === 'age_range') return AGE_ORDER
+  return null
+}
+
+const DEMO_DIM_MAP = {
+  'Race': 'race',
+  'Gender': 'gender',
+  'Age Range': 'age_range',
+  'race': 'race',
+  'gender': 'gender',
+  'age_range': 'age_range',
+}
+
+function multiplierLabel(multiplier, isBaseline) {
+  if (isBaseline) return 'Baseline'
+  if (!Number.isFinite(multiplier)) {
+    if (multiplier === Infinity || multiplier === -Infinity) return 'Above baseline'
+    return '0.0x of Baseline'
+  }
+  return `${Math.abs(multiplier).toFixed(1)}x of Baseline`
+}
+
+// =========================================================================
+// num-intrusions  (was q1A)
+// =========================================================================
+const q1A = computed(() => {
+  const bundle = stopsBundle.value
+  if (!bundle) return null
+  const { cube } = bundle
+  const loc = getLocationParam(selectedLocation.value)
+  const timeGranularity = selectedTimeGranularity.value
+  const locStr = locationStringFor(loc)
+
+  // Grand totals (no time filter — endpoint always reads "all time").
+  const totalIntrusions = sumMeasure(cube, 'n_intruded', { location: loc })
+  const totalStopped = sumMeasure(cube, 'n_stopped', { location: loc })
+  const pctTotal = pct(totalIntrusions, totalStopped)
+
+  // Date range string covers every quarter present in the cube for this location.
+  const presentQs = quartersInRange(cube, '0000-Q0', '9999-Q9')
+  const startStr = quarterStartStr(presentQs[0])
+  const endStr = quarterEndStr(presentQs[presentQs.length - 1])
+  const startYear = presentQs[0].slice(0, 4)
+  const endYear = presentQs[presentQs.length - 1].slice(0, 4)
+
+  // Per-bucket figure.
+  const groupedStops = groupSum(cube, 'quarter', 'n_stopped', { location: loc })
+  const groupedIntr = groupSum(cube, 'quarter', 'n_intruded', { location: loc })
+  const stopsByBucket = rollupOverTime(groupedStops, timeGranularity)
+  const intrByBucket = rollupOverTime(groupedIntr, timeGranularity)
+  const stopsMap = new Map(stopsByBucket.map(({ key, value }) => [key, value]))
+
+  const xAxisLabel = timeGranularity === 'quarter' ? 'Quarter' : 'Year'
+  const dateRangeStr = timeGranularity === 'quarter'
+    ? `${seasonAndYear(presentQs[0])} through ${seasonAndYear(presentQs[presentQs.length - 1])}`
+    : `${startYear} through ${endYear}`
+  const longDateRange = `the start of ${startStr} through the end of ${endStr}`
+
+  const data = intrByBucket.map(({ key, value }) => {
+    const stops = stopsMap.get(key) ?? 0
+    const rate = pct(value, stops)
+    const xVal = timeGranularity === 'quarter' ? seasonAndYear(key) : Number(key)
+    return {
+      group: null,
+      [xAxisLabel]: xVal,
+      'Number of Intrusions': value,
+      annotation: null,
+      hover_text: [
+        String(xVal),
+        `${value.toLocaleString()} intrusions`,
+        `${rate}% intrusion rate`,
+      ],
+    }
+  })
+
+  // Period statistics for the trailing prose paragraph. Match the
+  // Python: round((sum/num_quarters)/3) — i.e. monthly average rounded
+  // to int.
+  function periodStats(startQ, endQ) {
+    const intr = sumMeasure(cube, 'n_intruded', { location: loc, startQuarter: startQ, endQuarter: endQ })
+    const stops = sumMeasure(cube, 'n_stopped', { location: loc, startQuarter: startQ, endQuarter: endQ })
+    const quarters = quartersInRange(cube, startQ, endQ)
+    const nQ = quarters.length || 1
+    const monthly = Math.round(intr / nQ / 3)
+    const monthlyStops = Math.round(stops / nQ / 3)
+    return { monthly, monthlyStops, pctRate: pct(intr, stops) }
+  }
+
+  const baseline = periodStats('2014-Q1', '2018-Q4')
+  const surge = periodStats('2019-Q1', '2019-Q4')
+  // Pandemic: 2020-04-01 to 2021-02-28 → 2020-Q2..2021-Q1 (matches cube
+  // semantics; FastAPI uses month-precision but cube only has quarters).
+  // Python rounds the quarter boundary to the same 4 quarters.
+  const covid = periodStats('2020-Q2', '2021-Q1')
+
+  return {
+    text: [
+      `From ${longDateRange}, <span>${pctTotal}%</span> of traffic stops involved an intrusion, and Philadelphia police made a total of <span>${totalIntrusions.toLocaleString()}</span> intrusions.`,
+      `In ${locStr}:`,
+      `From the start of 2014 through the end of 2018, <span>${baseline.pctRate}%</span> of traffic stops involved an intrusion, and Philadelphia police made an average of <span>${baseline.monthly.toLocaleString()}</span> intrusions per month.`,
+      `During a surge in stops in 2019, <span>${surge.pctRate}%</span> of traffic stops involved an intrusion, and Philadelphia police made an average of <span>${surge.monthly.toLocaleString()}</span> intrusions per month.`,
+      `From the start of April 2020 through the end of March 2021 (pandemic), <span>${covid.pctRate}%</span> of traffic stops involved an intrusion, and Philadephia police made an average of <span>${covid.monthly.toLocaleString()}</span> intrusions per month.`,
+    ],
+    figures: {
+      barplot: {
+        properties: {
+          xAxis: xAxisLabel,
+          yAxis: 'Number of Intrusions',
+          title: `Number of Intrusions During PPD Traffic Stops in ${locStr} from ${dateRangeStr}`,
+        },
+        trendlines: [],
+        data,
+      },
+    },
+    tables: {}, geojsons: [], data: {},
+  }
 })
 
-const q3AParams = ref([q3AEvent, q2AQuarterStart, q2AQuarterEnd])
-const { data: q3A, refresh: refreshQ3A } = await useAsyncData('q3A',
-  () => $fetch(`${config.public.apiBaseUrl}/neighborhoods/neighborhoods-by-neighborhood`, {
-    params: {
-      police_action: getEventParam(q3AEvent.value),
-      start_qyear: q2AQuarterStart.value.toParamString(),
-      end_qyear: q2AQuarterEnd.value.toParamString(),
-    },
-    options
-  })
-)
-watch(q3AParams, async () => { refreshQ3A() }, { deep: true })
+// =========================================================================
+// searches-vs-frisks  (was q1B)
+// =========================================================================
+const q1B = computed(() => {
+  const bundle = stopsBundle.value
+  if (!bundle) return null
+  const { cube } = bundle
+  const loc = getLocationParam(selectedLocation.value)
+  const timeGranularity = selectedTimeGranularity.value
+  const locStr = locationStringFor(loc)
 
-const q3BParams = ref([q3AEvent, q2AQuarterStart, q2AQuarterEnd, selectedDistricts])
-const { data: q3B, refresh: refreshQ3B } = await useAsyncData('q3B',
-  () => $fetch(`${config.public.apiBaseUrl}/neighborhoods/neighborhoods-compare-districts`, {
-    params: {
-      police_action: getEventParam(q3AEvent.value),
-      start_qyear: q2AQuarterStart.value.toParamString(),
-      end_qyear: q2AQuarterEnd.value.toParamString(),
-      districts: selectedDistricts.value.map(d => getLocationParam(d)),
+  const stops = rollupOverTime(groupSum(cube, 'quarter', 'n_stopped', { location: loc }), timeGranularity)
+  const frisks = rollupOverTime(groupSum(cube, 'quarter', 'n_frisked', { location: loc }), timeGranularity)
+  const searches = rollupOverTime(groupSum(cube, 'quarter', 'n_searched', { location: loc }), timeGranularity)
+  const stopsMap = new Map(stops.map(({ key, value }) => [key, value]))
+
+  const presentQs = quartersInRange(cube, '0000-Q0', '9999-Q9')
+  const dateRangeStr = timeGranularity === 'quarter'
+    ? `${seasonAndYear(presentQs[0])} through ${seasonAndYear(presentQs[presentQs.length - 1])}`
+    : `${presentQs[0].slice(0,4)} through ${presentQs[presentQs.length - 1].slice(0,4)}`
+  const xAxisLabel = timeGranularity === 'quarter' ? 'Quarter' : 'Year'
+
+  // FastAPI emits searches first, then frisks (the order of value_vars in melt).
+  const data = []
+  for (const { key, value } of searches) {
+    const stopsAt = stopsMap.get(key) ?? 0
+    const rate = pct(value, stopsAt)
+    const xVal = timeGranularity === 'quarter' ? seasonAndYear(key) : Number(key)
+    data.push({
+      group: '# of searches',
+      [xAxisLabel]: xVal,
+      'Number of Searches or Frisks': value,
+      annotation: null,
+      hover_text: [
+        String(xVal),
+        `${value.toLocaleString()} searches`,
+        `${rate}% search rate`,
+      ],
+    })
+  }
+  const frisksMap = new Map(frisks.map(({ key, value }) => [key, value]))
+  for (const { key } of searches) {
+    const value = frisksMap.get(key) ?? 0
+    const stopsAt = stopsMap.get(key) ?? 0
+    const rate = pct(value, stopsAt)
+    const xVal = timeGranularity === 'quarter' ? seasonAndYear(key) : Number(key)
+    data.push({
+      group: '# of frisks',
+      [xAxisLabel]: xVal,
+      'Number of Searches or Frisks': value,
+      annotation: null,
+      hover_text: [
+        String(xVal),
+        `${value.toLocaleString()} frisks`,
+        `${rate}% frisk rate`,
+      ],
+    })
+  }
+
+  return {
+    text: [],
+    figures: {
+      barplot: {
+        properties: {
+          xAxis: xAxisLabel,
+          yAxis: 'Number of Searches or Frisks',
+          title: `Number of Searches and Frisks During PPD Traffic Stops in ${locStr} from ${dateRangeStr}`,
+        },
+        trendlines: [],
+        data,
+      },
     },
-    options
+    tables: {}, geojsons: [], data: {},
+  }
+})
+
+// =========================================================================
+// neighborhoods-by-demographic-category  (was q2A)
+// =========================================================================
+const q2A = computed(() => {
+  const bundle = stopsBundle.value
+  if (!bundle) return null
+  const { cube } = bundle
+  const loc = getLocationParam(selectedLocation.value)
+  const start = q2AQuarterStart.value.toParamString()
+  const end = q2AQuarterEnd.value.toParamString()
+  const locStr = locationStringFor(loc)
+  const demoLabel = getDemographicGroupParam(q2ADemographicCategory.value) // 'Race' | 'Gender' | 'Age Range'
+  const dim = DEMO_DIM_MAP[demoLabel]
+  const order = demoOrder(dim) || []
+  const baseline = q2ADemographicBaseline.value
+
+  const filterOpts = { location: loc, startQuarter: start, endQuarter: end }
+  const stopsByGroup = new Map(groupSum(cube, dim, 'n_stopped', filterOpts).map(g => [g.key, g.value]))
+  const intrByGroup = new Map(groupSum(cube, dim, 'n_intruded', filterOpts).map(g => [g.key, g.value]))
+  const contrabandByGroup = new Map(groupSum(cube, dim, 'n_contraband', filterOpts).map(g => [g.key, g.value]))
+
+  const orderedKeys = order.length ? order : Array.from(stopsByGroup.keys()).sort()
+
+  // Period totals & strings.
+  const totalIntr = sumMeasure(cube, 'n_intruded', filterOpts)
+  const totalStop = sumMeasure(cube, 'n_stopped', filterOpts)
+  const totalContraband = sumMeasure(cube, 'n_contraband', filterOpts)
+  const pctRate = pct(totalIntr, totalStop)
+  const pctNotFound = totalIntr === 0 ? 0 : Math.round((1 - totalContraband / totalIntr) * 1000) / 10
+  const dateRangeStr = `${quarterStartStr(start)} through ${quarterEndStr(end)}`
+  const longDateRange = `the start of ${quarterStartStr(start)} through the end of ${quarterEndStr(end)}`
+
+  // ---- barplot: intrusion rate %
+  const intrRateByKey = new Map()
+  for (const k of orderedKeys) {
+    const r = pct(intrByGroup.get(k) ?? 0, stopsByGroup.get(k) ?? 0)
+    intrRateByKey.set(k, r)
+  }
+  const baselineRate = intrRateByKey.get(baseline) ?? 0
+  const data1 = orderedKeys.map(k => {
+    const yVal = intrRateByKey.get(k) ?? 0
+    const isBaseline = k === baseline
+    const multiplier = baselineRate === 0 ? Infinity : yVal / baselineRate
+    return {
+      group: null,
+      [demoLabel]: k,
+      'Intrusion Rate (%)': yVal,
+      annotation: multiplierLabel(multiplier, isBaseline),
+      hover_text: [k, `${yVal}% intrusion rate`],
+    }
   })
-);
-watch(q3BParams, async () => { refreshQ3B() }, { deep: true })
+
+  // ---- barplot2: intrusions without contraband (clipped at 0)
+  const noContrabandByKey = new Map()
+  for (const k of orderedKeys) {
+    const intr = intrByGroup.get(k) ?? 0
+    const c = contrabandByGroup.get(k) ?? 0
+    noContrabandByKey.set(k, Math.max(0, intr - c))
+  }
+  const baselineNoContraband = noContrabandByKey.get(baseline) ?? 0
+  const data2 = orderedKeys.map(k => {
+    const yVal = noContrabandByKey.get(k) ?? 0
+    const isBaseline = k === baseline
+    const multiplier = baselineNoContraband === 0 ? Infinity : yVal / baselineNoContraband
+    return {
+      group: null,
+      [demoLabel]: k,
+      'Number of Intrusions without Contraband': yVal,
+      annotation: multiplierLabel(multiplier, isBaseline),
+      hover_text: [k, `${yVal.toLocaleString()} intrusions`, ''],
+    }
+  })
+
+  // ---- barplot3: contraband hit rate %
+  const hitRateByKey = new Map()
+  for (const k of orderedKeys) {
+    const intr = intrByGroup.get(k) ?? 0
+    const c = contrabandByGroup.get(k) ?? 0
+    // Python: percentage = 100 - (n_contraband / police_action.sql_column) * 100
+    // → percentage_found = round(100 - percentage, 1) = round(100 * c / intr, 1)
+    // When intr=0, percentage is NaN, then 100 - NaN = NaN, fillna(0) → 0.
+    const found = intr === 0 ? 0 : Math.round((1000 * c) / intr) / 10
+    hitRateByKey.set(k, found)
+  }
+  const baselineHit = hitRateByKey.get(baseline) ?? 0
+  const data3 = orderedKeys.map(k => {
+    const yVal = hitRateByKey.get(k) ?? 0
+    const isBaseline = k === baseline
+    const multiplier = baselineHit === 0 ? Infinity : yVal / baselineHit
+    return {
+      group: null,
+      [demoLabel]: k,
+      'Contraband Hit Rate (%)': yVal,
+      annotation: multiplierLabel(multiplier, isBaseline),
+      hover_text: [k, `${yVal}% contraband hit rate`, ''],
+    }
+  })
+
+  return {
+    text: [
+      `In ${locStr}:`,
+      `When making traffic stops, Philadelphia police intruded upon <span>${pctRate}%</span> of people and/or vehicles from ${longDateRange}.`,
+      `During these intrusions, Philadelphia police did not find any contraband <span>${pctNotFound}%</span> of the time.`,
+    ],
+    figures: {
+      barplot: {
+        properties: {
+          xAxis: demoLabel,
+          yAxis: 'Intrusion Rate (%)',
+          title: `Intrusion Rates by ${demoLabel} in ${locStr} from ${dateRangeStr}`,
+        },
+        trendlines: [],
+        data: data1,
+      },
+      barplot2: {
+        properties: {
+          xAxis: demoLabel,
+          yAxis: 'Number of Intrusions without Contraband',
+          title: `Intrusions Resulting in No Contraband by ${demoLabel} in ${locStr} from ${dateRangeStr}`,
+        },
+        trendlines: [],
+        data: data2,
+      },
+      barplot3: {
+        properties: {
+          xAxis: demoLabel,
+          yAxis: 'Contraband Hit Rate (%)',
+          title: `Contraband Hit Rates by ${demoLabel} in ${locStr} from ${dateRangeStr}`,
+        },
+        trendlines: [],
+        data: data3,
+      },
+    },
+    tables: {}, geojsons: [], data: {},
+  }
+})
+
+// q2A annotated data passthroughs (kept for backward compat with existing template).
+const q2AData1 = computed(() => q2A.value ? q2A.value.figures.barplot.data : null)
+const q2AData2 = computed(() => q2A.value ? q2A.value.figures.barplot2.data : null)
+const q2AData3 = computed(() => q2A.value ? q2A.value.figures.barplot3.data : null)
+
+// =========================================================================
+// neighborhoods-by-neighborhood  (was q3A)
+// =========================================================================
+const q3A = computed(() => {
+  const bundle = stopsBundle.value
+  const demo = districtsDemo.value
+  if (!bundle || !demo) return null
+  const { cube } = bundle
+  const start = q2AQuarterStart.value.toParamString()
+  const end = q2AQuarterEnd.value.toParamString()
+  const event = getEventParam(q3AEvent.value) // 'stop' | 'search' | 'frisk' | 'intrusion'
+  const actionMap = {
+    stop: { col: 'n_stopped', noun: 'Traffic Stops' },
+    search: { col: 'n_searched', noun: 'Searches' },
+    frisk: { col: 'n_frisked', noun: 'Frisks' },
+    intrusion: { col: 'n_intruded', noun: 'Intrusions' },
+  }
+  const action = actionMap[event] || actionMap.stop
+
+  const filterOpts = { startQuarter: start, endQuarter: end }
+  const perDistrict = groupAllMeasuresByDistrict(cube, filterOpts)
+
+  // Drop district 77 (airport, no residents). Drop any district without
+  // demographic data — mirrors `dropna()` on the join.
+  const rows = perDistrict
+    .filter(r => r.district !== '77' && demo[r.district] && demo[r.district].total)
+    .map(r => {
+      const m = r.measures
+      const nStopped = m.n_stopped || 0
+      const nIntruded = m.n_intruded || 0
+      const nContraband = m.n_contraband || 0
+      const whiteness = demo[r.district].whiteness
+      return {
+        district: r.district,
+        whiteness,
+        n_stopped: nStopped,
+        n_intruded: nIntruded,
+        n_contraband: nContraband,
+        n_searched: m.n_searched || 0,
+        n_frisked: m.n_frisked || 0,
+        intrusion_rate: pct(nIntruded, nStopped),
+        contraband_hit_rate: pct(nContraband, nIntruded),
+      }
+    })
+    .sort((a, b) => a.whiteness - b.whiteness)
+
+  const xAxisLabel = 'Majority Non-White Districts → Majority White Districts'
+  const dateRangeStr = `${quarterStartStr(start)} through ${quarterEndStr(end)}`
+
+  function buildFig(yKey, yLabel, hoverSuffix, title) {
+    const data = rows.map(r => ({
+      group: null,
+      [xAxisLabel]: r.district,
+      [yLabel]: r[yKey],
+      annotation: null,
+      hover_text: [
+        `District ${r.district}`,
+        `${r.whiteness}% of residents are white`,
+        ...hoverSuffix(r),
+      ],
+    }))
+    // OLS trendline over (whiteness, y), then displayed with x=district.
+    const trend = olsTrendline(rows.map(r => ({ x: r.whiteness, y: r[yKey] })))
+    let trendlines = []
+    if (trend) {
+      trendlines = rows.map(r => ({
+        hover_text: null,
+        [xAxisLabel]: r.district,
+        [yLabel]: Math.max(0, trend.predict(r.whiteness)),
+      }))
+    }
+    return {
+      properties: { xAxis: xAxisLabel, yAxis: yLabel, title },
+      trendlines,
+      data,
+    }
+  }
+
+  const fig = buildFig(
+    action.col,
+    `Number of ${action.noun}`,
+    (r) => [`${r[action.col].toLocaleString()} ${action.noun.toLowerCase()}`],
+    `Number of ${action.noun} in Majority Non-White Districts vs. Majority White Districts from ${dateRangeStr}`,
+  )
+  const fig2 = buildFig(
+    'intrusion_rate',
+    'Intrusion Rate (%)',
+    (r) => [`${r.n_intruded.toLocaleString()} intrusions`, `${r.intrusion_rate}% intrusion rate`],
+    `PPD Intrusion Rate During Traffic Stops in Majority Non-White Districts vs. Majority White Districts from ${dateRangeStr}`,
+  )
+  const fig3 = buildFig(
+    'contraband_hit_rate',
+    'Contraband Hit Rate (%)',
+    (r) => [`${r.contraband_hit_rate}% contraband hit rate`],
+    `Contraband Hit Rate in Majority Non-White Districts vs. Majority White Districts from ${dateRangeStr}`,
+  )
+
+  return {
+    text: [],
+    figures: { barplot: fig, barplot2: fig2, barplot3: fig3 },
+    tables: {}, geojsons: [], data: {},
+  }
+})
+
+// =========================================================================
+// neighborhoods-compare-districts  (was q3B)
+// =========================================================================
+const q3B = computed(() => {
+  const bundle = stopsBundle.value
+  if (!bundle) return null
+  const { cube } = bundle
+  const start = q2AQuarterStart.value.toParamString()
+  const end = q2AQuarterEnd.value.toParamString()
+  const event = getEventParam(q3AEvent.value)
+  const actionMap = {
+    stop: { col: 'n_stopped', noun: 'traffic stops', titleNoun: 'Traffic Stops' },
+    search: { col: 'n_searched', noun: 'searches', titleNoun: 'Searches' },
+    frisk: { col: 'n_frisked', noun: 'frisks', titleNoun: 'Frisks' },
+    intrusion: { col: 'n_intruded', noun: 'intrusions', titleNoun: 'Intrusions' },
+  }
+  const action = actionMap[event] || actionMap.stop
+
+  // The Vue passes "District 05" → getLocationParam → "05*". Strip
+  // the trailing asterisk to get the district code, but use the
+  // location predicate for filtering.
+  const districtParams = (selectedDistricts.value || []).map(d => getLocationParam(d))
+  const districtRows = districtParams.map(locParam => {
+    const dCode = locParam.replace(/\*$/, '').padStart(2, '0')
+    const value = sumMeasure(cube, action.col, {
+      location: locParam,
+      startQuarter: start,
+      endQuarter: end,
+    })
+    return { district: dCode, value }
+  })
+
+  const districtsInTitle = englishCommaSeparated(districtRows.map(r => `District ${r.district}`))
+  const dateRangeStr = `${quarterStartStr(start)} through ${quarterEndStr(end)}`
+
+  return {
+    text: [],
+    figures: {
+      barplot: {
+        properties: {
+          xAxis: 'District',
+          yAxis: `Number of ${action.titleNoun}`,
+          title: `Number of ${action.titleNoun} in Districts ${districtsInTitle} from ${dateRangeStr}`,
+        },
+        trendlines: [],
+        data: districtRows.map(r => ({
+          group: null,
+          District: r.district,
+          [`Number of ${action.titleNoun}`]: r.value,
+          annotation: null,
+          hover_text: [`District ${r.district}`, `${r.value.toLocaleString()} ${action.noun}`],
+        })),
+      },
+    },
+    tables: {}, geojsons: [], data: {},
+  }
+})
+
+function englishCommaSeparated(arr) {
+  if (arr.length === 0) return ''
+  if (arr.length === 1) return arr[0]
+  if (arr.length === 2) return `${arr[0]} and ${arr[1]}`
+  return `${arr.slice(0, -1).join(', ')}, and ${arr[arr.length - 1]}`
+}
 </script>
