@@ -290,18 +290,35 @@ const q1A = computed(() => {
   }
 })
 
-const q1BParams = ref([selectedLocation, q1BQuarterStart, q1BQuarterEnd])
-const { data: q1B, refresh: refreshQ1B } = await useAsyncData('q1B',
-  () => $fetch(`${config.public.apiBaseUrl}/stops/num-stops-time-slice`, {
-    params: {
-      location: getLocationParam(selectedLocation.value),
-      start_qyear: q1BQuarterStart.value.toParamString(),
-      end_qyear: q1BQuarterEnd.value.toParamString(),
+const q1B = computed(() => {
+  const bundle = stopsBundle.value
+  if (!bundle) return null
+  const { cube } = bundle
+  const loc = getLocationParam(selectedLocation.value)
+  const start = q1BQuarterStart.value.toParamString()
+  const end   = q1BQuarterEnd.value.toParamString()
+
+  const groups = groupSum(cube, 'quarter', 'n_stopped', { location: loc, startQuarter: start, endQuarter: end })
+  const total = groups.reduce((s, g) => s + g.value, 0)
+
+  return {
+    text: [`Philadelphia police made <span>${total.toLocaleString()}</span> traffic stops.`],
+    figures: {
+      barplot: {
+        properties: { xAxis: 'Quarter', yAxis: 'Number of Traffic Stops', title: 'Number of PPD Stops by Quarter' },
+        trendlines: [],
+        data: groups.map(({ key, value }) => ({
+          group: null,
+          Quarter: key,
+          'Number of Traffic Stops': value,
+          annotation: null,
+          hover_text: [key, `${value.toLocaleString()} stops`],
+        })),
+      },
     },
-    options
-  })
-)
-watch(q1BParams, async () => { refreshQ1B() }, { deep: true })
+    tables: {}, geojsons: [], data: {},
+  }
+})
 
 const q1CParams = ref([selectedLocation, q1CQuarters])
 const { data: q1C, refresh: refreshQ1C } = await useAsyncData('q1C',
