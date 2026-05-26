@@ -1,4 +1,3 @@
-export const apiBaseUrl = 'https://deo-fastapi.onrender.com'
 export const options = { mode: 'cors' }
 
 export function grammaticalJoin(arr: string[], conjunction: string = 'and') {

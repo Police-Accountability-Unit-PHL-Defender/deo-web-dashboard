@@ -45,11 +45,5 @@ export default defineNuxtConfig({
     }
   },
 
-  runtimeConfig: {
-    public: {
-      apiBaseUrl: process.env.NUXT_API_BASE_URL || 'https://deo-fastapi.onrender.com',
-    }
-  },
-
   compatibilityDate: '2025-03-04'
 })
