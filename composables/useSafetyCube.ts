@@ -46,10 +46,13 @@ export interface SafetyCubeBundle {
 }
 
 export function useSafetyCube() {
-  return useAsyncData<SafetyCubeBundle>('safety-cube', async () => {
-    const event = typeof useRequestEvent === 'function' ? useRequestEvent() : null
-    const origin = event ? `http://${event.node.req.headers.host}` : ''
-    const cube = await $fetch<SafetyCube>(`${origin}/cubes/safety.json`)
-    return { cube }
-  })
+  return useAsyncData<SafetyCubeBundle>(
+    'safety-cube',
+    async () => {
+      const cube = await $fetch<SafetyCube>('/cubes/safety.json')
+      return { cube }
+    },
+    // Skip SSR — safety cube inlines HIN geometry + maps; keep payload off SSR.
+    { server: false, lazy: true },
+  )
 }

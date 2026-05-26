@@ -13,13 +13,17 @@ export interface StopsCubeBundle {
 }
 
 export function useStopsCube() {
-  return useAsyncData<StopsCubeBundle>('stops-cube', async () => {
-    const event = typeof useRequestEvent === 'function' ? useRequestEvent() : null
-    const origin = event ? `http://${event.node.req.headers.host}` : ''
-    const [cube, scalars] = await Promise.all([
-      $fetch<Cube>(`${origin}/cubes/stops.json`),
-      $fetch<Scalars>(`${origin}/cubes/scalars.json`),
-    ])
-    return { cube, scalars }
-  })
+  return useAsyncData<StopsCubeBundle>(
+    'stops-cube',
+    async () => {
+      const [cube, scalars] = await Promise.all([
+        $fetch<Cube>('/cubes/stops.json'),
+        $fetch<Scalars>('/cubes/scalars.json'),
+      ])
+      return { cube, scalars }
+    },
+    // Skip SSR fetch: the cube is multi-MB and would balloon __NUXT_DATA__.
+    // Client fetches once on mount; templates guard with v-if while pending.
+    { server: false, lazy: true },
+  )
 }

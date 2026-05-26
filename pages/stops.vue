@@ -87,7 +87,7 @@
             <div class="text-body-4 text-left">Select time(s) of year</div>
             <SelectTimeOfYear class="mt-2 max-w-[390px]" v-model="q1CQuarters"/>
           </div>
-          <Answer>
+          <Answer v-if="q1C">
             <Graph :graph-data="q1C.figures.barplot.data" :axis-properties="{x: q1C.figures.barplot.properties.xAxis, y: q1C.figures.barplot.properties.yAxis}">
               <h4 class="max-w-[550px] mx-auto">{{ q1C.figures.barplot.properties.title }}</h4>
             </Graph>
