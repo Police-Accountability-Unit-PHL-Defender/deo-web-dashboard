@@ -390,18 +390,42 @@ const q2A = computed(() => {
   }
 })
 
-const q2BParams = ref([selectedLocation, q1BQuarterStart, q1BQuarterEnd])
-const { data: q2B, refresh: refreshQ2B } = await useAsyncData('q2B',
-  () => $fetch(`${config.public.apiBaseUrl}/stops/most-frequent-stops`, {
-    params: {
-      location: getLocationParam(selectedLocation.value),
-      start_qyear: q1BQuarterStart.value.toParamString(),
-      end_qyear: q1BQuarterEnd.value.toParamString(),
-    },
-    options
-  })
-)
-watch(q2BParams, async () => { refreshQ2B() }, { deep: true })
+const q2B = computed(() => {
+  const bundle = stopsBundle.value
+  if (!bundle) return null
+  const { cube } = bundle
+  const loc = getLocationParam(selectedLocation.value)
+  const start = q1BQuarterStart.value.toParamString()
+  const end   = q1BQuarterEnd.value.toParamString()
+
+  const tuples = groupTupleSum(
+    cube, ['race', 'gender', 'age_range'], 'n_stopped',
+    { location: loc, startQuarter: start, endQuarter: end }
+  )
+  const total = tuples.reduce((s, t) => s + t.value, 0)
+  const withPct = tuples
+    .map(({ keys, value }) => ({
+      Race: keys[0],
+      Gender: keys[1],
+      'Age Range': keys[2],
+      '% of traffic stops': total === 0 ? 0 : Math.round((value / total) * 1000) / 10,
+    }))
+    .filter(r => r['% of traffic stops'] > 0)
+
+  const top = withPct[0]
+  const locationStr = formatLocationForSentence(selectedLocation.value)
+  const title = `Demographic Groups Stopped by PPD in ${locationStr} from ${start} through ${end}`
+  const sentence = top
+    ? `Philadelphia police most frequently stopped <span>${String(top.Race).toLowerCase().replace(/(^|\s)\S/g, c => c.toUpperCase())} ${String(top.Gender).toLowerCase()} ${top['Age Range']}</span> year old drivers in ${locationStr} from ${start} through ${end}, or <span>${top['% of traffic stops']}%</span> of stops.`
+    : ''
+
+  return {
+    text: [title, sentence],
+    figures: {},
+    tables: { demo: withPct },
+    geojsons: [], data: {},
+  }
+})
 
 const q2CParams = ref([selectedLocation, q1BQuarterStart, q1BQuarterEnd, q2CGroup1AgeRange, q2CGroup2AgeRange, q2CGroup1Gender, q2CGroup2Gender, q2CGroup1Race, q2CGroup2Race])
 const { data: q2C, refresh: refreshQ2C } = await useAsyncData('q2C',
