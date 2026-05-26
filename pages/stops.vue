@@ -320,17 +320,36 @@ const q1B = computed(() => {
   }
 })
 
-const q1CParams = ref([selectedLocation, q1CQuarters])
-const { data: q1C, refresh: refreshQ1C } = await useAsyncData('q1C',
-  () => $fetch(`${config.public.apiBaseUrl}/stops/seasonal`, {
-    params: {
-      location: getLocationParam(selectedLocation.value),
-      q_over_year_select: q1CQuarters.value.map(q => getQuarterParam(q)),
+const q1C = computed(() => {
+  const bundle = stopsBundle.value
+  if (!bundle) return null
+  const { cube } = bundle
+  const loc = getLocationParam(selectedLocation.value)
+  const wantedQuarters = new Set(q1CQuarters.value.map(q => getQuarterParam(q))) // ['Q1', 'Q3', ...]
+
+  const groups = groupSum(cube, 'quarter', 'n_stopped', { location: loc })
+  const filtered = groups
+    .filter(g => wantedQuarters.has(g.key.slice(-2))) // 'YYYY-QN' → 'QN'
+    .map(({ key, value }) => ({
+      group: key.slice(-2),
+      Year: key.slice(0, 4),
+      'Number of Traffic Stops': value,
+      annotation: null,
+      hover_text: [key, `${value.toLocaleString()} stops`],
+    }))
+
+  return {
+    text: [],
+    figures: {
+      barplot: {
+        properties: { xAxis: 'Year', yAxis: 'Number of Traffic Stops', title: 'Stops by Quarter Across Years' },
+        trendlines: [],
+        data: filtered,
+      },
     },
-    options
-  })
-)
-watch(q1CParams, async () => { refreshQ1C() }, { deep: true })
+    tables: {}, geojsons: [], data: {},
+  }
+})
 
 const q2AParams = ref([selectedLocation, q1BQuarterStart, q1BQuarterEnd, q2ADemographicCategory])
 const { data: q2A, refresh: refreshQ2A } = await useAsyncData('q2A',
