@@ -261,3 +261,132 @@ export interface OldEndpointShape {
   scalar?: number
   [key: string]: unknown
 }
+
+// -----------------------------------------------------------------
+// Derived helpers used by neighborhood/by-district aggregations.
+// -----------------------------------------------------------------
+
+/**
+ * Extract the district (zero-padded 2-digit string) from a cube
+ * `location` value like `"22-1"`. Returns the empty string when the
+ * input is not a valid `district-psa` token.
+ */
+export function locationDistrict(loc: string): string {
+  if (typeof loc !== 'string') return ''
+  const i = loc.indexOf('-')
+  return i < 0 ? loc : loc.slice(0, i)
+}
+
+/**
+ * Group rows by district and sum a measure. Identical semantics to
+ * `groupSum(cube, 'districtoccur', ...)` from the old FastAPI code,
+ * but driven by the cube's `location` dimension.
+ *
+ * Results are sorted by district code (ascending) for stable display.
+ */
+export function groupSumByDistrict(
+  cube: Cube,
+  measure: string,
+  opts: CubeFilterOpts = {},
+): Array<{ district: string; value: number }> {
+  const locIdx = cube.dimensions.indexOf('location')
+  if (locIdx === -1) throw new Error('cube missing location dimension')
+  const measureIdx = cube.dimensions.length + cube.measures.indexOf(measure)
+  if (cube.measures.indexOf(measure) === -1) {
+    throw new Error(`Unknown measure: ${measure}`)
+  }
+  const f = compileFilter(cube, opts)
+  const acc = new Map<string, number>()
+  for (const row of cube.rows) {
+    if (!rowPasses(row, f)) continue
+    const loc = row[locIdx]
+    if (typeof loc !== 'string') continue
+    const d = locationDistrict(loc)
+    if (!d) continue
+    const v = row[measureIdx]
+    if (typeof v !== 'number') continue
+    acc.set(d, (acc.get(d) ?? 0) + v)
+  }
+  return Array.from(acc, ([district, value]) => ({ district, value })).sort(
+    (a, b) => (a.district < b.district ? -1 : a.district > b.district ? 1 : 0),
+  )
+}
+
+/**
+ * Sum every numeric measure in the cube per district, in one pass.
+ * Returns one entry per district present after filtering, with all
+ * measures populated (zero where no matching rows exist).
+ */
+export function groupAllMeasuresByDistrict(
+  cube: Cube,
+  opts: CubeFilterOpts = {},
+): Array<{ district: string; measures: Record<string, number> }> {
+  const locIdx = cube.dimensions.indexOf('location')
+  if (locIdx === -1) throw new Error('cube missing location dimension')
+  const dimsLen = cube.dimensions.length
+  const f = compileFilter(cube, opts)
+  const acc = new Map<string, Record<string, number>>()
+  for (const row of cube.rows) {
+    if (!rowPasses(row, f)) continue
+    const loc = row[locIdx]
+    if (typeof loc !== 'string') continue
+    const d = locationDistrict(loc)
+    if (!d) continue
+    let bucket = acc.get(d)
+    if (!bucket) {
+      bucket = {}
+      for (const m of cube.measures) bucket[m] = 0
+      acc.set(d, bucket)
+    }
+    for (let i = 0; i < cube.measures.length; i++) {
+      const v = row[dimsLen + i]
+      if (typeof v === 'number') bucket[cube.measures[i]] += v
+    }
+  }
+  return Array.from(acc, ([district, measures]) => ({ district, measures })).sort(
+    (a, b) => (a.district < b.district ? -1 : a.district > b.district ? 1 : 0),
+  )
+}
+
+/**
+ * Safe percentage: 100 * numerator / denominator, rounded to one
+ * decimal. Returns 0 when the denominator is 0.
+ */
+export function pct(numerator: number, denominator: number): number {
+  if (!denominator) return 0
+  return Math.round((1000 * numerator) / denominator) / 10
+}
+
+/**
+ * Compute an ordinary-least-squares trendline (a + b*x) for the
+ * given (x, y) pairs. `x` values can be strings (e.g. district codes)
+ * — they are coerced to numbers when possible, otherwise ignored.
+ *
+ * Returns `null` when there are fewer than 2 finite (x, y) pairs.
+ */
+export function olsTrendline(
+  pairs: Array<{ x: string | number; y: number }>,
+): { slope: number; intercept: number; predict: (x: number) => number } | null {
+  const xs: number[] = []
+  const ys: number[] = []
+  for (const { x, y } of pairs) {
+    const xn = typeof x === 'number' ? x : Number(x)
+    if (!Number.isFinite(xn) || !Number.isFinite(y)) continue
+    xs.push(xn)
+    ys.push(y)
+  }
+  if (xs.length < 2) return null
+  const n = xs.length
+  const mx = xs.reduce((s, v) => s + v, 0) / n
+  const my = ys.reduce((s, v) => s + v, 0) / n
+  let num = 0
+  let den = 0
+  for (let i = 0; i < n; i++) {
+    num += (xs[i] - mx) * (ys[i] - my)
+    den += (xs[i] - mx) ** 2
+  }
+  if (den === 0) return null
+  const slope = num / den
+  const intercept = my - slope * mx
+  return { slope, intercept, predict: (x: number) => slope * x + intercept }
+}

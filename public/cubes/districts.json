@@ -1,0 +1,107 @@
+{
+  "01": {
+    "total": 38405,
+    "white": 20664,
+    "whiteness": 53.8
+  },
+  "02": {
+    "total": 113310,
+    "white": 28512,
+    "whiteness": 25.2
+  },
+  "03": {
+    "total": 91318,
+    "white": 53882,
+    "whiteness": 59.0
+  },
+  "05": {
+    "total": 43498,
+    "white": 32759,
+    "whiteness": 75.3
+  },
+  "06": {
+    "total": 47413,
+    "white": 28301,
+    "whiteness": 59.7
+  },
+  "07": {
+    "total": 96187,
+    "white": 60536,
+    "whiteness": 62.9
+  },
+  "08": {
+    "total": 98803,
+    "white": 65094,
+    "whiteness": 65.9
+  },
+  "09": {
+    "total": 65349,
+    "white": 46205,
+    "whiteness": 70.7
+  },
+  "12": {
+    "total": 71526,
+    "white": 4351,
+    "whiteness": 6.1
+  },
+  "14": {
+    "total": 112859,
+    "white": 20676,
+    "whiteness": 18.3
+  },
+  "15": {
+    "total": 138626,
+    "white": 47313,
+    "whiteness": 34.1
+  },
+  "16": {
+    "total": 40944,
+    "white": 8942,
+    "whiteness": 21.8
+  },
+  "17": {
+    "total": 49552,
+    "white": 22251,
+    "whiteness": 44.9
+  },
+  "18": {
+    "total": 80477,
+    "white": 20730,
+    "whiteness": 25.8
+  },
+  "19": {
+    "total": 86470,
+    "white": 7938,
+    "whiteness": 9.2
+  },
+  "22": {
+    "total": 76503,
+    "white": 16021,
+    "whiteness": 20.9
+  },
+  "24": {
+    "total": 68061,
+    "white": 20521,
+    "whiteness": 30.2
+  },
+  "25": {
+    "total": 67310,
+    "white": 2548,
+    "whiteness": 3.8
+  },
+  "26": {
+    "total": 57811,
+    "white": 29402,
+    "whiteness": 50.9
+  },
+  "35": {
+    "total": 99899,
+    "white": 4229,
+    "whiteness": 4.2
+  },
+  "39": {
+    "total": 59476,
+    "white": 9953,
+    "whiteness": 16.7
+  }
+}

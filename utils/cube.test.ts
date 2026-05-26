@@ -5,6 +5,11 @@ import {
   sumMeasure,
   groupSum,
   groupTupleSum,
+  locationDistrict,
+  groupSumByDistrict,
+  groupAllMeasuresByDistrict,
+  pct,
+  olsTrendline,
 } from './cube'
 
 // Tiny fixture cube. Dimensions match the real stops cube.
@@ -100,5 +105,74 @@ describe('groupTupleSum', () => {
     const out = groupTupleSum(fixture, ['race', 'gender'], 'n_stopped')
     expect(out[0]).toEqual({ keys: ['Black', 'Male'], value: 17 })
     expect(out.map((r) => r.value)).toEqual([17, 5, 3, 2])
+  })
+})
+
+describe('locationDistrict', () => {
+  it('extracts the district prefix', () => {
+    expect(locationDistrict('22-1')).toBe('22')
+    expect(locationDistrict('01-12')).toBe('01')
+  })
+  it('returns the value itself when there is no dash', () => {
+    expect(locationDistrict('22')).toBe('22')
+  })
+})
+
+describe('groupSumByDistrict', () => {
+  it('sums measure per district', () => {
+    const out = groupSumByDistrict(fixture, 'n_stopped')
+    expect(out).toEqual([
+      { district: '01', value: 7 },
+      { district: '17', value: 2 },
+      { district: '22', value: 18 },
+    ])
+  })
+  it('applies filter options', () => {
+    const out = groupSumByDistrict(fixture, 'n_stopped', { race: 'Black' })
+    expect(out).toEqual([
+      { district: '01', value: 7 },
+      { district: '22', value: 15 },
+    ])
+  })
+})
+
+describe('groupAllMeasuresByDistrict', () => {
+  it('returns every measure per district in one pass', () => {
+    const out = groupAllMeasuresByDistrict(fixture)
+    const byDist = Object.fromEntries(out.map((r) => [r.district, r.measures]))
+    expect(byDist['22']).toEqual({ n_stopped: 18, n_searched: 1 })
+    expect(byDist['01']).toEqual({ n_stopped: 7, n_searched: 2 })
+    expect(byDist['17']).toEqual({ n_stopped: 2, n_searched: 0 })
+  })
+})
+
+describe('pct', () => {
+  it('computes safe rounded percentages', () => {
+    expect(pct(1, 4)).toBe(25)
+    expect(pct(1, 3)).toBe(33.3)
+    expect(pct(0, 0)).toBe(0)
+    expect(pct(5, 0)).toBe(0)
+  })
+})
+
+describe('olsTrendline', () => {
+  it('fits a straight line through y = 2x + 1', () => {
+    const t = olsTrendline([
+      { x: 0, y: 1 },
+      { x: 1, y: 3 },
+      { x: 2, y: 5 },
+      { x: 3, y: 7 },
+    ])!
+    expect(t.slope).toBeCloseTo(2, 6)
+    expect(t.intercept).toBeCloseTo(1, 6)
+    expect(t.predict(10)).toBeCloseTo(21, 6)
+  })
+  it('returns null when there is no variance in x', () => {
+    expect(
+      olsTrendline([
+        { x: 1, y: 1 },
+        { x: 1, y: 2 },
+      ]),
+    ).toBeNull()
   })
 })
