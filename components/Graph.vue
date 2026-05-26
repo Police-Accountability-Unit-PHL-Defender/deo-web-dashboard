@@ -203,7 +203,7 @@ const drawGraph = (graphData) => {
   let tickSkip = 1
   if (n >= 36) {
     tickSkip = 8
-  } else if (n >= 16) {
+  } else if (n >= 12) {
     tickSkip = 4
   } else if (n > 8) {
     tickSkip = 2
@@ -216,11 +216,8 @@ const averageTickLength = x
   .reduce((sum, d) => sum + d.toString().length, 0) / x.domain().length;
 const tickValues = averageTickLength > 4 && props.quarterlyXAxisTicks
   ? x.domain().filter(function(d, i) {
-      const lastTickIndex = x.domain().length - 1; // Index of the last tick
-      return (
-        i === lastTickIndex
-        || (!((i + 6) % tickSkip) && (lastTickIndex - i > n/40 || tickSkip === 1))
-      );
+      const lastTickIndex = x.domain().length - 1;
+      return !((i + 6) % tickSkip) && (lastTickIndex - i > n/40 || tickSkip === 1);
     })
   : x.domain();
   const marginBottomAdjustment = props.quarterlyXAxisTicks && x.bandwidth() < 100 ? 16 : 0
