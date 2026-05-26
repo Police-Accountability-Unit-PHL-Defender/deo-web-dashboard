@@ -100,38 +100,213 @@ import SelectLocation from '~/components/SelectLocation.vue';
 import SelectTimeGranularity from '~/components/SelectTimeGranularity.vue';
 import HorizontalLine from '~/components/ui/HorizontalLine.vue';
 import Tooltip from '~/components/ui/Tooltip.vue';
+import { getLocationParam } from '~/utils';
+import { sumMeasure } from '~/utils/cube';
 
 useHead({
   title: 'Do traffic stops promote safety?',
 })
 
-const config = useRuntimeConfig()
-
 const selectedLocation = ref('Philadelphia')
 const selectedTimeGranularity = ref('year')
-const q3AEvent = ref('traffic stops')
-const selectedDistricts = ref(['District 25', 'District 05'])
 
-const q1AParams = ref([selectedLocation, selectedTimeGranularity])
-const { data: q1A, refresh: refreshQ1A } = await useAsyncData('q1A',
-  () => $fetch(`${config.public.apiBaseUrl}/safety/safety-num-accidents`, {
-    params: {
-      location: getLocationParam(selectedLocation.value),
-      time_aggregation: selectedTimeGranularity.value,
+const { data: safetyBundle } = await useSafetyCube()
+
+// ------ Helpers ------------------------------------------------------------
+
+const SEASON_LABEL = { Q1: 'Jan-Mar', Q2: 'Apr-Jun', Q3: 'July-Sep', Q4: 'Oct-Dec' }
+
+function yearQuarterToYearSeason(q) {
+  const [year, qx] = q.split('-')
+  return `${SEASON_LABEL[qx]} ${year}`
+}
+
+function locationStringFor(locParam) {
+  if (!locParam || locParam === '*') return 'Philadelphia'
+  if (/^[A-Z]+$/.test(locParam)) return `Division ${locParam}`
+  const dMatch = /^(\d{1,2})\*?$/.exec(locParam)
+  if (dMatch) return `District ${dMatch[1].padStart(2, '0')}`
+  const psaMatch = /^(\d{1,2})-(.+)$/.exec(locParam)
+  if (psaMatch) return `PSA ${psaMatch[1].padStart(2, '0')}-${psaMatch[2]}`
+  return locParam
+}
+
+function round1(v) {
+  return Math.round(v * 10) / 10
+}
+
+// ------ q1A: HIN num-accidents (bar chart + DEO sentence) -----------------
+
+const q1A = computed(() => {
+  const bundle = safetyBundle.value
+  if (!bundle) return null
+  const { cube } = bundle
+  const hin = cube.hin
+  const loc = getLocationParam(selectedLocation.value)
+  const timeAgg = selectedTimeGranularity.value
+  const locStr = locationStringFor(loc)
+
+  // Sum on_hin / locatable for the selected location, all time, grouped
+  // by year or quarter.
+  const qIdx = hin.dimensions.indexOf('quarter')
+  const yearIdx = hin.dimensions.indexOf('year')
+  const locIdx = hin.dimensions.indexOf('location')
+  const onHinIdx = hin.dimensions.length + hin.measures.indexOf('n_stopped_locatable_on_hin')
+  const totalIdx = hin.dimensions.length + hin.measures.indexOf('n_stopped_locatable')
+
+  // Build a location predicate matching FastAPI's Geography filter.
+  let locPred
+  if (loc === '*') {
+    locPred = () => true
+  } else {
+    // Reuse cube locationPredicate behaviour for division/district/psa.
+    const DIVISION_MAP = {
+      SPD: ['01', '03', '17'],
+      NEPD: ['02', '07', '08', '15', '25'],
+      NWPD: ['05', '14', '35', '39'],
+      CPD: ['06', '09', '22'],
+      SWPD: ['12', '16', '18', '19'],
+      EPD: ['24', '25', '26'],
+    }
+    if (loc in DIVISION_MAP) {
+      const districts = new Set(DIVISION_MAP[loc])
+      locPred = (l) => districts.has(l.split('-', 1)[0])
+    } else {
+      const dMatch = /^(\d{1,2})\*?$/.exec(loc)
+      if (dMatch) {
+        const d = dMatch[1].padStart(2, '0')
+        const prefix = d + '-'
+        locPred = (l) => l.startsWith(prefix)
+      } else {
+        locPred = (l) => l === loc
+      }
+    }
+  }
+
+  // Accumulate per bucket.
+  const buckets = new Map() // key -> {on_hin, total, sample_quarter}
+  let yearsSet = new Set()
+  for (const row of hin.rows) {
+    const l = row[locIdx]
+    if (typeof l !== 'string' || !locPred(l)) continue
+    const q = row[qIdx]
+    const y = row[yearIdx]
+    const onHin = row[onHinIdx] || 0
+    const total = row[totalIdx] || 0
+    yearsSet.add(y)
+    const key = timeAgg === 'year' ? String(y) : q
+    let b = buckets.get(key)
+    if (!b) {
+      b = { on_hin: 0, total: 0, quarter: q }
+      buckets.set(key, b)
+    }
+    b.on_hin += onHin
+    b.total += total
+  }
+
+  // Build x_label sorting.
+  const keys = Array.from(buckets.keys()).sort()
+  const data = []
+  for (const key of keys) {
+    const b = buckets.get(key)
+    const pct = b.total > 0 ? round1(100 * b.on_hin / b.total) : 0
+    const xLabel = timeAgg === 'quarter' ? yearQuarterToYearSeason(key) : Number(key)
+    data.push({
+      group: null,
+      x_label: xLabel,
+      'Percentage (%)': pct,
+      annotation: null,
+      hover_text: [`${xLabel}`, `${pct}% of traffic stops on HIN`],
+    })
+  }
+
+  // Date range string for title.
+  const yearsSorted = Array.from(yearsSet).filter((y) => y != null).sort((a, b) => a - b)
+  const dateRangeStr = timeAgg === 'year'
+    ? `${yearsSorted[0]} through ${yearsSorted[yearsSorted.length - 1]}`
+    : (() => {
+        const qsAll = Array.from(new Set(hin.rows
+          .filter((r) => locPred(r[locIdx]))
+          .map((r) => r[qIdx])
+          .filter((q) => typeof q === 'string'))).sort()
+        const first = qsAll[0]
+        const last = qsAll[qsAll.length - 1]
+        const SEASON_START = { Q1: 'Jan', Q2: 'Apr', Q3: 'Jul', Q4: 'Oct' }
+        const SEASON_END = { Q1: 'Mar', Q2: 'Jun', Q3: 'Sep', Q4: 'Dec' }
+        const [fy, fq] = first.split('-')
+        const [ly, lq] = last.split('-')
+        return `${SEASON_START[fq]} ${fy} through ${SEASON_END[lq]} ${ly}`
+      })()
+
+  const title = `Percent of PPD Traffic Stops on the HIN in ${locStr} from ${dateRangeStr}`
+
+  // DEO comparison sentence — citywide regardless of location filter
+  // (matches FastAPI before_deo_filter_hin / after_deo_filter_hin which
+  // are hard-coded to location="*").
+  const beforeQuarters = new Set(['2021-Q1', '2021-Q2', '2021-Q3', '2021-Q4'])
+  const afterQuarters = new Set(['2022-Q2', '2022-Q3', '2022-Q4', '2023-Q1'])
+  let beforeOnHin = 0, beforeTotal = 0, afterOnHin = 0, afterTotal = 0
+  for (const row of hin.rows) {
+    const q = row[qIdx]
+    const onHin = row[onHinIdx] || 0
+    const total = row[totalIdx] || 0
+    if (beforeQuarters.has(q)) {
+      beforeOnHin += onHin
+      beforeTotal += total
+    } else if (afterQuarters.has(q)) {
+      afterOnHin += onHin
+      afterTotal += total
+    }
+  }
+  const beforeRatio = beforeTotal > 0 ? beforeOnHin / beforeTotal : 0
+  const afterRatio = afterTotal > 0 ? afterOnHin / afterTotal : 0
+  const pctIncrease = beforeRatio > 0
+    ? round1(100 * (afterRatio - beforeRatio) / beforeRatio)
+    : 0
+  const text0 = `the proportion of traffic stops Philadelphia police made along the HIN increased by <span>${pctIncrease}%</span>`
+
+  return {
+    text: [text0],
+    figures: {
+      barplot: {
+        properties: {
+          xAxis: 'x_label',
+          yAxis: 'Percentage (%)',
+          title,
+        },
+        trendlines: [],
+        data,
+      },
     },
-    options
-  })
-)
-watch(q1AParams, async () => { refreshQ1A() }, { deep: true })
+  }
+})
 
-const { data: q1C, refresh: refreshQ1C } = await useAsyncData('q1C',
-  () => $fetch(`${config.public.apiBaseUrl}/safety/safety-hin-map`, {
-    options
-  })
-)
+// ------ q1C: HIN map (geojsons[0]) ----------------------------------------
+
+const q1C = computed(() => {
+  const bundle = safetyBundle.value
+  if (!bundle) return null
+  return {
+    geojsons: [
+      {
+        type: 'FeatureCollection',
+        features: bundle.cube.hin_map.features,
+        properties: {
+          title: bundle.cube.hin_map.title,
+          map_key: 'map_hin',
+        },
+      },
+    ],
+  }
+})
+
 const q1CGeoAggregation = computed(() => {
   if (!q1C.value?.geojsons?.[0]?.features) {
-    return { data: { type: 'FeatureCollection', features: [] }, legendSelectedTextFunction: () => '', tooltipFunction: () => '' }
+    return {
+      data: { type: 'FeatureCollection', features: [] },
+      legendSelectedTextFunction: () => '',
+      tooltipFunction: () => '',
+    }
   }
   const features = q1C.value.geojsons[0].features
   const data = { type: 'FeatureCollection', features }
@@ -148,16 +323,51 @@ const q1CGeoAggregation = computed(() => {
   }
 })
 
-const { data: q2, refresh: refreshQ2 } = await useAsyncData('q2',
-  () => $fetch(`${config.public.apiBaseUrl}/safety/safety-shootings-vs-stops-maps`, {
-    options
-  })
-)
+// ------ q2: shootings_vs_stops_maps ---------------------------------------
+
+const q2 = computed(() => {
+  const bundle = safetyBundle.value
+  if (!bundle) return null
+  const surge = bundle.cube.shootings_vs_stops.surge
+  const deo = bundle.cube.shootings_vs_stops.deo
+
+  const fmtInt = (n) => Math.round(n).toLocaleString('en-US')
+  const fmt1 = (n) => (Math.round(n * 10) / 10).toFixed(1)
+
+  const surgeDiff = surge.n_stopped_end - surge.n_stopped_start
+  const surgePctDiff = surge.n_stopped_start > 0
+    ? 100 * surgeDiff / surge.n_stopped_start
+    : 0
+  const surgeText = `Comparing 2018 to 2019, the Philadelphia Police Department increased traffic stops across nearly all 21 districts by ${fmtInt(surgeDiff)} stops, a ${fmt1(surgePctDiff)}% increase. The map below compares the 5 districts with the largest percent increases in traffic stops to the 5 districts with the largest percent decreases in shootings. This map attempts to see whether the districts with the largest percent increases in traffic stops also had the largest percent decreases in shootings. Here, only one district, the 18th district, had such an outcome, with the third largest percent increase of traffic stops and the second largest percent decrease in shootings.`
+
+  const deoDiff = deo.n_stopped_end - deo.n_stopped_start
+  const deoPctDiff = deo.n_stopped_start > 0
+    ? 100 * deoDiff / deo.n_stopped_start
+    : 0
+  const deoText = `Comparing before and after Driving Equality, the Philadelphia Police Department decreased traffic stops by ${fmtInt(-deoDiff)} stops, a ${fmt1(-deoPctDiff)}% decrease. The map below compares the 5 districts with the largest percent decreases in traffic stops to the 5 districts with the largest percent increases in shootings. This map attempts to see whether the districts with the largest percent decreases in traffic stops also had the largest percent increases in shootings. Here, only one district, the 3rd district, had such an outcome, with the third largest percent decrease of traffic stops and the third largest percent increase in shootings.`
+
+  return {
+    text: [surgeText, deoText],
+    geojsons: [
+      {
+        type: 'FeatureCollection',
+        features: surge.features,
+        properties: { title: surge.title, map_key: 'map_surge' },
+      },
+      {
+        type: 'FeatureCollection',
+        features: deo.features,
+        properties: { title: deo.title, map_key: 'map_deo' },
+      },
+    ],
+  }
+})
+
 const q2AGeoAggregation = computed(() => {
   return {
     data: {
-      features: q2.value.geojsons[0].features,
-      type: "FeatureCollection"
+      features: q2.value?.geojsons?.[0]?.features ?? [],
+      type: 'FeatureCollection',
     },
     legendSelectedTextFunction: (obj) => obj.DIST_NUM,
     tooltipFunction: (obj) => obj.hovertext,
@@ -166,8 +376,8 @@ const q2AGeoAggregation = computed(() => {
 const q2BGeoAggregation = computed(() => {
   return {
     data: {
-      features: q2.value.geojsons[1].features,
-      type: "FeatureCollection"
+      features: q2.value?.geojsons?.[1]?.features ?? [],
+      type: 'FeatureCollection',
     },
     legendSelectedTextFunction: (obj) => obj.DIST_NUM,
     tooltipFunction: (obj) => obj.hovertext,
