@@ -77,7 +77,26 @@ export interface CubeFilterOpts {
   race?: string | string[]
   gender?: string | string[]
   ageRange?: string | string[]
+  violationCategory?: string | string[]
+  /** Match rows whose `location`'s district is in this set (raw 2-digit codes). */
+  districtIn?: string[] | Set<string>
 }
+
+// Mirrors deo_backend/models.py constants.
+export const VIOLATION_CATEGORIES_OPERATIONAL = [
+  'Failure to Obey Traffic Sign/Light',
+  'Improper Pass, Lane, One Way',
+  'Improper Turn/Signal',
+  'Red Light/Stop Sign/Yield',
+  'Speeding/Reckless/Careless Driving',
+]
+export const VIOLATION_CATEGORIES_DEO_IMPACTED = [
+  'Display License Plate',
+  'Inspection/Emission Sticker',
+  'Lights',
+  'Registration',
+  'Windshield Obstruction',
+]
 
 function asSet(v: string | string[] | undefined): Set<string> | null {
   if (v === undefined) return null
@@ -94,12 +113,15 @@ interface CompiledFilter {
   raceIdx: number
   genderIdx: number
   ageIdx: number
+  violationIdx: number
   locPred: (loc: string) => boolean
   startQuarter?: string
   endQuarter?: string
   raceSet: Set<string> | null
   genderSet: Set<string> | null
   ageSet: Set<string> | null
+  violationSet: Set<string> | null
+  districtSet: Set<string> | null
 }
 
 function compileFilter(cube: Cube, opts: CubeFilterOpts): CompiledFilter {
@@ -108,18 +130,28 @@ function compileFilter(cube: Cube, opts: CubeFilterOpts): CompiledFilter {
   const raceIdx = cube.dimensions.indexOf('race')
   const genderIdx = cube.dimensions.indexOf('gender')
   const ageIdx = cube.dimensions.indexOf('age_range')
+  const violationIdx = cube.dimensions.indexOf('violation_category')
+  const districtSet =
+    opts.districtIn === undefined
+      ? null
+      : opts.districtIn instanceof Set
+        ? opts.districtIn
+        : new Set(opts.districtIn)
   return {
     qIdx,
     locIdx,
     raceIdx,
     genderIdx,
     ageIdx,
+    violationIdx,
     locPred: locationPredicate(opts.location ?? '*'),
     startQuarter: opts.startQuarter,
     endQuarter: opts.endQuarter,
     raceSet: asSet(opts.race),
     genderSet: asSet(opts.gender),
     ageSet: asSet(opts.ageRange),
+    violationSet: asSet(opts.violationCategory),
+    districtSet,
   }
 }
 
@@ -145,6 +177,16 @@ function rowPasses(row: Array<string | number | null>, f: CompiledFilter): boole
   if (f.ageSet && f.ageIdx >= 0) {
     const v = row[f.ageIdx]
     if (typeof v !== 'string' || !f.ageSet.has(v)) return false
+  }
+  if (f.violationSet && f.violationIdx >= 0) {
+    const v = row[f.violationIdx]
+    if (typeof v !== 'string' || !f.violationSet.has(v)) return false
+  }
+  if (f.districtSet && f.locIdx >= 0) {
+    const loc = row[f.locIdx]
+    if (typeof loc !== 'string') return false
+    const d = loc.split('-', 1)[0]
+    if (!f.districtSet.has(d)) return false
   }
   return true
 }

@@ -107,62 +107,333 @@ import QuestionHeader from '~/components/QuestionHeader.vue';
 import SelectTimeGranularity from '~/components/SelectTimeGranularity.vue';
 import HorizontalLine from '~/components/ui/HorizontalLine.vue';
 import Tooltip from '~/components/ui/Tooltip.vue';
+import {
+  groupSum,
+  groupTupleSum,
+  sumMeasure,
+  VIOLATION_CATEGORIES_OPERATIONAL,
+  VIOLATION_CATEGORIES_DEO_IMPACTED,
+} from '~/utils/cube';
+import { useReasonsCube } from '~/composables/useReasonsCube';
+import { useDistrictsDemographics } from '~/composables/useDistrictsDemographics';
+
 useHead({
   title: 'What reasons do police give for making traffic stops?',
 })
 
-const config = useRuntimeConfig()
 const deoYears = useState('deoYears')
 
-// const selectedLocation = ref('Philadelphia')
 const selectedNeighborhoodMajority = ref('Non-white')
 const selectedTimeGranularity = ref('quarter')
 const q1Year = ref(Math.max(...deoYears.value))
 const q1Race = ref('Black')
 
-const q1Params = ref([q1Year, q1Race])
-const { data: q1, refresh: refreshQ1 } = await useAsyncData('q1',
-  () => $fetch(`${config.public.apiBaseUrl}/reasons/reasons-comparison-bar-drivers`, {
-    params: {
-      year: q1Year.value,
-      race: q1Race.value,
-    },
-    options
-  })
-)
-watch(q1Params, async () => { refreshQ1() }, { deep: true })
+// Shared cube + districts demographics.
+const { data: reasonsBundle } = await useReasonsCube()
+const { data: districtsDemo } = await useDistrictsDemographics()
 
-const q2Params = ref([q1Year, selectedNeighborhoodMajority])
-const { data: q2, refresh: refreshQ2 } = await useAsyncData('q2',
-  () => $fetch(`${config.public.apiBaseUrl}/reasons/reasons-comparison-bar-neighborhoods`, {
-    params: {
-      year: q1Year.value,
-      race: selectedNeighborhoodMajority.value,
-    },
-    options
-  })
-)
-watch(q2Params, async () => { refreshQ2() }, { deep: true })
+// Race order for q1.
+const RACE_ORDER = ['Asian', 'Black', 'Latino', 'White', 'All Other Races']
 
-const q3Params = ref([selectedTimeGranularity])
-const { data: q3, refresh: refreshQ3 } = await useAsyncData('q3',
-  () => $fetch(`${config.public.apiBaseUrl}/reasons/reasons-deo-impacts`, {
-    params: {
-      time_aggregation: selectedTimeGranularity.value,
-    },
-    options
-  })
-)
-watch(q3Params, async () => { refreshQ3() }, { deep: true })
+// SEASON mapping mirrors deo_backend/models.py SEASON_QUARTER_MAPPING.
+const SEASON_LABEL = { Q1: 'Jan-Mar', Q2: 'Apr-Jun', Q3: 'July-Sep', Q4: 'Oct-Dec' }
+function seasonAndYear(qStr) {
+  const [year, q] = qStr.split('-')
+  return `${SEASON_LABEL[q]} ${year}`
+}
 
-const q4Params = ref([q1Year])
-const { data: q4, refresh: refreshQ4 } = await useAsyncData('q4',
-  () => $fetch(`${config.public.apiBaseUrl}/reasons/reasons-operational`, {
-    params: {
-      year: q1Year.value,
-    },
-    options
+// Majority-white/non-white district sets are derived from districts.json
+// (whiteness > 50 ⇒ majority white). Mirrors demographic_constants.py.
+const majorityDistricts = computed(() => {
+  const demo = districtsDemo.value || {}
+  const white = []
+  const nonwhite = []
+  for (const [d, v] of Object.entries(demo)) {
+    if ((v?.whiteness ?? 0) > 50) white.push(d)
+    else nonwhite.push(d)
+  }
+  return { white, nonwhite }
+})
+
+// =========================================================================
+// q1: reasons-comparison-bar-drivers
+// =========================================================================
+const q1 = computed(() => {
+  const bundle = reasonsBundle.value
+  if (!bundle) return null
+  const { cube } = bundle
+  const year = String(q1Year.value)
+  const race = q1Race.value // 'Black' | 'White'
+
+  const filterOpts = {
+    startQuarter: `${year}-Q1`,
+    endQuarter: `${year}-Q4`,
+  }
+  // groupBy [race, violation_category] then drop Other/None.
+  const groups = groupTupleSum(cube, ['race', 'violation_category'], 'n_stopped', filterOpts)
+    .filter(({ keys }) => (keys[0] === 'Black' || keys[0] === 'White')
+      && keys[1] !== 'Other' && keys[1] !== 'None')
+
+  // Totals per race (over filtered groups).
+  const totalsByRace = { Black: 0, White: 0 }
+  for (const g of groups) totalsByRace[g.keys[0]] += g.value
+
+  // Sort: by race (Black-or-White first depending on selection), then n_stopped desc.
+  const raceAscBool = race !== 'White' // matches python: ascending=[race != "White"]
+  const rows = groups.slice().sort((a, b) => {
+    if (a.keys[0] !== b.keys[0]) {
+      // ascending=true means Black before White (alphabetical); false flips.
+      const cmp = a.keys[0] < b.keys[0] ? -1 : 1
+      return raceAscBool ? cmp : -cmp
+    }
+    return b.value - a.value // n_stopped desc
   })
-)
-watch(q4Params, async () => { refreshQ4() }, { deep: true })
+
+  const xAxis = 'Primary Reason for Traffic Stop'
+  const yAxis = 'Percentage (%)'
+  const title = race === 'Black'
+    ? `Primary Reasons PPD Stopped Black Drivers, Compared to White Drivers, in ${year}`
+    : `Primary Reasons PPD Stopped White Drivers, Compared to Black Drivers, in ${year}`
+
+  const data = rows.map(({ keys, value }) => {
+    const r = keys[0]
+    const vc = keys[1]
+    const tot = totalsByRace[r] || 0
+    const pctVal = tot ? Math.round((1000 * value) / tot) / 10 : 0
+    return {
+      group: `${r} drivers`,
+      [xAxis]: vc,
+      [yAxis]: pctVal,
+      annotation: null,
+      hover_text: [
+        `${r} drivers`,
+        vc,
+        `${pctVal.toFixed(1)}% of traffic stops`,
+        `${value.toLocaleString()} traffic stops`,
+        '',
+      ],
+    }
+  })
+
+  return {
+    text: [],
+    figures: {
+      barplot: {
+        properties: { xAxis, yAxis, title },
+        trendlines: [],
+        data,
+      },
+    },
+    tables: {}, geojsons: [], data: {},
+  }
+})
+
+// =========================================================================
+// q2: reasons-comparison-bar-neighborhoods
+// =========================================================================
+const q2 = computed(() => {
+  const bundle = reasonsBundle.value
+  if (!bundle) return null
+  const { cube } = bundle
+  const year = String(q1Year.value)
+  const race = selectedNeighborhoodMajority.value // 'Non-white' | 'White'
+  const { white: whiteDistricts, nonwhite: nonwhiteDistricts } = majorityDistricts.value
+
+  const baseOpts = {
+    startQuarter: `${year}-Q1`,
+    endQuarter: `${year}-Q4`,
+  }
+  // Per python: filter out Other/None, group by violation_category + majority_district.
+  const whiteGroups = groupSum(cube, 'violation_category', 'n_stopped', {
+    ...baseOpts,
+    districtIn: whiteDistricts,
+  }).filter(g => g.key !== 'Other' && g.key !== 'None')
+  const nonwhiteGroups = groupSum(cube, 'violation_category', 'n_stopped', {
+    ...baseOpts,
+    districtIn: nonwhiteDistricts,
+  }).filter(g => g.key !== 'Other' && g.key !== 'None')
+
+  const labels = {
+    white: 'Majority white districts',
+    nonwhite: 'Majority non-white districts',
+  }
+  const all = [
+    ...whiteGroups.map(g => ({ majority: 'white', vc: g.key, n: g.value })),
+    ...nonwhiteGroups.map(g => ({ majority: 'nonwhite', vc: g.key, n: g.value })),
+  ]
+  const totals = {
+    white: whiteGroups.reduce((s, g) => s + g.value, 0),
+    nonwhite: nonwhiteGroups.reduce((s, g) => s + g.value, 0),
+  }
+
+  // Sort: by majority_district (alpha asc/desc), then n desc. Python uses
+  // ascending=[race != 'White'] on the majority_district label
+  // ("Majority non-white" < "Majority white") so race=='White' → desc.
+  const raceAscBool = race !== 'White'
+  const sortKey = (m) => m === 'nonwhite' ? 'Majority non-white' : 'Majority white'
+  const rows = all.slice().sort((a, b) => {
+    if (a.majority !== b.majority) {
+      const cmp = sortKey(a.majority) < sortKey(b.majority) ? -1 : 1
+      return raceAscBool ? cmp : -cmp
+    }
+    return b.n - a.n
+  })
+
+  const xAxis = 'Primary Reason for Traffic Stop'
+  const yAxis = 'Percentage (%)'
+  const title = race === 'Non-white'
+    ? `Primary Reasons PPD Stopped Drivers in Majority Non-White Districts, Compared to Majority White Districts, in ${year}`
+    : `Primary Reasons PPD Stopped Drivers in Majority White Districts, Compared to Majority Non-White Districts, in ${year}`
+
+  const data = rows.map(({ majority, vc, n }) => {
+    const tot = totals[majority] || 0
+    const pctVal = tot ? Math.round((1000 * n) / tot) / 10 : 0
+    const groupName = `${labels[majority]} districts`
+    return {
+      group: groupName,
+      [xAxis]: vc,
+      [yAxis]: pctVal,
+      annotation: null,
+      hover_text: [
+        labels[majority],
+        vc,
+        `${pctVal.toFixed(1)}% of traffic stops`,
+        `${n.toLocaleString()} traffic stops`,
+        '',
+      ],
+    }
+  })
+
+  return {
+    text: [],
+    figures: {
+      barplot: {
+        properties: { xAxis, yAxis, title },
+        trendlines: [],
+        data,
+      },
+    },
+    tables: {}, geojsons: [], data: {},
+  }
+})
+
+// =========================================================================
+// q3: reasons-deo-impacts
+// =========================================================================
+const q3 = computed(() => {
+  const bundle = reasonsBundle.value
+  if (!bundle) return null
+  const { cube } = bundle
+  const tg = selectedTimeGranularity.value // 'quarter' | 'year'
+
+  const filterOpts = {
+    startQuarter: '2022-Q1',
+    violationCategory: VIOLATION_CATEGORIES_DEO_IMPACTED,
+  }
+  // Always sum n_stopped grouped by [quarter, violation_category].
+  const groups = groupTupleSum(cube, ['quarter', 'violation_category'], 'n_stopped', filterOpts)
+
+  // Roll up to time-granularity bucket.
+  const acc = new Map() // bucket -> Map(vc -> sum)
+  for (const { keys, value } of groups) {
+    const [q, vc] = keys
+    const bucket = tg === 'year' ? q.slice(0, 4) : q
+    if (!acc.has(bucket)) acc.set(bucket, new Map())
+    const inner = acc.get(bucket)
+    inner.set(vc, (inner.get(vc) ?? 0) + value)
+  }
+
+  // Sort by bucket ascending. Within bucket, by n_stopped descending.
+  const buckets = Array.from(acc.keys()).sort()
+  const xAxis = tg === 'quarter' ? 'Quarter' : 'Year'
+  const yAxis = 'Number of Traffic Stops'
+
+  const data = []
+  for (const b of buckets) {
+    const xVal = tg === 'quarter' ? seasonAndYear(b) : Number(b)
+    const inner = acc.get(b)
+    const items = Array.from(inner, ([vc, v]) => ({ vc, v }))
+      .sort((a, c) => c.v - a.v)
+    for (const { vc, v } of items) {
+      data.push({
+        group: vc,
+        [xAxis]: xVal,
+        [yAxis]: v,
+        annotation: null,
+        hover_text: [String(xVal), vc, `${v.toLocaleString()} traffic stops`, ''],
+      })
+    }
+  }
+
+  return {
+    text: [],
+    figures: {
+      barplot: {
+        properties: {
+          xAxis,
+          yAxis,
+          title: 'Number of PPD Traffic Stops for Reasons Covered by Driving Equality',
+        },
+        trendlines: [],
+        data,
+      },
+    },
+    tables: {}, geojsons: [], data: {},
+  }
+})
+
+// =========================================================================
+// q4: reasons-operational
+// =========================================================================
+const q4 = computed(() => {
+  const bundle = reasonsBundle.value
+  if (!bundle) return null
+  const { cube } = bundle
+  const year = String(q1Year.value)
+  const filterOpts = {
+    startQuarter: `${year}-Q1`,
+    endQuarter: `${year}-Q4`,
+  }
+
+  const stopsByRace = new Map(
+    groupSum(cube, 'race', 'n_stopped', filterOpts).map(g => [g.key, g.value]),
+  )
+  const opStopsByRace = new Map(
+    groupSum(cube, 'race', 'n_stopped', {
+      ...filterOpts,
+      violationCategory: VIOLATION_CATEGORIES_OPERATIONAL,
+    }).map(g => [g.key, g.value]),
+  )
+
+  const xAxis = 'Race'
+  const yAxis = 'Percentage (%)'
+  const data = RACE_ORDER.filter(r => stopsByRace.has(r)).map(r => {
+    const total = stopsByRace.get(r) ?? 0
+    const op = opStopsByRace.get(r) ?? 0
+    const pctVal = total ? Math.round((1000 * op) / total) / 10 : 0
+    return {
+      group: null,
+      [xAxis]: r,
+      [yAxis]: pctVal,
+      annotation: null,
+      hover_text: [r, `${pctVal}% of traffic stops for operational violations`, ''],
+    }
+  })
+
+  return {
+    text: [],
+    figures: {
+      barplot: {
+        properties: {
+          xAxis,
+          yAxis,
+          title: `Percentage of Operational Stops by Race in ${year}`,
+        },
+        trendlines: [],
+        data,
+      },
+    },
+    tables: {}, geojsons: [], data: {},
+  }
+})
 </script>
