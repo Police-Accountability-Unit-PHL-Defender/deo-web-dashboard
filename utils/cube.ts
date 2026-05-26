@@ -58,9 +58,10 @@ export function locationPredicate(location: string): (loc: string) => boolean {
     }
   }
 
-  // Bare district code (e.g. "22" or "9")
-  if (/^\d{1,2}$/.test(location)) {
-    const d = padDistrict(location)
+  // Bare district code (e.g. "22", "9", or "22*" from getLocationParam)
+  const districtMatch = /^(\d{1,2})\*?$/.exec(location)
+  if (districtMatch) {
+    const d = padDistrict(districtMatch[1])
     const prefix = d + '-'
     return (loc: string) => loc.startsWith(prefix)
   }

@@ -209,6 +209,8 @@ import SelectTimeGranularity from '~/components/SelectTimeGranularity.vue';
 import Button from '~/components/ui/Button.vue';
 import HorizontalLine from '~/components/ui/HorizontalLine.vue';
 import Tooltip from '~/components/ui/Tooltip.vue';
+import { groupSum, sumMeasure, groupTupleSum } from '~/utils/cube';
+import { useStopsCube } from '~/composables/useStopsCube';
 
 useHead({
   title: 'How many stops do police make, and who do they stop?',
@@ -239,17 +241,54 @@ watch(isTableShowingAll, (newValue) => {
   }
 })
 
-const q1AParams = ref([selectedLocation, selectedTimeGranularity])
-const { data: q1A, refresh: refreshQ1A } = await useAsyncData('q1A',
-  () => $fetch(`${config.public.apiBaseUrl}/stops/num-stops`, {
-    params: {
-      location: getLocationParam(selectedLocation.value),
-      time_aggregation: selectedTimeGranularity.value,
+const { data: stopsBundle } = await useStopsCube()
+
+const q1A = computed(() => {
+  const bundle = stopsBundle.value
+  if (!bundle) return null
+  const { cube, scalars } = bundle
+  const loc = getLocationParam(selectedLocation.value)
+  const timeDim = selectedTimeGranularity.value // 'year' or 'quarter'
+
+  const groups = groupSum(cube, 'quarter', 'n_stopped', { location: loc })
+  const rolled = new Map()
+  for (const { key, value } of groups) {
+    const bucket = timeDim === 'year' ? key.slice(0, 4) : key
+    rolled.set(bucket, (rolled.get(bucket) ?? 0) + value)
+  }
+  const sorted = Array.from(rolled, ([key, value]) => ({ key, value })).sort((a, b) => a.key.localeCompare(b.key))
+
+  const total = sumMeasure(cube, 'n_stopped', { location: loc })
+  const baseline = scalars['stops_baseline_2014_2018_avg_monthly']?.[loc] ?? null
+  const surge    = scalars['stops_2019_surge_avg_monthly']?.[loc] ?? null
+  const covid    = scalars['stops_covid_avg_monthly']?.[loc] ?? null
+
+  const xAxisLabel = timeDim === 'year' ? 'Year' : 'Quarter'
+  return {
+    text: [
+      `From the start of 2014 through the most recent quarter, Philadelphia police made a total of <span>${total.toLocaleString()}</span> stops in this area.`,
+      baseline === null ? '' : `From 2014–2018, Philadelphia police made an average of <span>${baseline.toLocaleString()}</span> stops per month.`,
+      surge    === null ? '' : `During the 2019 surge, Philadelphia police made an average of <span>${surge.toLocaleString()}</span> stops per month.`,
+      covid    === null ? '' : `From April 2020 through March 2021 (pandemic), Philadelphia police made an average of <span>${covid.toLocaleString()}</span> stops per month.`,
+    ],
+    figures: {
+      barplot: {
+        properties: { xAxis: xAxisLabel, yAxis: 'Number of Traffic Stops', title: `Number of PPD Stops` },
+        trendlines: [],
+        data: sorted.map(({ key, value }) => ({
+          group: null,
+          [xAxisLabel]: key,
+          'Number of Traffic Stops': value,
+          annotation: null,
+          hover_text: [`${key}`, `${value.toLocaleString()} stops`],
+        })),
+      },
     },
-    options
-  })
-)
-watch(q1AParams, async () => { refreshQ1A() }, { deep: true })
+    tables: {},
+    geojsons: [],
+    data: {},
+  }
+})
 
 const q1BParams = ref([selectedLocation, q1BQuarterStart, q1BQuarterEnd])
 const { data: q1B, refresh: refreshQ1B } = await useAsyncData('q1B',
