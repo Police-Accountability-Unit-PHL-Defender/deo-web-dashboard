@@ -98,39 +98,14 @@
 <script setup>
 import QuestionHeader from '~/components/QuestionHeader.vue';
 import Graph from '~/components/Graph.vue';
-import SelectLocation from '~/components/SelectLocation.vue'
-import SelectTimeGranularity from '~/components/SelectTimeGranularity.vue'
 import HorizontalLine from '~/components/ui/HorizontalLine.vue';
-import Button from '~/components/ui/Button.vue';
 import Tooltip from '~/components/ui/Tooltip.vue';
 
 useHead({
   title: 'Snapshot of traffic enforcement in Philadelphia',
 })
 
-const config = useRuntimeConfig()
-
-const selectedLocation = ref('Philadelphia')
-const selectedTimeGranularity = ref('year')
-const q2ADemographicCategory = ref('race')
-const q2AQuarterStart = ref(new Quarter(2023, QuarterMonths['Jan-Mar']))
-const q2AQuarterEnd = ref(new Quarter(2023, QuarterMonths['Oct-Dec']))
-const q2ARace = ref('White')
-const q2AGender = ref('Male')
-const q2AAgeGroup = ref('<25')
-const q3AEvent = ref('traffic stops')
-const selectedDistricts = ref(['District 25', 'District 05'])
-
-const q1AParams = ref([selectedLocation, selectedTimeGranularity])
-const { data: q1A, refresh: refreshQ1A } = await useAsyncData('q1A',
-  () => $fetch(`${config.public.apiBaseUrl}/snapshot/annual-summary`, {
-    params: {
-      location: getLocationParam(selectedLocation.value),
-      time_aggregation: selectedTimeGranularity.value,
-    },
-    options
-  })
-)
-watch(q1AParams, async () => { refreshQ1A() }, { deep: true })
+const { data: snapshotCube } = await useSnapshotCube()
+const q1A = computed(() => snapshotCube.value?.annual_summary ?? null)
 
 </script>
