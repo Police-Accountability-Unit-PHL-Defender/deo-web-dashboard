@@ -261,9 +261,10 @@ const q1A = computed(() => {
   const beforeRatio = beforeTotal > 0 ? beforeOnHin / beforeTotal : 0
   const afterRatio = afterTotal > 0 ? afterOnHin / afterTotal : 0
   const pctIncrease = beforeRatio > 0
-    ? round1(100 * (afterRatio - beforeRatio) / beforeRatio)
-    : 0
-  const text0 = `<span>the proportion of traffic stops Philadelphia police made along the HIN increased by ${pctIncrease}%</span>`
+    ? (100 * (afterRatio - beforeRatio) / beforeRatio).toFixed(1)
+    : '0.0'
+  // The template wraps text[0] in <span class="result-text">; emit the bare prose.
+  const text0 = `the proportion of traffic stops Philadelphia police made along the HIN increased by ${pctIncrease}%`
 
   return {
     text: [text0],
