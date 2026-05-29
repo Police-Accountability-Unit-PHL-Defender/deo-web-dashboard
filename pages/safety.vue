@@ -263,7 +263,7 @@ const q1A = computed(() => {
   const pctIncrease = beforeRatio > 0
     ? round1(100 * (afterRatio - beforeRatio) / beforeRatio)
     : 0
-  const text0 = `the proportion of traffic stops Philadelphia police made along the HIN increased by <span>${pctIncrease}%</span>`
+  const text0 = `<span>the proportion of traffic stops Philadelphia police made along the HIN increased by ${pctIncrease}%</span>`
 
   return {
     text: [text0],
