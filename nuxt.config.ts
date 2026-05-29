@@ -45,5 +45,13 @@ export default defineNuxtConfig({
     }
   },
 
+  // Fully static deploy. Each route is prerendered once at build time and
+  // served as plain HTML from the CDN — no per-request server work. Cube
+  // data is fetched client-side (see composables/use*Cube) so the static
+  // HTML stays small.
+  nitro: {
+    preset: 'static',
+  },
+
   compatibilityDate: '2025-03-04'
 })

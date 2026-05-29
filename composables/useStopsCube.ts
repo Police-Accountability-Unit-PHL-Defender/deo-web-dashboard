@@ -13,16 +13,18 @@ export interface StopsCubeBundle {
 }
 
 export function useStopsCube() {
-  return useAsyncData<StopsCubeBundle>('stops-cube', async () => {
-    // During SSR $fetch with a bare /cubes/... path goes through the Vue
-    // router and returns undefined; build the absolute origin so the request
-    // hits Nitro's public-asset handler instead.
-    const event = typeof useRequestEvent === 'function' ? useRequestEvent() : null
-    const origin = event ? `http://${event.node.req.headers.host}` : ''
-    const [cube, scalars] = await Promise.all([
-      $fetch<Cube>(`${origin}/cubes/stops.json`),
-      $fetch<Scalars>(`${origin}/cubes/scalars.json`),
-    ])
-    return { cube, scalars }
-  })
+  return useAsyncData<StopsCubeBundle>(
+    'stops-cube',
+    async () => {
+      const [cube, scalars] = await Promise.all([
+        $fetch<Cube>('/cubes/stops.json'),
+        $fetch<Scalars>('/cubes/scalars.json'),
+      ])
+      return { cube, scalars }
+    },
+    // Client-only: skip prerender/SSR fetch so cube data does NOT land in
+    // __NUXT_DATA__ (avoids multi-MB page HTML). Page renders an empty
+    // skeleton until the cube fetch resolves and computeds populate.
+    { server: false, lazy: true },
+  )
 }
