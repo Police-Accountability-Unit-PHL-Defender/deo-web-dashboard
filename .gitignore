@@ -17,3 +17,9 @@ logs
 .env.*
 !.env.example
 .envrc
+
+# e2e parity harness artifacts (rendered page text)
+e2e/.artifacts/
+
+# Legacy build output symlink
+dist

@@ -204,7 +204,9 @@ const q1A = computed(() => {
     b.total += total
   }
 
-  // Build x_label sorting.
+  // Graph.vue reads each row's x value by `axisProperties.x`, so the data key
+  // has to be the display label itself.
+  const xAxisLabel = timeAgg === 'quarter' ? 'Quarter' : 'Year'
   const keys = Array.from(buckets.keys()).sort()
   const data = []
   for (const key of keys) {
@@ -213,7 +215,7 @@ const q1A = computed(() => {
     const xLabel = timeAgg === 'quarter' ? yearQuarterToYearSeason(key) : Number(key)
     data.push({
       group: null,
-      x_label: xLabel,
+      [xAxisLabel]: xLabel,
       'Percentage (%)': pct,
       annotation: null,
       hover_text: [`${xLabel}`, `${pct}% of traffic stops on HIN`],
@@ -271,7 +273,7 @@ const q1A = computed(() => {
     figures: {
       barplot: {
         properties: {
-          xAxis: 'x_label',
+          xAxis: xAxisLabel,
           yAxis: 'Percentage (%)',
           title,
         },
