@@ -17,7 +17,6 @@ export function useReasonsCube() {
       const cube = await $fetch<Cube>('/cubes/reasons.json')
       return { cube }
     },
-    // Skip SSR — reasons cube is ~40 MB raw and would balloon __NUXT_DATA__.
     { server: false, lazy: true },
   )
 }

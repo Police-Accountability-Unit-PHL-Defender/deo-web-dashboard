@@ -52,7 +52,6 @@ export function useSafetyCube() {
       const cube = await $fetch<SafetyCube>('/cubes/safety.json')
       return { cube }
     },
-    // Skip SSR — safety cube inlines HIN geometry + maps; keep payload off SSR.
     { server: false, lazy: true },
   )
 }

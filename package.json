@@ -3,11 +3,14 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "nuxt build",
+    "build": "nuxt generate",
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
-    "postinstall": "nuxt prepare"
+    "postinstall": "nuxt prepare",
+    "test": "vitest run",
+    "e2e": "node e2e/parity.mjs",
+    "e2e:checks": "node e2e/parity.mjs --checks-only"
   },
   "devDependencies": {
     "@nuxt/devtools": "latest",

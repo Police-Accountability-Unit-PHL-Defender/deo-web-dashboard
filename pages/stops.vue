@@ -216,6 +216,13 @@ useHead({
   title: 'How many stops do police make, and who do they stop?',
 })
 
+// SEASON mapping mirrors deo_backend/models.py SEASON_QUARTER_MAPPING.
+const SEASON_LABEL = { Q1: 'Jan-Mar', Q2: 'Apr-Jun', Q3: 'July-Sep', Q4: 'Oct-Dec' }
+function seasonAndYear(qStr) {
+  const [year, q] = qStr.split('-')
+  return `${SEASON_LABEL[q]} ${year}`
+}
+
 const config = useRuntimeConfig()
 const mostRecentQuarter = Quarter.fromParamString(useState("mostRecentQuarter").value)
 const defaultStartQuarter = mostRecentQuarter.getPreviousQuarter().getPreviousQuarter().getPreviousQuarter()
@@ -243,11 +250,14 @@ watch(isTableShowingAll, (newValue) => {
 
 const { data: stopsBundle } = await useStopsCube()
 
+const firstQuarter = new Quarter(2014, 1)
+
 const q1A = computed(() => {
   const bundle = stopsBundle.value
   if (!bundle) return null
   const { cube, scalars } = bundle
   const loc = getLocationParam(selectedLocation.value)
+  const locStr = formatLocationForSentence(selectedLocation.value)
   const timeDim = selectedTimeGranularity.value // 'year' or 'quarter'
 
   const groups = groupSum(cube, 'quarter', 'n_stopped', { location: loc })
@@ -259,28 +269,34 @@ const q1A = computed(() => {
   const sorted = Array.from(rolled, ([key, value]) => ({ key, value })).sort((a, b) => a.key.localeCompare(b.key))
 
   const total = sumMeasure(cube, 'n_stopped', { location: loc })
-  const baseline = scalars['stops_baseline_2014_2018_avg_monthly']?.[loc] ?? null
-  const surge    = scalars['stops_2019_surge_avg_monthly']?.[loc] ?? null
-  const covid    = scalars['stops_covid_avg_monthly']?.[loc] ?? null
+  const baseline = scalars['stops_monthly_avg_2014_2018']?.[loc] ?? null
+  const surge    = scalars['stops_monthly_avg_2019']?.[loc] ?? null
+  const covid    = scalars['stops_monthly_avg_2020Q2_2021Q1']?.[loc] ?? null
+
+  const startStr = firstQuarter.getStartString()
+  const endStr   = mostRecentQuarter.getEndString()
+  const startYear = sorted.length ? sorted[0].key.slice(0,4) : '2014'
+  const endYear   = sorted.length ? sorted[sorted.length-1].key.slice(0,4) : String(mostRecentQuarter.year)
 
   const xAxisLabel = timeDim === 'year' ? 'Year' : 'Quarter'
   return {
     text: [
-      `From the start of 2014 through the most recent quarter, Philadelphia police made a total of <span>${total.toLocaleString()}</span> stops in this area.`,
-      baseline === null ? '' : `From 2014–2018, Philadelphia police made an average of <span>${baseline.toLocaleString()}</span> stops per month.`,
-      surge    === null ? '' : `During the 2019 surge, Philadelphia police made an average of <span>${surge.toLocaleString()}</span> stops per month.`,
-      covid    === null ? '' : `From April 2020 through March 2021 (pandemic), Philadelphia police made an average of <span>${covid.toLocaleString()}</span> stops per month.`,
+      `From the start of ${startStr} through the end of ${endStr}, Philadelphia police made a total of <span>${total.toLocaleString()}</span> traffic stops in ${locStr}.`,
+      `In ${locStr}:`,
+      baseline === null ? '' : `From the start of 2014 through the end of 2018, Philadelphia police made an average of <span>${Math.round(baseline).toLocaleString()}</span> traffic stops per month.`,
+      surge    === null ? '' : `During a surge in traffic stops in 2019, Philadelphia police made an average of <span>${Math.round(surge).toLocaleString()}</span> traffic stops per month.`,
+      covid    === null ? '' : `From the start of April 2020 through the end of March 2021 (pandemic), Philadelphia police made an average of <span>${Math.round(covid).toLocaleString()}</span> traffic stops per month.`,
     ],
     figures: {
       barplot: {
-        properties: { xAxis: xAxisLabel, yAxis: 'Number of Traffic Stops', title: `Number of PPD Stops` },
+        properties: { xAxis: xAxisLabel, yAxis: 'Number of Traffic Stops', title: `Number of PPD Traffic Stops in ${locStr} from ${startYear} through ${endYear}` },
         trendlines: [],
         data: sorted.map(({ key, value }) => ({
           group: null,
           [xAxisLabel]: key,
           'Number of Traffic Stops': value,
           annotation: null,
-          hover_text: [`${key}`, `${value.toLocaleString()} stops`],
+          hover_text: [`${key}`, `${value.toLocaleString()} traffic stops`],
         })),
       },
     },
@@ -295,24 +311,27 @@ const q1B = computed(() => {
   if (!bundle) return null
   const { cube } = bundle
   const loc = getLocationParam(selectedLocation.value)
+  const locStr = formatLocationForSentence(selectedLocation.value)
   const start = q1BQuarterStart.value.toParamString()
   const end   = q1BQuarterEnd.value.toParamString()
 
   const groups = groupSum(cube, 'quarter', 'n_stopped', { location: loc, startQuarter: start, endQuarter: end })
   const total = groups.reduce((s, g) => s + g.value, 0)
+  const months = Math.max(1, groups.length * 3)
+  const perMonth = Math.round(total / months)
 
   return {
-    text: [`Philadelphia police made <span>${total.toLocaleString()}</span> traffic stops.`],
+    text: [`Philadelphia police made an average of <span>${perMonth.toLocaleString()}</span> traffic stops per month in ${locStr}, totaling <span>${total.toLocaleString()}</span> traffic stops during that period.`],
     figures: {
       barplot: {
-        properties: { xAxis: 'Quarter', yAxis: 'Number of Traffic Stops', title: 'Number of PPD Stops by Quarter' },
+        properties: { xAxis: 'Quarter', yAxis: 'Number of Traffic Stops', title: 'Number of PPD Traffic Stops by Quarter' },
         trendlines: [],
         data: groups.map(({ key, value }) => ({
           group: null,
           Quarter: key,
           'Number of Traffic Stops': value,
           annotation: null,
-          hover_text: [key, `${value.toLocaleString()} stops`],
+          hover_text: [key, `${value.toLocaleString()} traffic stops`],
         })),
       },
     },
@@ -325,24 +344,33 @@ const q1C = computed(() => {
   if (!bundle) return null
   const { cube } = bundle
   const loc = getLocationParam(selectedLocation.value)
+  const locStr = formatLocationForSentence(selectedLocation.value)
   const wantedQuarters = new Set(q1CQuarters.value.map(q => getQuarterParam(q))) // ['Q1', 'Q3', ...]
+
+  const seasonStr = q1CQuarters.value.join(', ')
+  // Graph.vue reads each row's x value by `axisProperties.x`, so the data key
+  // has to be the display label itself.
+  const xAxisLabel = `Times of Year: ${seasonStr}`
 
   const groups = groupSum(cube, 'quarter', 'n_stopped', { location: loc })
   const filtered = groups
     .filter(g => wantedQuarters.has(g.key.slice(-2))) // 'YYYY-QN' → 'QN'
     .map(({ key, value }) => ({
       group: key.slice(-2),
-      Year: key.slice(0, 4),
+      [xAxisLabel]: key.slice(0, 4),
       'Number of Traffic Stops': value,
       annotation: null,
-      hover_text: [key, `${value.toLocaleString()} stops`],
+      hover_text: [key, `${value.toLocaleString()} traffic stops`],
     }))
+
+  const startYear = filtered.length ? filtered[0][xAxisLabel] : '2014'
+  const endYear   = filtered.length ? filtered[filtered.length-1][xAxisLabel] : String(mostRecentQuarter.year)
 
   return {
     text: [],
     figures: {
       barplot: {
-        properties: { xAxis: 'Year', yAxis: 'Number of Traffic Stops', title: 'Stops by Quarter Across Years' },
+        properties: { xAxis: xAxisLabel, yAxis: 'Number of Traffic Stops', title: `Number of PPD Traffic Stops in ${locStr} for ${seasonStr} from ${startYear} through ${endYear}` },
         trendlines: [],
         data: filtered,
       },
@@ -360,29 +388,57 @@ const DEMO_DIM_MAP = {
   'race': 'race',
 }
 
+// Order-of-group lists mirror DemographicCategory.order_of_group. groupSum
+// returns keys alphabetically, which would put "All Other Races" first.
+const RACE_ORDER = ['Asian', 'Black', 'Latino', 'White', 'All Other Races']
+const GENDER_ORDER = ['Male', 'Female']
+const AGE_ORDER = ['Under 25', '25-34', '35-44', '45-54', '55-64', '65+']
+
+function demoOrder(dimName) {
+  if (dimName === 'race') return RACE_ORDER
+  if (dimName === 'gender') return GENDER_ORDER
+  if (dimName === 'age_range') return AGE_ORDER
+  return null
+}
+
 const q2A = computed(() => {
   const bundle = stopsBundle.value
   if (!bundle) return null
   const { cube } = bundle
   const loc = getLocationParam(selectedLocation.value)
+  const locStr = formatLocationForSentence(selectedLocation.value)
   const start = q1BQuarterStart.value.toParamString()
   const end   = q1BQuarterEnd.value.toParamString()
   const dim = DEMO_DIM_MAP[getDemographicGroupParam(q2ADemographicCategory.value)]
+  const dimLabel = { age_range: 'Age Range', gender: 'Gender', race: 'Race' }[dim] || dim
 
-  const groups = groupSum(cube, dim, 'n_stopped', { location: loc, startQuarter: start, endQuarter: end })
+  const order = demoOrder(dim)
+  const unordered = groupSum(cube, dim, 'n_stopped', { location: loc, startQuarter: start, endQuarter: end })
+  const groups = order
+    ? order.filter(k => unordered.some(g => g.key === k)).map(k => unordered.find(g => g.key === k))
+    : unordered
+  const total = groups.reduce((s, g) => s + g.value, 0)
+  const withPct = groups.map(({ key, value }) => ({
+    key,
+    pct: total === 0 ? 0 : Math.round((value / total) * 1000) / 10,
+    value,
+  }))
+
+  const startStr = q1BQuarterStart.value.getStartString()
+  const endStr   = q1BQuarterEnd.value.getEndString()
 
   return {
     text: [],
     figures: {
       barplot: {
-        properties: { xAxis: dim, yAxis: 'Number of Traffic Stops', title: `Stops by ${dim}` },
+        properties: { xAxis: dimLabel, yAxis: 'Percentage (%)', title: `Percent of PPD Traffic Stops in ${locStr} by ${dimLabel} from ${startStr} through ${endStr}` },
         trendlines: [],
-        data: groups.map(({ key, value }) => ({
+        data: withPct.map(({ key, pct, value }) => ({
           group: null,
-          [dim]: key,
-          'Number of Traffic Stops': value,
+          [dimLabel]: key,
+          'Percentage (%)': pct,
           annotation: null,
-          hover_text: [key, `${value.toLocaleString()} stops`],
+          hover_text: [key, `${pct}% of traffic stops`],
         })),
       },
     },
@@ -414,9 +470,11 @@ const q2B = computed(() => {
 
   const top = withPct[0]
   const locationStr = formatLocationForSentence(selectedLocation.value)
-  const title = `Demographic Groups Stopped by PPD in ${locationStr} from ${start} through ${end}`
+  const startStr = q1BQuarterStart.value.getStartString()
+  const endStr   = q1BQuarterEnd.value.getEndString()
+  const title = `Demographic Groups Stopped by PPD in ${locationStr} from ${startStr} through ${endStr}`
   const sentence = top
-    ? `Philadelphia police most frequently stopped <span>${String(top.Race).toLowerCase().replace(/(^|\s)\S/g, c => c.toUpperCase())} ${String(top.Gender).toLowerCase()} ${top['Age Range']}</span> year old drivers in ${locationStr} from ${start} through ${end}, or <span>${top['% of traffic stops']}%</span> of stops.`
+    ? `Philadelphia police most frequently stopped <span>${String(top.Race).toLowerCase().replace(/(^|\s)\S/g, c => c.toUpperCase())} ${String(top.Gender).toLowerCase()} ${top['Age Range']}</span> year old drivers in ${locationStr} from the start of ${startStr} through the end of ${endStr}, or <span>${top['% of traffic stops'].toFixed(1)}%</span> of stops.`
     : ''
 
   return {
@@ -435,32 +493,49 @@ const q2C = computed(() => {
   const start = q1BQuarterStart.value.toParamString()
   const end   = q1BQuarterEnd.value.toParamString()
 
-  const sumGroup = (ages, genders, races) =>
-    sumMeasure(cube, 'n_stopped', {
+  // Both groups are broken out by quarter and drawn as a grouped bar series,
+  // mirroring group_comparison.py (groupby ["group", "quarter"], x="season").
+  const quartersFor = (ages, genders, races) =>
+    groupSum(cube, 'quarter', 'n_stopped', {
       location: loc, startQuarter: start, endQuarter: end,
       race: races.length ? races : undefined,
       gender: genders.length ? genders : undefined,
       ageRange: ages.length ? ages : undefined,
     })
 
-  const g1 = sumGroup(q2CGroup1AgeRange.value, q2CGroup1Gender.value, q2CGroup1Race.value)
-  const g2 = sumGroup(q2CGroup2AgeRange.value, q2CGroup2Gender.value, q2CGroup2Race.value)
-  const ratio = g2 === 0 ? null : g1 / g2
+  const series = [
+    { name: 'Group 1', rows: quartersFor(q2CGroup1AgeRange.value, q2CGroup1Gender.value, q2CGroup1Race.value) },
+    { name: 'Group 2', rows: quartersFor(q2CGroup2AgeRange.value, q2CGroup2Gender.value, q2CGroup2Race.value) },
+  ]
 
+  // groupSum sorts by 'YYYY-QN', which is already chronological.
+  const allQuarters = Array.from(new Set(series.flatMap(s => s.rows.map(r => r.key)))).sort()
+  const data = []
+  for (const q of allQuarters) {
+    const season = seasonAndYear(q)
+    for (const s of series) {
+      const hit = s.rows.find(r => r.key === q)
+      if (!hit) continue
+      data.push({
+        group: s.name,
+        Quarter: season,
+        'Number of Traffic Stops': hit.value,
+        annotation: null,
+        hover_text: [s.name, season, `${hit.value.toLocaleString()} traffic stops`],
+      })
+    }
+  }
+
+  const locStr = formatLocationForSentence(selectedLocation.value)
+  const startStr = q1BQuarterStart.value.getStartString()
+  const endStr   = q1BQuarterEnd.value.getEndString()
   return {
-    text: [
-      `Group 1 was stopped <span>${g1.toLocaleString()}</span> times.`,
-      `Group 2 was stopped <span>${g2.toLocaleString()}</span> times.`,
-      ratio === null ? '' : `Group 1 was stopped <span>${ratio.toFixed(2)}×</span> as often as Group 2.`,
-    ],
+    text: [],
     figures: {
       barplot: {
-        properties: { xAxis: 'Group', yAxis: 'Number of Traffic Stops', title: 'Group Comparison' },
+        properties: { xAxis: 'Quarter', yAxis: 'Number of Traffic Stops', title: `Number of PPD Traffic Stops in ${locStr}, Comparing Group 1 to Group 2, from ${startStr} through ${endStr}` },
         trendlines: [],
-        data: [
-          { group: 'Group 1', Group: 'Group 1', 'Number of Traffic Stops': g1, annotation: null, hover_text: ['Group 1', `${g1.toLocaleString()} stops`] },
-          { group: 'Group 2', Group: 'Group 2', 'Number of Traffic Stops': g2, annotation: null, hover_text: ['Group 2', `${g2.toLocaleString()} stops`] },
-        ],
+        data,
       },
     },
     tables: {}, geojsons: [], data: {},

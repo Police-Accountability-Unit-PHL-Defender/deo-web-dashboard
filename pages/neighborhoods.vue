@@ -764,7 +764,7 @@ const q3B = computed(() => {
     return { district: dCode, value }
   })
 
-  const districtsInTitle = englishCommaSeparated(districtRows.map(r => `District ${r.district}`))
+  const districtsInTitle = englishCommaSeparated(districtRows.map(r => r.district))
   const dateRangeStr = `${quarterStartStr(start)} through ${quarterEndStr(end)}`
 
   return {

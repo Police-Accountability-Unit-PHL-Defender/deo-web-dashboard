@@ -45,5 +45,22 @@ export default defineNuxtConfig({
     }
   },
 
+  // Fully static deploy. Each route is prerendered once at build time and
+  // served as plain HTML from the CDN — no per-request server work. Cube
+  // data is fetched client-side (see composables/use*Cube) so the static
+  // HTML stays small.
+  nitro: {
+    preset: 'static',
+  },
+
+  runtimeConfig: {
+    public: {
+      // Set by the e2e parity harness via NUXT_PUBLIC_PINNED_MOST_RECENT_QUARTER
+      // (e.g. '2026-Q1') so a local build can be diffed against a production
+      // site built in an earlier quarter. Empty in every real deploy.
+      pinnedMostRecentQuarter: '',
+    },
+  },
+
   compatibilityDate: '2025-03-04'
 })

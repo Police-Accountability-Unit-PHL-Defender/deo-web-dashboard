@@ -22,8 +22,9 @@ export function useStopsCube() {
       ])
       return { cube, scalars }
     },
-    // Skip SSR fetch: the cube is multi-MB and would balloon __NUXT_DATA__.
-    // Client fetches once on mount; templates guard with v-if while pending.
+    // Client-only: skip prerender/SSR fetch so cube data does NOT land in
+    // __NUXT_DATA__ (avoids multi-MB page HTML). Page renders an empty
+    // skeleton until the cube fetch resolves and computeds populate.
     { server: false, lazy: true },
   )
 }

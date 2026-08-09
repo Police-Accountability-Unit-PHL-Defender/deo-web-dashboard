@@ -21,9 +21,9 @@ export interface DistrictDemographics {
 export type DistrictsDemographics = Record<string, DistrictDemographics>
 
 export function useDistrictsDemographics() {
-  return useAsyncData<DistrictsDemographics>('districts-demographics', () => {
-    const event = typeof useRequestEvent === 'function' ? useRequestEvent() : null
-    const origin = event ? `http://${event.node.req.headers.host}` : ''
-    return $fetch<DistrictsDemographics>(`${origin}/cubes/districts.json`)
-  })
+  return useAsyncData<DistrictsDemographics>(
+    'districts-demographics',
+    () => $fetch<DistrictsDemographics>('/cubes/districts.json'),
+    { server: false, lazy: true },
+  )
 }
