@@ -50,4 +50,14 @@ describe('buildAnnualSummary', () => {
     )
     expect(row.hover_text).toEqual(['Asian', '2.9% of traffic stops'])
   })
+
+  it('keeps a trailing .0 on whole-number hover percentages', () => {
+    // Regression: hover text must be formatted like Python's `:.1f`, not a
+    // plain number interpolation, so a whole-number percentage doesn't lose
+    // its decimal (e.g. "68%" instead of "68.0%").
+    const after = s.figures.barplot2.data.filter((d) => d.group === '% after Driving Equality')
+    const black = after.find((d) => d.Race === 'Black')
+    expect(black?.['Percentage (%)']).toBe(68)
+    expect(black?.hover_text).toEqual(['After Driving Equality', 'Black', '68.0% of traffic stops'])
+  })
 })

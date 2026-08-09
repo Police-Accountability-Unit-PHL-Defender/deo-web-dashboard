@@ -59,6 +59,18 @@ Requires [uv](https://docs.astral.sh/uv/). The pipeline lives in `pipeline/`;
 The most recent quarter is inferred from `summary.json` inside the zip (the
 last full quarter before `last_dt`).
 
+**If that inferred quarter is wrong**, `pipeline/update_db.py` still has a
+`--most-recent-quarter-override` flag. This bypasses `npm run update-data`
+entirely — run stage 1 directly instead:
+
+```bash
+cd pipeline
+uv run python update_db.py --zip car_ped_stops_2026-10-20T03_45_06.zip --most-recent-quarter-override 2026-Q2
+```
+
+Then pick back up at stage 2 (`build_cubes.py`) by hand, or point
+`update-data.mjs` at the resulting `.db` if you'd rather resume there.
+
 One thing that has bitten us here:
 
 - **CSV names change between backup versions.** Files used to be

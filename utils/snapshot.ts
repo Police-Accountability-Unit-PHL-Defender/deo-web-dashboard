@@ -16,8 +16,11 @@ const RACE_ORDER = ['Asian', 'Black', 'Latino', 'White', 'All Other Races'] as c
  * Philadelphia population by race, 2020 Census.
  *
  * Source: ssuffian/censusify-philly -> csvs/police_service_area.csv, summed
- * across all 65 PSAs. Static; unaffected by a quarterly data update.
- * See pipeline/ASSETS.md for how to regenerate.
+ * across all 66 PSAs (one row per PSA_NUM in
+ * pipeline/data/demographics/police_service_area.csv). Static; unaffected by
+ * a quarterly data update. `All Other Races` is the sum of that CSV's
+ * `american_indian` and `unknown` columns. See pipeline/ASSETS.md for how to
+ * regenerate.
  */
 const POPULATION_BY_RACE: Record<string, number> = {
   Asian: 132987,
@@ -99,11 +102,11 @@ export function buildAnnualSummary(cube: Cube, mostRecentQuarter: Quarter): Annu
     data: [
       ...RACE_ORDER.map((r) => {
         const pct = round1(((stopsByRace[r] ?? 0) / stopsTotal) * 100)
-        return pctRow('% of traffic stops', r, pct, [r, `${pct}% of traffic stops`])
+        return pctRow('% of traffic stops', r, pct, [r, `${pct.toFixed(1)}% of traffic stops`])
       }),
       ...RACE_ORDER.map((r) => {
         const pct = round1((POPULATION_BY_RACE[r] / popTotal) * 100)
-        return pctRow('% of city population', r, pct, [r, `${pct}% of city population`])
+        return pctRow('% of city population', r, pct, [r, `${pct.toFixed(1)}% of city population`])
       }),
     ],
   }
@@ -120,18 +123,18 @@ export function buildAnnualSummary(cube: Cube, mostRecentQuarter: Quarter): Annu
       ...RACE_ORDER.map((r) => {
         const pct = round1(((beforeByRace[r] ?? 0) / beforeTotal) * 100)
         return pctRow('% before Driving Equality', r, pct, [
-          'Before Driving Equality', r, `${pct}% of traffic stops`,
+          'Before Driving Equality', r, `${pct.toFixed(1)}% of traffic stops`,
         ])
       }),
       ...RACE_ORDER.map((r) => {
         const pct = round1(((afterByRace[r] ?? 0) / afterTotal) * 100)
         return pctRow('% after Driving Equality', r, pct, [
-          'After Driving Equality', r, `${pct}% of traffic stops`,
+          'After Driving Equality', r, `${pct.toFixed(1)}% of traffic stops`,
         ])
       }),
       ...RACE_ORDER.map((r) => {
         const pct = round1((POPULATION_BY_RACE[r] / popTotal) * 100)
-        return pctRow('% of city population', r, pct, [r, `${pct}% of city population`])
+        return pctRow('% of city population', r, pct, [r, `${pct.toFixed(1)}% of city population`])
       }),
     ],
   }

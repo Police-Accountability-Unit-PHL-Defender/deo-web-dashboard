@@ -31,6 +31,17 @@ if (!existsSync(join(PIPELINE, 'data', zip))) {
   console.error(`Not found: pipeline/data/${zip}`)
   process.exit(2)
 }
+// update_db_models.py also opens this second, hardcoded archive as the 2022
+// mvc_code override (most 2022 mvc_codes were removed from Open Data Philly
+// in Jan 2025). It is not the --zip argument, so it is easy to have the main
+// backup but not this one; without it, stage 1 fails ~25 minutes in.
+const MVC_OVERRIDE_ZIP = 'car_ped_stops_2024-10-24T01_17_41.zip'
+if (!existsSync(join(PIPELINE, 'data', MVC_OVERRIDE_ZIP))) {
+  console.error(`Not found: pipeline/data/${MVC_OVERRIDE_ZIP}`)
+  console.error('This is the 2022 mvc_code override zip that update_db_models.py')
+  console.error('hardcodes for car_ped_stops/2022; it is required in addition to --zip.')
+  process.exit(2)
+}
 
 const run = (cmd, args, cwd) =>
   execFileSync(cmd, args, { cwd, stdio: 'inherit', encoding: 'utf8' })
@@ -49,9 +60,11 @@ const qkey = (q) => { const [y, n] = q.split('-Q'); return Number(y) * 10 + Numb
 // space or comma, so it is safe as the join separator for row-key lookups.
 const SEP = ''
 let historicalChanges = 0
-for (const topic of ['stops', 'reasons']) {
-  const oldCube = JSON.parse(readFileSync(join(CUBES, `${topic}.json`), 'utf8'))
-  const newCube = JSON.parse(readFileSync(join(staging, `${topic}.json`), 'utf8'))
+// Diffs one quarter-keyed cube (top-level {dimensions, rows} shape) and logs
+// a one-line summary. Counts historical cells that moved, including rows
+// ADDED in an already-published quarter, which a walk over only the old
+// cube's keys would never see (there is no key in `a` to trigger it).
+function diffCube(label, oldCube, newCube) {
   const nd = oldCube.dimensions.length
   const qi = oldCube.dimensions.indexOf('quarter')
   const index = (c) => {
@@ -68,9 +81,28 @@ for (const topic of ['stops', 'reasons']) {
     if (qkey(k.split(SEP)[qi]) >= cutoff) continue
     if (b.get(k) !== v) changed += 1
   }
+  for (const k of b.keys()) {
+    if (a.has(k)) continue
+    if (qkey(k.split(SEP)[qi]) >= cutoff) continue
+    changed += 1
+  }
   historicalChanges += changed
   const added = newQuarters.length ? ` + ${newQuarters.sort().join(', ')} added` : ' no new quarter'
-  console.log(`      ${topic}:${added}, ~ ${changed} historical cells changed`)
+  console.log(`      ${label}:${added}, ~ ${changed} historical cells changed`)
+}
+
+for (const topic of ['stops', 'reasons']) {
+  const oldCube = JSON.parse(readFileSync(join(CUBES, `${topic}.json`), 'utf8'))
+  const newCube = JSON.parse(readFileSync(join(staging, `${topic}.json`), 'utf8'))
+  diffCube(topic, oldCube, newCube)
+}
+// safety.json's top level (version/hin/hin_map/shootings_vs_stops) is not
+// itself quarter-keyed, but its `hin` sub-cube is, and safety.json is
+// overwritten below like every other topic, so diff that sub-cube too.
+{
+  const oldSafety = JSON.parse(readFileSync(join(CUBES, 'safety.json'), 'utf8'))
+  const newSafety = JSON.parse(readFileSync(join(staging, 'safety.json'), 'utf8'))
+  diffCube('safety.hin', oldSafety.hin, newSafety.hin)
 }
 if (historicalChanges > 0) {
   console.log(`\n      NOTE: ${historicalChanges} historical cells moved. Expected only if`)
