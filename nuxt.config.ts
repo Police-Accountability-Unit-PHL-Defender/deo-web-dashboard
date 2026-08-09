@@ -53,5 +53,14 @@ export default defineNuxtConfig({
     preset: 'static',
   },
 
+  runtimeConfig: {
+    public: {
+      // Set by the e2e parity harness via NUXT_PUBLIC_PINNED_MOST_RECENT_QUARTER
+      // (e.g. '2026-Q1') so a local build can be diffed against a production
+      // site built in an earlier quarter. Empty in every real deploy.
+      pinnedMostRecentQuarter: '',
+    },
+  },
+
   compatibilityDate: '2025-03-04'
 })
