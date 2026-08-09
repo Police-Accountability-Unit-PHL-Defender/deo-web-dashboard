@@ -32,3 +32,7 @@ pipeline/data/*.db
 
 # uv virtual environment for the pipeline project
 pipeline/.venv
+
+# Python bytecode and test caches from pipeline/
+__pycache__/
+.pytest_cache/
