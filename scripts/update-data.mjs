@@ -45,6 +45,8 @@ run('uv', ['run', 'python', 'build_cubes.py', '--db', join('data', dbName), '--o
 
 console.log('\n[3/4] Diffing against the published cubes')
 const qkey = (q) => { const [y, n] = q.split('-Q'); return Number(y) * 10 + Number(n) }
+// SOH (\x01): cannot occur inside a dimension or measure value, unlike a
+// space or comma, so it is safe as the join separator for row-key lookups.
 const SEP = ''
 let historicalChanges = 0
 for (const topic of ['stops', 'reasons']) {
