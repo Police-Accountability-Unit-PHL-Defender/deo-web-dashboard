@@ -11,6 +11,7 @@ import argparse
 import re
 import sqlite3
 import zipfile
+from contextlib import closing
 from pathlib import Path
 
 import pandas as pd
@@ -63,7 +64,24 @@ def build_veil_table(zip_path: Path, db_path: Path, years: list[int] | None = No
             with zf.open(name) as fh:
                 # Non-MVC rows are kept through the rollup and dropped by
                 # apply_paper_restrictions, which needs them to decide is_mvc.
-                df = pd.read_csv(fh, usecols=USE_COLS, low_memory=False)
+                #
+                # mvc_code needs a converter: the literal string "NA" is a
+                # real value in this column, meaning "genuine MVC stop whose
+                # specific code went unrecorded" (stoptype='vehicle',
+                # mvc_reason='Other'). It is NOT the same as a true blank
+                # (no reason recorded at all). pandas' default NA-sentinel
+                # handling treats the string "NA" as null and silently
+                # coerces it to NaN, which makes is_mvc come out False and
+                # drops ~11% of the analytic sample. The converter bypasses
+                # that sentinel handling for this column only, so "NA"
+                # survives as a string. Do not "clean this up" by removing
+                # the converter.
+                df = pd.read_csv(
+                    fh,
+                    usecols=USE_COLS,
+                    low_memory=False,
+                    converters={"mvc_code": lambda v: v},
+                )
             df["datetimeoccur"] = pd.to_datetime(df.datetimeoccur, utc=True)
             df["ts_local"] = (
                 df.datetimeoccur.dt.tz_convert("America/New_York").dt.tz_localize(None)
@@ -78,8 +96,9 @@ def build_veil_table(zip_path: Path, db_path: Path, years: list[int] | None = No
     out["ts_local"] = out.ts_local.astype(str)
     out["stop_date"] = out.stop_date.astype(str)
 
-    with sqlite3.connect(str(db_path)) as conn:
-        out.to_sql(TABLE, conn, if_exists="replace", index=False)
+    with closing(sqlite3.connect(str(db_path))) as conn:
+        with conn:
+            out.to_sql(TABLE, conn, if_exists="replace", index=False)
     return len(out)
 
 
