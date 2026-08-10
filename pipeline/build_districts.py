@@ -25,21 +25,31 @@ DEFAULT_OUT = REPO_ROOT.parent / "public" / "cubes" / "districts.json"
 FIELDS = ("total", "white", "black")
 
 
-def build() -> dict:
+def build(psa_csv: Path = PSA_CSV, geo_csv: Path = GEO_CSV) -> dict:
     psa_to_district = {}
-    with GEO_CSV.open() as fh:
+    with geo_csv.open() as fh:
         for row in csv.DictReader(fh):
             psa_to_district[row["full_psa_num"]] = row["district"]
 
     totals = defaultdict(lambda: dict.fromkeys(FIELDS, 0))
-    with PSA_CSV.open() as fh:
+    unmatched = []
+    with psa_csv.open() as fh:
         for row in csv.DictReader(fh):
             district = psa_to_district.get(row["PSA_NUM"])
             if district is None:
+                unmatched.append(row["PSA_NUM"])
                 continue
             code = district.zfill(2)
             for field in FIELDS:
                 totals[code][field] += int(row[field])
+
+    if unmatched:
+        raise ValueError(
+            "PSA_NUM(s) in police_service_area.csv have no entry in the "
+            "police_geographies.csv crosswalk, so their population would be "
+            "silently dropped from the district totals: "
+            + ", ".join(unmatched)
+        )
 
     out = {}
     for code in sorted(totals):

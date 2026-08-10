@@ -38,13 +38,13 @@ reverse-engineer provenance from code comments.
   poetry run python src/censusify_philly/police_geographies.py generate-csvs
   cp csvs/police_service_area.csv ../pipeline/data/demographics/
   ```
-- Read by: `build_districts.py` at build time, plus one hand-maintained artifact:
-  - `public/cubes/districts.json` — PSA rows aggregated to district, with
-    `total`, `white`, `black` and `whiteness`. Regenerate with
-    `uv run python build_districts.py`. Verified: PSAs 011 + 012 sum to
-    district 01's total 38405 / white 20664 / 53.8%.
-  - `POPULATION_BY_RACE` in `utils/snapshot.ts` — the five citywide totals.
-    Still hand-maintained; update it by hand if this CSV changes.
+- Read by: `build_districts.py` at build time, which generates
+  `public/cubes/districts.json` — PSA rows aggregated to district, with
+  `total`, `white`, `black` and `whiteness`. Regenerate with
+  `uv run python build_districts.py`. Verified: PSAs 011 + 012 sum to
+  district 01's total 38405 / white 20664 / 53.8%.
+  - `POPULATION_BY_RACE` in `utils/snapshot.ts` — the five citywide totals —
+    remains hand-maintained; update it by hand if this CSV changes.
 - Verified 2026-08-09: byte-identical to upstream.
 
 ## data/demographics/police_geographies.csv — PSA/district/division crosswalk
