@@ -198,9 +198,14 @@ const drawGraph = (graphData) => {
         //    "from this x onward", i.e. all of it is provisional. Dash the
         //    whole series rather than rendering it solid, which would
         //    misrepresent provisional data as settled.
-        //  - Anywhere else (dashIndex > 0): solid up to and including that
-        //    point, plus a dashed path starting one point earlier so the
-        //    two paths share a point and join visually.
+        //  - Anywhere else (dashIndex > 0): solid up to but NOT including
+        //    that point, plus a dashed path starting one point earlier so
+        //    the two paths meet at the point before the boundary and the
+        //    line reads continuous. The boundary point itself belongs to
+        //    the dashed path only — if it were on both paths, the solid
+        //    path would draw a solid line directly under the dashed one in
+        //    the same colour, and a 4-4 dash over an identical solid line
+        //    renders as solid, hiding the partial-year cue entirely.
         if (dashIndex === -1) {
           svg.append('path')
             .datum(sorted)
@@ -217,7 +222,7 @@ const drawGraph = (graphData) => {
             .attr('stroke-dasharray', '4 4')
             .attr('d', line)
         } else {
-          const solidPoints = sorted.slice(0, dashIndex + 1)
+          const solidPoints = sorted.slice(0, dashIndex)
           const dashedPoints = sorted.slice(dashIndex - 1)
 
           svg.append('path')

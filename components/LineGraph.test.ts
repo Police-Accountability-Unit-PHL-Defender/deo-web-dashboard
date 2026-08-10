@@ -95,14 +95,17 @@ describe('LineGraph', () => {
 
       const solidCoords = pathCoords(solidPath.attributes('d'))
       const dashedCoords = pathCoords(dashedPath.attributes('d'))
-      // Solid spans all three years (2022, 2023, 2024); dashed spans only
-      // the trailing two (2023, 2024) — a real split, not the same path
-      // relabeled, and not the split inverted.
-      expect(solidCoords).toHaveLength(3)
+      // Solid spans up to but NOT including the boundary (2022, 2023);
+      // dashed spans the boundary and the point before it (2023, 2024). The
+      // boundary point (2024) belongs to the dashed path ONLY — if it were
+      // drawn on both, the solid path would render a solid line directly
+      // under the dashed one in the same colour, and a 4-4 dash over an
+      // identical solid line renders as solid, hiding the partial-year cue.
+      expect(solidCoords).toHaveLength(2)
       expect(dashedCoords).toHaveLength(2)
-      // The dashed path's first point must be the solid path's
-      // second-to-last point, so the two paths share it and join visually.
-      expect(dashedCoords[0]).toEqual(solidCoords[solidCoords.length - 2])
+      // The dashed path's first point must be the solid path's last point,
+      // so the two paths share it and the line reads continuous.
+      expect(dashedCoords[0]).toEqual(solidCoords[solidCoords.length - 1])
     }
   })
 
