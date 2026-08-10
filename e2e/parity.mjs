@@ -137,22 +137,57 @@ function renderText(session, url, { tries = 12, settleMs = 1200 } = {}) {
 
   const consoleLogs = ab('console', '--json')
   const pageErrors = ab('errors', '--json')
-  const errors = [...parseErrorEntries(consoleLogs, 'error'), ...parseErrorEntries(pageErrors)]
+  const errors = [
+    ...parseErrorEntries(consoleLogs, ['messages', 'entries', 'logs'], 'error'),
+    ...parseErrorEntries(pageErrors, ['errors', 'entries', 'logs']),
+  ]
 
   return { text: text ?? '', errors }
 }
 
-/** Best-effort parse of agent-browser's --json console/errors output into short strings. */
-function parseErrorEntries(json, onlyType) {
+/**
+ * Parse agent-browser's `--json` console/errors output into short strings.
+ *
+ * agent-browser 0.27.2 wraps its payload as
+ * `{ success, data: { messages: [...] } }` for `console --json` and
+ * `{ success, data: { errors: [...] } }` for `errors --json` — not a bare
+ * array, and not `entries`/`logs`. `expectedKeys` lists the array key(s) to
+ * look for on `data` (or on the top-level object, for robustness), in
+ * preference order.
+ *
+ * If the shape doesn't match anything expected, that means the CLI's output
+ * contract moved, not that there were no errors — returning `[]` in that case
+ * would make the check pass unconditionally, which is worse than no check at
+ * all. So an unrecognized shape or a JSON parse failure produces a
+ * *synthetic* error entry describing the problem, which fails the "no
+ * console/page errors" check loudly instead of silently.
+ */
+function parseErrorEntries(json, expectedKeys, onlyType) {
+  let parsed
   try {
-    const parsed = JSON.parse(json)
-    const entries = Array.isArray(parsed) ? parsed : parsed.entries || parsed.logs || []
-    return entries
-      .filter((e) => !onlyType || e.type === onlyType)
-      .map((e) => String(e.text ?? e.message ?? e).slice(0, 200))
-  } catch {
-    return []
+    parsed = JSON.parse(json)
+  } catch (err) {
+    return [`could not parse agent-browser --json output: ${err.message}`]
   }
+
+  let items
+  if (Array.isArray(parsed)) {
+    items = parsed
+  } else {
+    const data = (parsed && typeof parsed === 'object' && parsed.data && typeof parsed.data === 'object')
+      ? parsed.data
+      : parsed
+    const key = data && typeof data === 'object' ? expectedKeys.find((k) => Array.isArray(data[k])) : null
+    if (!key) {
+      const gotKeys = data && typeof data === 'object' ? Object.keys(data).join(', ') : typeof data
+      return [`unrecognized agent-browser --json payload shape (expected one of [${expectedKeys.join(', ')}], got keys: ${gotKeys})`]
+    }
+    items = data[key]
+  }
+
+  return items
+    .filter((e) => !onlyType || e.type === onlyType)
+    .map((e) => String(e.text ?? e.message ?? e).slice(0, 200))
 }
 
 // ------------------------------------------------------------------- diffing
