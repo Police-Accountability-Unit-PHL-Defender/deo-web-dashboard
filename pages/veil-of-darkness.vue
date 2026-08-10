@@ -236,13 +236,13 @@
                 <p class="text-caption text-neutral-800 pt-4 px-4 max-w-[860px] mx-auto">
                   Stops of young Black male motorists (ages 18&ndash;29), 2021&ndash;2024, in 15-minute clock-time bins.
                   Counted <strong>per stop</strong>: each stop counts once regardless of how many people were in the
-                  car, which mirrors what the models below predict. {{ chart4.suppressedBars }} bars are not shown. The
-                  sample window starts at 5:08pm and ends at 8:35pm, so the earliest dark bin and the latest daylight bin
-                  are clipped and rest on very few stops &mdash; {{ chart4.suppressedSummary }}. Percentages built on that few stops
-                  swing widely enough to stretch the chart's vertical scale and flatten the real differences, so any
-                  clock time with fewer than {{ MIN_BIN_STOPS }} stops on either side of the veil is left out here.
-                  Hover any bar for its own stop count. The models below use every stop, including the ones behind the
-                  two omitted bins.
+                  car, which mirrors what the models below predict. {{ chart4.suppressedBins }} clock times are not
+                  shown. The sample window starts at 5:08pm and ends at 8:35pm, so the earliest dark bin and the latest
+                  daylight bin are clipped and rest on very few stops &mdash; {{ chart4.suppressedSummary }}. Percentages
+                  built on that few stops swing widely enough to stretch the chart's vertical scale and flatten the real
+                  differences, so any clock time with fewer than {{ MIN_BIN_STOPS }} stops on either side of the veil is
+                  left out here. Hover any bar for its own stop count. The models below use every stop, including the
+                  ones behind the omitted clock times.
                 </p>
               </template>
             </Graph>
@@ -378,7 +378,7 @@
               <template v-if="areaOtherShares.headlineMax !== null">In the two rows above the placebo, collapsing costs
               little: areas holding just {{ areaOtherShares.headlineMax.toFixed(1) }}% of stops or fewer end up in that
               &ldquo;other&rdquo; bucket, so the location control is doing real work.</template>
-              <template v-if="areaOtherShares.placebo !== null && placebo2">The placebo row is the exception, and it is
+              <template v-if="areaOtherShares.placebo !== null && placebo2">&#32;The placebo row is the exception, and it is
               worth being blunt about: its {{ placebo2.n.toLocaleString() }} stops of young white men are spread across
               dozens of service areas, so areas holding
               {{ areaOtherShares.placebo.toFixed(0) }}% of those stops fall below the threshold and lose
@@ -420,10 +420,10 @@
             <!-- Tooltip renders a <div>, which the HTML parser would hoist out of a <p>. -->
             <div class="text-body-4 mt-6">
               <strong>Philadelphia's segregation strains any cross-race comparison.</strong>
-              <template v-if="blackStopsInMajorityWhiteDistricts !== null">In our sample, only
+              <template v-if="blackStopsInMajorityWhiteDistricts !== null">&#32;In our sample, only
               {{ blackStopsInMajorityWhiteDistricts.toFixed(1) }}% of stops of young Black men happened in a
               majority-white police district<Tooltip term="District"/> &mdash; one where more than half of residents are
-              white.</template><template v-else>Very few stops of young Black men happen in majority-white police
+              white.</template><template v-else>&#32;Very few stops of young Black men happen in majority-white police
               districts<Tooltip term="District"/>.</template> So comparing Black
               and white motorists always means comparing different places as well as different people. That is why the
               paper's within-race test matters most: it holds race constant, compares young Black men with young Black
@@ -431,10 +431,10 @@
             </div>
             <p class="text-body-4 mt-6">
               <strong>Recorded stop times are rounded.</strong>
-              <template v-if="timeRounding">In our sample,
+              <template v-if="timeRounding">&#32;In our sample,
               {{ timeRounding.pct_multiple_of_5.toFixed(0) }}% of recorded stop times fall on a multiple of five minutes
               and {{ timeRounding.pct_multiple_of_15.toFixed(0) }}% on a quarter hour, far more than chance would
-              produce (20% and 6.7%).</template><template v-else>Officers log times in round numbers far more often than
+              produce (20% and 6.7%).</template><template v-else>&#32;Officers log times in round numbers far more often than
               chance would produce.</template> A stop logged at 7:30pm may therefore have happened somewhat earlier or
               later. Near the boundary between light and dark that rounding can put a stop on the wrong side of the
               veil, so the roughly 30-minute window between sunset and full dusk is excluded from the analysis
@@ -678,19 +678,33 @@ const chart4 = computed(() => {
   // `daylightHigherBins`, quietly deflating the "12 of the 13 bins"
   // sentence. No such bin exists in the current cube; this closes the case
   // rather than relying on that staying true.
+  const lightWord = (p: ClockBinPoint) => (p.lighting === 'dark' ? 'after dark' : 'in daylight')
+
   const kept: ClockBinPoint[][] = []
-  const suppressed: { point: ClockBinPoint; thin: boolean }[] = []
-  for (const [, binPoints] of [...bins.entries()].sort((a, b) => a[0] - b[0])) {
-    const hasBothStates = LIGHTING_STATES.every(
-      (state) => binPoints.some((p) => p.lighting === state),
+  // One entry per DROPPED clock time, carrying the reason it was dropped.
+  // Per-bin rather than per-bar, because a bin dropped for thinness still
+  // has a well-populated half, and describing that half as unpaired would be
+  // wrong.
+  const suppressed: string[] = []
+  for (const [bin, binPoints] of [...bins.entries()].sort((a, b) => a[0] - b[0])) {
+    const missingState = LIGHTING_STATES.some(
+      (state) => !binPoints.some((p) => p.lighting === state),
     )
-    const allThick = binPoints.every((p) => p.stops >= MIN_BIN_STOPS)
-    if (hasBothStates && allThick) {
+    const thin = binPoints.filter((p) => p.stops < MIN_BIN_STOPS)
+    if (!missingState && thin.length === 0) {
       kept.push(binPoints)
       continue
     }
-    for (const point of binPoints) {
-      suppressed.push({ point, thin: point.stops < MIN_BIN_STOPS })
+    if (missingState) {
+      suppressed.push(
+        `${clockLabel(bin)} appears only ${binPoints.map(lightWord).join(' and ')}, with nothing to compare it against`,
+      )
+    } else {
+      suppressed.push(
+        thin
+          .map((p) => `${clockLabel(bin)} ${lightWord(p)} has only ${p.stops.toLocaleString()} stops`)
+          .join(' and '),
+      )
     }
   }
 
@@ -718,13 +732,6 @@ const chart4 = computed(() => {
     return day !== undefined && dark !== undefined && day.pctGroupStops > dark.pctGroupStops
   }).length
 
-  const lightWord = (p: ClockBinPoint) => (p.lighting === 'dark' ? 'after dark' : 'in daylight')
-  const suppressedSummary = suppressed
-    .map(({ point, thin }) => (thin
-      ? `${clockLabel(point.clockBin)} ${lightWord(point)} has only ${point.stops.toLocaleString()} stops`
-      : `${clockLabel(point.clockBin)} appears only ${lightWord(point)}, with nothing to compare it against`))
-    .join(', and ')
-
   return {
     xAxis,
     yAxis,
@@ -732,8 +739,8 @@ const chart4 = computed(() => {
     data,
     shownBins: kept.length,
     daylightHigherBins,
-    suppressedSummary,
-    suppressedBars: suppressed.length,
+    suppressedSummary: suppressed.join(', and '),
+    suppressedBins: suppressed.length,
   }
 })
 
