@@ -5,6 +5,13 @@
  * wrong number. The paper's headline "five times more likely" (25.1% vs
  * 4.6%) is per motorist; the same quantity per stop is 14.2% vs 2.6%.
  * Function names here say which denominator they use.
+ *
+ * None of the selectors below take a year/date range. They aggregate
+ * unconditionally over every row in the `VeilCube` they're given. The
+ * shipped cube spans 2014-2026, not just the paper's 2021-2024 study
+ * window, so callers must call `restrictToYears(cube, REPLICATION_YEARS.from,
+ * REPLICATION_YEARS.to)` once and pass the result to every selector —
+ * there is no `opts` parameter on the selectors themselves.
  */
 import type { Cube } from '~/utils/cube'
 
@@ -25,6 +32,35 @@ export interface VeilCube extends Cube {
 }
 
 type Row = Array<string | number | null>
+
+/**
+ * The paper's study window. The shipped cube spans 2014-2026 (it is
+ * rebuilt from the full stops history), so every selector in this file
+ * aggregates over whatever rows are in the cube it's given — callers
+ * MUST restrict to this range themselves (see `restrictToYears`) before
+ * calling a selector, or the numbers will not match the paper's figures.
+ */
+export const REPLICATION_YEARS = { from: 2021, to: 2024 } as const
+
+/**
+ * Return a new `VeilCube` whose `rows` are limited to `year` in
+ * `[fromYear, toYear]` (inclusive). Does not mutate `cube`.
+ * `dimensions`, `measures`, `version`, and `models` pass through
+ * unchanged (`models` describes fitted regressions and isn't
+ * re-derived here). Compose this once at the call site and pass the
+ * result to every selector, rather than threading a year range through
+ * each one individually.
+ */
+export function restrictToYears(cube: VeilCube, fromYear: number, toYear: number): VeilCube {
+  const yearIdx = column(cube, 'year')
+  return {
+    ...cube,
+    rows: cube.rows.filter((row) => {
+      const y = Number((row as Row)[yearIdx])
+      return y >= fromYear && y <= toYear
+    }),
+  }
+}
 
 function column(cube: VeilCube, name: string): number {
   const dim = cube.dimensions.indexOf(name)
@@ -89,6 +125,9 @@ export function frisksAndTickets(cube: VeilCube, race: string) {
   return { solo: bucket(0), group: bucket(1) }
 }
 
+/** Display order for lighting states: daylight side of the veil first. */
+const LIGHT_ORDER = ['daylight', 'dark']
+
 export interface ClockBinPoint {
   clockBin: number
   lighting: string
@@ -122,7 +161,7 @@ export function groupTravelByClockBin(cube: VeilCube, race: string): ClockBinPoi
   }
 
   return [...points.values()]
-    .sort((a, b) => a.bin - b.bin || b.light.localeCompare(a.light))
+    .sort((a, b) => a.bin - b.bin || LIGHT_ORDER.indexOf(a.light) - LIGHT_ORDER.indexOf(b.light))
     .map((e) => ({
       clockBin: e.bin,
       lighting: e.light,
