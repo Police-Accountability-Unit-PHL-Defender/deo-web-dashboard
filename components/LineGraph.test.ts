@@ -12,6 +12,13 @@ const rows = [
   { group: 'Non-operational', Year: 2024, 'Percentage (%)': 45.7 },
 ]
 
+// No `attachTo: document.body` here: @vue/test-utils 2.4.x calls
+// `app.onUnmount()` when `attachTo` is used, an API Vue only added in 3.4.
+// This repo pins vue ^3.3.6, so passing `attachTo` throws
+// `TypeError: app.onUnmount is not a function` on unpatched node_modules.
+// None of the assertions below need real-document layout — they inspect the
+// returned wrapper — so the option is simply omitted rather than worked
+// around.
 const factory = (props = {}) =>
   mount(LineGraph, {
     props: {
@@ -27,7 +34,6 @@ const factory = (props = {}) =>
       dashedFromX: null,
       ...props,
     },
-    attachTo: document.body,
   })
 
 describe('LineGraph', () => {
