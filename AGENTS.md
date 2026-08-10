@@ -156,3 +156,25 @@ a given `sample_year`, so the map no longer churns each backup.
 `d[axisProperties.x]`, so the axis title *is* the data key. Renaming a label
 without renaming the key silently produces an empty chart. `stops.vue` and
 `safety.vue` show the correct pattern.
+
+**Whether a year is complete comes from the cube, never from the clock.**
+`mostRecentQuarter` is derived from today's date (see "Why `--quarter` matters"
+above), so it cannot tell you whether the data for a year actually arrived. Use
+`completeYears()` in `utils/cube.ts`: a year is complete only when all four of
+its quarters are present in the cube. `mostRecentQuarter` still *caps* which
+year may be published, which is what keeps `--quarter` pinning meaningful — the
+two are a floor and a ceiling, not alternatives. Trusting the clock alone means
+that one missed quarterly refresh across a year boundary silently publishes a
+half-year as a settled one: the partial-year dash disappears from the trend
+chart and the Neighborhoods sentence recomputes on six months of stops, with
+every test and e2e check still green. Both `operationalShareByYear` and
+`majorityWhiteDisparity` have tests pinning this exact scenario; don't
+"simplify" them back.
+
+**`None` is not missing data.** In `reasons.json`, `violation_category` of
+`None` means no MVC code was recorded — but PPD stopped coding tint stops in
+2023, so `Tint` falls to zero while `None` absorbs the same volume. Both `None`
+and `Other` are non-operational stops and belong in the denominator, out of the
+numerator. Filtering either one out inflates the operational share, most of all
+for Black drivers, who carry the largest share of them. This has been
+"corrected" by mistake before; `utils/reasons.test.ts` guards it.
