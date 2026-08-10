@@ -346,8 +346,21 @@
                 <tbody>
                   <tr v-for="row in model2Rows" :key="row.key">
                     <td>
-                      <div class="font-medium">{{ row.label }}</div>
+                      <div class="font-medium">
+                        {{ row.label }}<sup v-if="row.locationControlHollow" aria-hidden="true">&dagger;</sup>
+                      </div>
                       <div class="text-caption text-neutral-800">{{ row.description }}</div>
+                      <!--
+                        The daggered warning lives in the ROW, not only in the
+                        caption below the table. A reader who scans the table
+                        and moves on — which is what readers do with tables —
+                        would otherwise see three rows of equal standing.
+                      -->
+                      <div v-if="row.locationControlHollow" class="text-caption text-neutral-800 mt-1">
+                        &dagger; Location control
+                        {{ areaControlWording(row.areaOtherShare ?? 0).adjective }} &mdash;
+                        {{ areaControlWording(row.areaOtherShare ?? 0).caveat }}. See the note below the table.
+                      </div>
                     </td>
                     <td class="whitespace-nowrap">
                       <template v-if="row.failed">Model failed to fit</template>
@@ -378,12 +391,12 @@
               <template v-if="areaOtherShares.headlineMax !== null">In the two rows above the placebo, collapsing costs
               little: areas holding just {{ areaOtherShares.headlineMax.toFixed(1) }}% of stops or fewer end up in that
               &ldquo;other&rdquo; bucket, so the location control is doing real work.</template>
-              <template v-if="areaOtherShares.placebo !== null && placebo2">&#32;The placebo row is the exception, and it is
-              worth being blunt about: its {{ placebo2.n.toLocaleString() }} stops of young white men are spread across
-              dozens of service areas, so areas holding
-              {{ areaOtherShares.placebo.toFixed(0) }}% of those stops fall below the threshold and lose
-              their own effect. That row's location control is largely hollow, and its Model 2 estimate should not be
-              read as location-adjusted.</template>
+              <template v-if="placeboAreaControl && placebo2">&#32;The placebo row &mdash; marked &dagger; above &mdash; is
+              the exception, and it is worth being blunt about: its {{ placebo2.n.toLocaleString() }} stops of young
+              white men are spread across dozens of service areas, so areas holding
+              {{ placeboAreaControl.share.toFixed(0) }}% of those stops fall below the threshold and lose
+              their own effect. That row's location control is {{ placeboAreaControl.adjective }}, and
+              {{ placeboAreaControl.caveat }}.</template>
               Treat these numbers as supporting detail. The Model 1 results above are the reproduction we stand behind.
               <template v-if="placebo2">
                 Note that the placebo row here, though its odds ratio of {{ placebo2.oddsRatio.toFixed(3) }} looks larger
@@ -432,8 +445,14 @@
             <p class="text-body-4 mt-6">
               <strong>Recorded stop times are rounded.</strong>
               <template v-if="timeRounding">&#32;In our sample,
+              <!--
+                One decimal on the quarter-hour figure, deliberately: toFixed(0)
+                rendered the measured 19.83% as "20%", the same numeral as the
+                multiple-of-five CHANCE baseline in the same sentence, so the
+                sentence scanned as a contradiction.
+              -->
               {{ timeRounding.pct_multiple_of_5.toFixed(0) }}% of recorded stop times fall on a multiple of five minutes
-              and {{ timeRounding.pct_multiple_of_15.toFixed(0) }}% on a quarter hour, far more than chance would
+              and {{ timeRounding.pct_multiple_of_15.toFixed(1) }}% on a quarter hour, far more than chance would
               produce (20% and 6.7%).</template><template v-else>&#32;Officers log times in round numbers far more often than
               chance would produce.</template> A stop logged at 7:30pm may therefore have happened somewhat earlier or
               later. Near the boundary between light and dark that rounding can put a stop on the wrong side of the
@@ -445,9 +464,9 @@
               snapshot roughly two years newer than the authors', our sample counts come within about 5% of the
               published figures and our Model 1
               coefficients<template v-if="model1MaxDelta !== null"> within {{ model1MaxDelta.toFixed(3) }} of the
-              published ones</template><template v-else> closely track the published ones</template>. Our Model 2
-              coefficients are further off, and deliberately so: it omits a weight the paper applies, as noted above.
-              The original analysis is
+              published ones</template><template v-else> closely track the published ones</template>. Model 2 omits a
+              weight the paper applies, as noted above, so it is not quite the same model, and how far its estimates sit
+              from the published ones is not a measure of how well this reproduction lands. The original analysis is
               by Lance Hannon and Molly Biddle, Villanova University, 2026:
               <a href="https://doi.org/10.21428/cb6ab371.f1d81a4b" class="text-hyperlink-blue" target="_blank">https://doi.org/10.21428/cb6ab371.f1d81a4b</a>.
             </p>
@@ -761,6 +780,13 @@ interface ModelRow {
   failed: boolean
   collapsedUnits: number
   minUnitCount: number
+  /**
+   * Share of this fit's rows whose police_area folded into OTHER, or null for
+   * a model_1 fit (no location term). Drives the table's daggered warning.
+   */
+  areaOtherShare: number | null
+  /** True when the location control is too hollow to present unqualified. */
+  locationControlHollow: boolean
 }
 
 const MODEL_META: Record<string, { label: string; description: string }> = {
@@ -784,6 +810,7 @@ function toRow(key: string, model: VeilModel | undefined): ModelRow | null {
   if (!model) return null
   const family = key.split('.')[0]
   const meta = MODEL_META[family]
+  const share = areaOtherShare(key)
   // `degenerate` is set by the pipeline when a fit blew up on a sparse
   // fixed-effect level; such a model is not a finding.
   const failed = (model as VeilModel & { degenerate?: boolean }).degenerate === true
@@ -802,6 +829,8 @@ function toRow(key: string, model: VeilModel | undefined): ModelRow | null {
     failed,
     collapsedUnits: (model as VeilModel & { collapsed_units?: number }).collapsed_units ?? 0,
     minUnitCount: (model as VeilModel & { min_unit_count?: number }).min_unit_count ?? 0,
+    areaOtherShare: share,
+    locationControlHollow: share !== null && share > HOLLOW_AREA_SHARE,
   }
 }
 
@@ -871,18 +900,64 @@ const timeRounding = computed(() => veilBundle.value?.cube?.time_rounding ?? nul
  * whether the control is doing any work.
  */
 const areaOtherShares = computed(() => {
-  const models = veilBundle.value?.cube?.models
-  const share = (key: string): number | null => {
-    const value = models?.[key]?.other_row_share?.police_area
-    return typeof value === 'number' ? value * 100 : null
-  }
   const headline = ['party_is_black.model_2', 'has_black_passenger.model_2']
-    .map(share)
+    .map(areaOtherShare)
     .filter((v): v is number => v !== null)
   return {
     headlineMax: headline.length ? Math.max(...headline) : null,
-    placebo: share('placebo_white.model_2'),
+    placebo: areaOtherShare('placebo_white.model_2'),
   }
+})
+
+/**
+ * Percentage of a model_2 fit's ROWS whose police_area folded into OTHER.
+ * Null for model_1 fits, which have no location term at all.
+ */
+function areaOtherShare(key: string): number | null {
+  const value = veilBundle.value?.cube?.models?.[key]?.other_row_share?.police_area
+  return typeof value === 'number' ? value * 100 : null
+}
+
+/**
+ * Above this share of rows in the OTHER area bucket, a Model 2 fit's location
+ * control is not meaningfully doing its job and the row must be marked in the
+ * table rather than only discussed in the caption below it.
+ *
+ * The adjective the caption uses is DERIVED from the measured share, not
+ * hard-coded. It previously read "largely hollow" unconditionally while the
+ * percentage next to it was computed, so a future data vintage that pushed
+ * the placebo's share down to, say, 8% would have rendered "areas holding 8%
+ * ... largely hollow" — self-contradicting, with nothing failing. See
+ * `areaControlWording`.
+ */
+const HOLLOW_AREA_SHARE = 20
+/** Below this, collapsing is cheap enough to call the control sound. */
+const SOUND_AREA_SHARE = 10
+
+/** Wording for a Model 2 row's location control, scaled to the measured share. */
+function areaControlWording(share: number): { adjective: string; caveat: string } {
+  if (share > HOLLOW_AREA_SHARE) {
+    return {
+      adjective: 'largely hollow',
+      caveat: 'this estimate should not be read as location-adjusted',
+    }
+  }
+  if (share > SOUND_AREA_SHARE) {
+    return {
+      adjective: 'materially weakened',
+      caveat: 'this estimate is only partly location-adjusted',
+    }
+  }
+  return {
+    adjective: 'largely intact',
+    caveat: 'this estimate is location-adjusted like the rows above it',
+  }
+}
+
+/** Derived wording for the placebo row's location-control disclosure. */
+const placeboAreaControl = computed(() => {
+  const share = areaOtherShares.value.placebo
+  return share === null ? null : { share, ...areaControlWording(share) }
 })
 
 /** Collapsed-category counts for the Model 2 disclosure. */
