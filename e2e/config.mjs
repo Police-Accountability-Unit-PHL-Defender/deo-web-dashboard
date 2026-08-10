@@ -53,7 +53,12 @@ export const CHECKS = [
     name: 'no raw cube/column keys leaked into axis labels',
     // A rendered axis should never show an internal identifier. This is the
     // class of bug that shipped `x_label` as a visible axis title.
-    pages: ['stops', 'safety', 'neighborhoods', 'reasons', 'snapshot'],
+    //
+    // `veil` is in scope for the `undefined`/`NaN` half above all: that page
+    // interpolates around thirty toFixed() results into its prose, and a
+    // model or selector returning undefined would render the word straight
+    // into a published statistical claim.
+    pages: ['stops', 'safety', 'neighborhoods', 'reasons', 'snapshot', 'veil'],
     assert: ({ text }) => {
       const leaked = ['x_label', 'y_label', 'n_stopped', 'age_range', 'districtoccur', 'undefined', 'NaN']
         .filter((k) => text.includes(k))
