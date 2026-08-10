@@ -57,9 +57,16 @@ describe('groupTravelByClockBin', () => {
   it('splits group-travel share by lighting within each bin', () => {
     const series = groupTravelByClockBin(cube, 'Black - Non-Latino')
     expect(series).toEqual([
-      { clockBin: 1080, lighting: 'daylight', pctGroupStops: 0 },
-      { clockBin: 1080, lighting: 'dark', pctGroupStops: 100 },
+      { clockBin: 1080, lighting: 'daylight', pctGroupStops: 0, stops: 100 },
+      { clockBin: 1080, lighting: 'dark', pctGroupStops: 100, stops: 20 },
     ])
+  })
+
+  it('reports the stop count behind each point, so thin bins can be suppressed', () => {
+    // n_stops, not n_motorists: the 1080/dark row is 20 stops carrying 45
+    // motorists. A caller thresholding on `stops` must see 20.
+    const series = groupTravelByClockBin(cube, 'Black - Non-Latino')
+    expect(series.map((p) => p.stops)).toEqual([100, 20])
   })
 })
 
@@ -172,6 +179,21 @@ describe('real cube (public/cubes/veil.json), restricted to the paper study wind
     expect(r.solo.ticketRate).toBeCloseTo(11.07, 2)
     expect(r.group.friskRate).toBeCloseTo(19.31, 2)
     expect(r.group.ticketRate).toBeCloseTo(7.24, 2)
+  })
+
+  it('exposes stop counts that identify the two truncated clock bins', () => {
+    // The sample window is 17:08-20:35, so the first dark bin and the last
+    // daylight bin are clipped and rest on very few stops. The page
+    // suppresses bins under 200 stops; this pins down that exactly those two
+    // bins fall below it, so the threshold cannot silently start dropping
+    // real signal after a cube rebuild.
+    const series = groupTravelByClockBin(studyCube, 'Black - Non-Latino')
+    const thin = series.filter((p) => p.stops < 200)
+    expect(thin.map((p) => [p.clockBin, p.lighting])).toEqual([
+      [1020, 'dark'],
+      [1230, 'daylight'],
+    ])
+    for (const point of series) expect(point.stops).toBeGreaterThan(0)
   })
 
   it('fits the four headline models with negative coefficients, each carrying its diagnostics', () => {

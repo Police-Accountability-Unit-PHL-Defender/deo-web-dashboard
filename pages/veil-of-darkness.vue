@@ -77,10 +77,11 @@
             <!-- Tooltip renders a <div>, which the HTML parser would hoist out of a <p>. -->
             <div class="text-body-4 mt-6">
               That difference is the test. If we compare traffic stops<Tooltip term="Traffic Stop"/> made just before
-              nightfall with stops made just after nightfall, at the same time of day and in the same places, then the
-              only thing that has really changed is visibility. If the kinds of people police stop shift when the light
-              goes, it is difficult to explain that shift by anything other than what officers could see. This design is
-              known as the &ldquo;veil of darkness&rdquo;.
+              nightfall with stops made just after nightfall at the same time of day, then the main thing that has
+              changed is visibility. If the kinds of people police stop shift when the light goes, it is difficult to
+              explain that shift by anything other than what officers could see. This design is known as the
+              &ldquo;veil of darkness&rdquo;. The Model 2 specification below goes further and also holds the location
+              of the stop constant.
             </div>
             <p class="text-body-4 mt-6">
               This page reproduces an analysis by Lance Hannon and Molly Biddle of Villanova University, published in
@@ -109,6 +110,7 @@
               :minimum-container-width="640">
               <h4>{{ chart1.title }}</h4>
               <template #footer>
+                <!-- Tooltip renders a <div>, which the HTML parser would hoist out of a <p>. -->
                 <div class="text-caption text-neutral-800 pt-4 px-4 max-w-[720px] mx-auto">
                   Young male motorists (ages 18&ndash;29) stopped for a motor vehicle code<Tooltip term="MVC"/>
                   violation between 5:08pm and 8:35pm, 2021&ndash;2024. Counted per motorist.
@@ -122,7 +124,9 @@
                 highest. Sending more officers into some neighborhoods than others produces more stops of the people who
                 live and drive in those neighborhoods, whatever each individual officer does. That mechanism &mdash;
                 sometimes called neighborhood profiling &mdash; plausibly explains much of the difference above. The
-                charts that follow control for location, so they are not vulnerable to it in the same way.
+                charts that follow compare young Black men with young Black men rather than comparing across races,
+                which removes the part of this problem that comes from Black and white motorists being stopped in
+                different neighborhoods. Only the Model 2 specification below controls for location directly.
               </p>
             </AnswerText>
           </Answer>
@@ -187,13 +191,15 @@
               </template>
             </Graph>
             <AnswerText>
+              <!-- Tooltip renders a <div>, which the HTML parser would hoist out of a <p>. -->
               <div class="text-body-4">
-                This is the sharpest result on the page. Traveling with another young Black man nearly triples the frisk
-                rate<Tooltip term="Frisk rate"/> &mdash; from {{ fmtPct(chart3.soloFrisk) }} to
-                {{ fmtPct(chart3.groupFrisk) }} &mdash; while <em>lowering</em> the chance of being ticketed for the
-                violation that supposedly justified the stop, from {{ fmtPct(chart3.soloTicket) }} to
-                {{ fmtPct(chart3.groupTicket) }}. If these stops were about enforcing the motor vehicle code, the ticket
-                rate would not fall when a second young Black man is in the car.
+                This is the sharpest contrast on the page. Stops of young Black men traveling with another young Black
+                man have nearly triple the frisk rate<Tooltip term="Frisk rate"/> of stops of young Black men traveling
+                alone &mdash; {{ fmtPct(chart3.groupFrisk) }} against {{ fmtPct(chart3.soloFrisk) }} &mdash; while the
+                ticket rate is <em>lower</em>, {{ fmtPct(chart3.groupTicket) }} against
+                {{ fmtPct(chart3.soloTicket) }}. These are raw shares with no controls, so they describe an association
+                rather than establishing a cause. But if these stops were about enforcing the motor vehicle code, it is
+                hard to see why the ticket rate would fall when a second young Black man is in the car.
               </div>
             </AnswerText>
           </Answer>
@@ -221,9 +227,13 @@
                 <p class="text-caption text-neutral-800 pt-4 px-4 max-w-[860px] mx-auto">
                   Stops of young Black male motorists (ages 18&ndash;29), 2021&ndash;2024, in 15-minute clock-time bins.
                   Counted <strong>per stop</strong>: each stop counts once regardless of how many people were in the
-                  car, which mirrors what the models below predict. The bins at each end of the evening rest on far
-                  fewer stops than the ones in the middle, so their heights move around more; the models below use every
-                  stop rather than reading any single bar.
+                  car, which mirrors what the models below predict. Two clock times are not shown. The sample window
+                  starts at 5:08pm and ends at 8:35pm, so the earliest dark bin and the latest daylight bin are clipped
+                  and rest on very few stops &mdash; {{ chart4.suppressedSummary }}. Percentages built on that few stops
+                  swing widely enough to stretch the chart's vertical scale and flatten the real differences, so any
+                  clock time with fewer than {{ MIN_BIN_STOPS }} stops on either side of the veil is left out here.
+                  Hover any bar for its own stop count. The models below use every stop, including the ones behind the
+                  two omitted bins.
                 </p>
               </template>
             </Graph>
@@ -233,8 +243,8 @@
                 That is possible because sunset moves through the year: at 7:15pm it is light in June and dark in
                 December. Commuting patterns at 7:15pm are much the same in both months; the light is not. The gap
                 between the two bars at the same clock time is what the whole test rests on, and across the evening the
-                daylight bars sit higher &mdash; police stop proportionally more multi-occupant cars when they can see
-                inside them.
+                daylight bars sit higher in {{ chart4.daylightHigherBins }} of the {{ chart4.shownBins }} bins shown.
+                The models below test whether that pattern survives controls.
               </p>
             </AnswerText>
           </Answer>
@@ -251,7 +261,7 @@
               and year constant and ask what darkness alone does to the odds of a given kind of stop. An odds ratio below
               1 means the stop became <em>less</em> likely once officers could no longer see into the car &mdash; the
               direction that indicates officers were selecting on what they could see. A 95% confidence interval that
-              does not include 1 means the result is unlikely to be chance.
+              does not include 1 means a result like this one would be unlikely if darkness made no difference at all.
             </p>
           </AnswerText>
           <div v-if="model1Rows.length" class="border border-neutral-400 pt-6 my-6">
@@ -344,6 +354,7 @@
                 </tbody>
               </table>
             </div>
+            <!-- Tooltip renders a <div>, which the HTML parser would hoist out of a <p>. -->
             <div class="text-caption text-neutral-800 p-4 max-w-[860px] mx-auto">
               Model 2 adds police service area<Tooltip term="PSA"/>, officer assignment and a summer indicator to the
               controls. Two differences from the published version matter and we state them rather than bury them.
@@ -354,6 +365,12 @@
               <template v-if="model2Detail.collapsedRange">({{ model2Detail.collapsedRange }} categories, depending on
               the model)</template>, because categories that rare can perfectly predict the outcome and break the fit.
               Treat these numbers as supporting detail. The Model 1 results above are the reproduction we stand behind.
+              <template v-if="placebo2">
+                Note that the placebo row here, though its odds ratio of {{ placebo2.oddsRatio.toFixed(3) }} looks larger
+                than in Model 1, has a confidence interval of {{ placebo2.ciLow.toFixed(3) }} to
+                {{ placebo2.ciHigh.toFixed(3) }} that also spans 1, and a p-value of {{ placebo2.p.toFixed(2) }}: it is
+                not statistically significant either.
+              </template>
             </div>
           </div>
         </section>
@@ -373,10 +390,14 @@
             </p>
             <p class="text-body-4 mt-6">
               <strong>The test is deliberately conservative.</strong> Streetlights, headlights and lit intersections mean
-              darkness is never total, some cars are recognizable regardless of the light, and officers sometimes know a
-              vehicle already. All of that shrinks the difference between the daylight and darkness comparisons, which
-              means the test understates the role of visibility rather than overstating it.
+              darkness is never total; some cars are recognizable regardless of the light, and officers sometimes know a
+              vehicle already; segregation means an officer can often infer who is likely to be in a car from where it is
+              driving, with or without seeing inside; and existing research suggests Black drivers drive <em>more</em>
+              carefully in high-visibility conditions, which would work against finding any daylight effect at all. Every
+              one of those shrinks the measured difference between daylight and darkness, which means the test understates
+              the role of visibility rather than overstating it.
             </p>
+            <!-- Tooltip renders a <div>, which the HTML parser would hoist out of a <p>. -->
             <div class="text-body-4 mt-6">
               <strong>Philadelphia's segregation strains any cross-race comparison.</strong> Only about 5% of stops of
               young Black men happen in majority-white police districts<Tooltip term="District"/>, so comparing Black
@@ -418,6 +439,7 @@ import {
   motoristsByRace,
   pctMotoristsInGroups,
   restrictToYears,
+  type ClockBinPoint,
   type VeilCube,
   type VeilModel,
 } from '~/utils/veil'
@@ -579,13 +601,44 @@ const LIGHTING_LABEL: Record<string, string> = {
   dark: 'After dark',
 }
 
+/**
+ * Minimum stops in BOTH lighting states for a clock bin to be plotted.
+ *
+ * The sample window is 17:08-20:35, so the 5:00pm dark bin (108 stops) and
+ * the 8:30pm daylight bin (41 stops) are truncated. The 8:30pm daylight bin
+ * reads 24.4% on those 41 stops, and because Graph.vue takes its y-axis
+ * maximum from the data maximum, that one bar stretched the axis and
+ * compressed the real 2-5 percentage-point signal in the well-populated
+ * bins. A caption cannot undo that distortion, so the thin bins are dropped
+ * instead. `utils/veil.test.ts` pins down that exactly these two bins fall
+ * below this threshold on the real cube.
+ */
+const MIN_BIN_STOPS = 200
+
 const chart4 = computed(() => {
   const c = cube.value
   if (!c) return null
   const xAxis = 'Time of evening'
   const yAxis = 'Percentage (%)'
   const points = groupTravelByClockBin(c, BLACK)
-  const data = points.map((p) => {
+
+  // Group by clock bin so a bin is kept or dropped as a pair: half a pair
+  // would read as a missing comparison rather than a thin one.
+  const bins = new Map<number, ClockBinPoint[]>()
+  for (const p of points) {
+    const existing = bins.get(p.clockBin)
+    if (existing) existing.push(p)
+    else bins.set(p.clockBin, [p])
+  }
+
+  const kept: ClockBinPoint[][] = []
+  const suppressed: ClockBinPoint[] = []
+  for (const [, binPoints] of [...bins.entries()].sort((a, b) => a[0] - b[0])) {
+    if (binPoints.every((p) => p.stops >= MIN_BIN_STOPS)) kept.push(binPoints)
+    else suppressed.push(...binPoints.filter((p) => p.stops < MIN_BIN_STOPS))
+  }
+
+  const data = kept.flat().map((p) => {
     const label = LIGHTING_LABEL[p.lighting] ?? p.lighting
     return {
       group: label,
@@ -596,15 +649,31 @@ const chart4 = computed(() => {
         clockLabel(p.clockBin),
         label,
         `${fmtPct(p.pctGroupStops)} of stops were of a multi-occupant car`,
+        `${p.stops.toLocaleString()} stops in this bin`,
         '',
       ],
     }
   })
+
+  // How often daylight sits above dark, among the bins actually shown.
+  const daylightHigherBins = kept.filter((binPoints) => {
+    const day = binPoints.find((p) => p.lighting === 'daylight')
+    const dark = binPoints.find((p) => p.lighting === 'dark')
+    return day !== undefined && dark !== undefined && day.pctGroupStops > dark.pctGroupStops
+  }).length
+
+  const suppressedSummary = suppressed
+    .map((p) => `${clockLabel(p.clockBin)} ${p.lighting === 'dark' ? 'after dark' : 'in daylight'} has only ${p.stops.toLocaleString()} stops`)
+    .join(', and ')
+
   return {
     xAxis,
     yAxis,
     title: `Share of Stops of Young Black Men That Were Multi-Occupant Cars, by Time of Evening and Light, ${YEARS_LABEL}`,
     data,
+    shownBins: kept.length,
+    daylightHigherBins,
+    suppressedSummary,
   }
 })
 
@@ -684,6 +753,7 @@ const byKey = (rows: ModelRow[], family: string) => rows.find((r) => r.key.start
 const passenger1 = computed(() => byKey(model1Rows.value, 'has_black_passenger'))
 const driver1 = computed(() => byKey(model1Rows.value, 'driver_is_black'))
 const placebo1 = computed(() => byKey(model1Rows.value, 'placebo_white'))
+const placebo2 = computed(() => byKey(model2Rows.value, 'placebo_white'))
 
 /** Collapsed-category counts for the Model 2 disclosure. */
 const model2Detail = computed(() => {

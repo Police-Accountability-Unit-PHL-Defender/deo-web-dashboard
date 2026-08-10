@@ -132,6 +132,14 @@ export interface ClockBinPoint {
   clockBin: number
   lighting: string
   pctGroupStops: number
+  /**
+   * Stops behind `pctGroupStops` — the denominator, not a rate. The window
+   * is truncated at both ends (17:08-20:35), so the first dark bin and the
+   * last daylight bin rest on very few stops and their percentages swing
+   * wildly. Callers plotting these points must use this to suppress thin
+   * bins rather than letting one 40-stop bin set a chart's y-axis.
+   */
+  stops: number
 }
 
 /**
@@ -166,5 +174,6 @@ export function groupTravelByClockBin(cube: VeilCube, race: string): ClockBinPoi
       clockBin: e.bin,
       lighting: e.light,
       pctGroupStops: e.total === 0 ? 0 : (e.grouped / e.total) * 100,
+      stops: e.total,
     }))
 }
