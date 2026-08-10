@@ -117,17 +117,42 @@ function renderText(session, url, { tries = 12, settleMs = 1200 } = {}) {
     })
     return r.stdout || ''
   }
+  // The session is reused across pages, so clear both buffers before
+  // navigating — otherwise a later page's checks would see an earlier page's
+  // console noise.
+  ab('console', '--clear')
+  ab('errors', '--clear')
   ab('open', url)
   ab('wait', '--load', 'networkidle')
 
   let previous = null
+  let text = previous
   for (let i = 0; i < tries; i += 1) {
     const current = ab('get', 'text', 'body')
-    if (previous !== null && current === previous && current.trim().length > 0) return current
+    if (previous !== null && current === previous && current.trim().length > 0) { text = current; break }
     previous = current
+    text = current
     ab('wait', String(settleMs))
   }
-  return previous ?? ''
+
+  const consoleLogs = ab('console', '--json')
+  const pageErrors = ab('errors', '--json')
+  const errors = [...parseErrorEntries(consoleLogs, 'error'), ...parseErrorEntries(pageErrors)]
+
+  return { text: text ?? '', errors }
+}
+
+/** Best-effort parse of agent-browser's --json console/errors output into short strings. */
+function parseErrorEntries(json, onlyType) {
+  try {
+    const parsed = JSON.parse(json)
+    const entries = Array.isArray(parsed) ? parsed : parsed.entries || parsed.logs || []
+    return entries
+      .filter((e) => !onlyType || e.type === onlyType)
+      .map((e) => String(e.text ?? e.message ?? e).slice(0, 200))
+  } catch {
+    return []
+  }
 }
 
 // ------------------------------------------------------------------- diffing
@@ -208,26 +233,29 @@ async function main() {
   try {
     for (const page of pages) {
       const notes = []
-      const localText = renderText('e2e-local', `${localBase}${page.path}`)
+      const local = renderText('e2e-local', `${localBase}${page.path}`)
+      const localText = local.text
       writeFileSync(join(ARTIFACT_DIR, `local_${page.name}.txt`), localText)
 
-      if (!args.checksOnly) {
-        const liveText = renderText('e2e-live', `${args.liveUrl}${page.path}`)
-        writeFileSync(join(ARTIFACT_DIR, `live_${page.name}.txt`), liveText)
-        const d = diffLines(liveText, localText)
+      if (!args.checksOnly && !page.noParity) {
+        const live = renderText('e2e-live', `${args.liveUrl}${page.path}`)
+        writeFileSync(join(ARTIFACT_DIR, `live_${page.name}.txt`), live.text)
+        const d = diffLines(live.text, localText)
         if (d.length) {
           failures.push({ page: page.name, kind: 'diff', detail: d })
           notes.push(`differs from live (${d.length} lines)`)
         } else {
           notes.push('matches live')
         }
+      } else if (!args.checksOnly && page.noParity) {
+        notes.push('no live parity (not on production)')
       }
 
       for (const check of CHECKS) {
         if (check.pages && !check.pages.includes(page.name)) continue
         let result
         try {
-          result = check.assert({ text: localText, page: page.name, quarter })
+          result = check.assert({ text: localText, page: page.name, quarter, errors: local.errors })
         } catch (err) {
           result = `threw: ${err.message}`
         }
@@ -245,7 +273,11 @@ async function main() {
 
   console.log('\n')
   if (failures.length === 0) {
-    console.log(`PASS — ${pages.length} page(s) checked${args.checksOnly ? '' : `, identical to ${args.liveUrl}`}`)
+    const parityPages = pages.filter((p) => !p.noParity)
+    const parityNote = args.checksOnly
+      ? ''
+      : `, ${parityPages.length} identical to ${args.liveUrl}${parityPages.length < pages.length ? ` (${pages.length - parityPages.length} skipped, not on production)` : ''}`
+    console.log(`PASS — ${pages.length} page(s) checked${parityNote}`)
     return 0
   }
 

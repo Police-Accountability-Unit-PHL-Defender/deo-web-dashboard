@@ -28,6 +28,12 @@ export const PAGES = [
   { path: '/data', name: 'data' },
   { path: '/glossary', name: 'glossary' },
   { path: '/contact', name: 'contact' },
+  // Not on the live site yet (unlinked from nav on purpose), so it is rendered
+  // and run through CHECKS like every other page, but `noParity: true` tells
+  // parity.mjs to skip the live diff for it — a diff against a page that
+  // doesn't exist in production would fail by construction, not signal a
+  // regression.
+  { path: '/veil-of-darkness', name: 'veil', noParity: true },
 ]
 
 /**
@@ -126,5 +132,47 @@ export const CHECKS = [
       if (ratio > 20) return `disparity ratio implausibly high: ${ratio}`
       return true
     },
+  },
+  {
+    name: 'veil-of-darkness page renders without console/page errors',
+    pages: ['veil'],
+    assert: ({ errors }) =>
+      !errors || errors.length === 0 || `console/page error(s): ${errors.join(' | ')}`,
+  },
+  {
+    name: "chart 1's Black-motorist count is in the expected range",
+    // Regression guard on the cube join, not the exact figure (actual is
+    // 36,781) — a wrong join could plausibly still land near it.
+    pages: ['veil'],
+    assert: ({ text }) => {
+      // Chart 1's bar annotations render, in data order (Black then White),
+      // right after the y-axis title — e.g. "Number of Motorists Stopped\n
+      // 36,781\n5,529". Anchoring on the axis title rather than the "Black
+      // motorists" tick label avoids also matching the demographic table
+      // further down the page, which repeats the same words.
+      const m = /Number of Motorists Stopped\s*\n\s*([\d,]+)\s*\n\s*([\d,]+)/.exec(text)
+      if (!m) return 'could not find chart 1\'s bar annotations on the page'
+      const n = Number(m[1].replace(/,/g, ''))
+      return (n >= 30000 && n <= 45000)
+        || `Black-motorist count was ${n.toLocaleString()}, expected 30,000–45,000`
+    },
+  },
+  {
+    name: 'chart 3 group frisk rate is at least double the solo frisk rate',
+    // Actual is 19.3% against 7.1%. This is the page's central finding, so
+    // guard the ratio rather than the exact figures.
+    pages: ['veil'],
+    assert: ({ text }) => {
+      const m = /frisk rate[\s\S]{0,80}?—\s*([\d.]+)%\s*against\s*([\d.]+)%/.exec(text)
+      if (!m) return 'could not find the group-vs-solo frisk rate sentence on the page'
+      const [group, solo] = [Number(m[1]), Number(m[2])]
+      return group >= 2 * solo
+        || `group frisk rate ${group}% is not at least double solo frisk rate ${solo}%`
+    },
+  },
+  {
+    name: 'Hannon attribution survives on the veil-of-darkness page',
+    pages: ['veil'],
+    assert: ({ text }) => text.includes('Hannon') || 'the string "Hannon" is missing from the page',
   },
 ]
