@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from veil.models import fit_vod
+from veil.models import _collapse_sparse_levels, fit_vod
 
 
 def synthetic(n=6000, effect=-0.5, seed=0):
@@ -59,3 +59,36 @@ def test_separation_is_reported_not_raised():
     df["psa"] = [f"psa-{i}" for i in range(len(df))]  # one level per row
     result = fit_vod(df, outcome="outcome", full_controls=True)
     assert result["converged"] is False or result["se"] > 0
+
+
+def test_collapse_sparse_levels_folds_rare_categories():
+    series = pd.Series(["A"] * 50 + ["B"] * 30 + ["C"] * 5 + ["D"] * 2)
+    collapsed = _collapse_sparse_levels(series, min_count=10)
+    assert set(collapsed[series == "A"]) == {"A"}
+    assert set(collapsed[series == "B"]) == {"B"}
+    assert set(collapsed[series == "C"]) == {"OTHER"}
+    assert set(collapsed[series == "D"]) == {"OTHER"}
+    assert len(collapsed) == len(series)
+
+
+def test_full_controls_spec_collapses_sparse_units():
+    """assigned_unit/psa levels below the threshold get folded before fitting."""
+    df = synthetic(n=2000)
+    # Add plenty of rare assigned_unit levels alongside the common A/B/C ones.
+    rng = np.random.default_rng(1)
+    rare = rng.choice([f"rare-{i}" for i in range(20)], size=50)
+    df.loc[df.index[:50], "assigned_unit"] = rare
+    result = fit_vod(df, outcome="outcome", full_controls=True)
+    assert result["spec"] == "model_2"
+    assert result["min_unit_count"] == 100
+    assert result["collapsed_units"] > 0
+
+
+def test_degenerate_fit_is_flagged_not_reported_as_success():
+    """Perfect separation must never be reported as a successful convergence."""
+    df = synthetic(n=2000)
+    df["outcome"] = df["obscured_view"]  # obscured_view perfectly predicts the outcome
+    result = fit_vod(df, outcome="outcome", full_controls=False)
+    assert result["converged"] is False
+    assert result.get("degenerate") is True
+    assert "error" in result

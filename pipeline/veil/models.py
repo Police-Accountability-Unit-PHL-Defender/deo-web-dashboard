@@ -25,8 +25,42 @@ MODEL_TARGETS = {
     "has_black_passenger.model_2": -0.269,
 }
 
-_BASE = "obscured_view + cr(clock_minutes, df=6) + C(dow) + C(year)"
+# constraints="center" keeps cr() a natural cubic spline (as the paper
+# specifies) but re-parameterises its basis so it no longer spans the
+# constant function. Without this, cr(clock_minutes, df=6) + Intercept is
+# rank-deficient by one column, and IRLS's absolute deviance-change
+# tolerance is never satisfied even though the obscured_view estimate is
+# stable -- the model looks unconverged when it is really just redundant.
+_BASE = 'obscured_view + cr(clock_minutes, df=6, constraints="center") + C(dow) + C(year)'
 _FULL = _BASE + " + C(psa) + C(assigned_unit) + C(is_summer)"
+
+# Sparse fixed-effect levels (e.g. a specialist unit with a handful of stops)
+# can perfectly separate a binary outcome: GLM then drives that level's
+# coefficient toward +/-infinity while still reporting converged=True. 100
+# was chosen by inspecting the real assigned_unit stop-count distribution: it
+# leaves a wide margin past the point (~20 stops) where zero-cell levels
+# against driver_is_black disappear, while keeping every real
+# district/unit as its own level. psa turned out to need the same
+# treatment -- a "0.0" psa level had only 2 stops and a zero cell.
+_MIN_UNIT_COUNT = 100
+
+# A log-odds coefficient or standard error beyond this is not a real effect
+# on this scale -- it is quasi/complete separation that GLM did not raise an
+# exception for.
+_DEGENERATE_BOUND = 10.0
+
+_SPARSE_COLUMNS = ("assigned_unit", "psa")
+
+
+def _collapse_sparse_levels(series: pd.Series, min_count: int) -> pd.Series:
+    """Fold levels occurring fewer than ``min_count`` times into "OTHER".
+
+    Row count and index are preserved; only the rare categories' labels
+    change.
+    """
+    counts = series.value_counts()
+    rare = counts[counts < min_count].index
+    return series.where(~series.isin(rare), "OTHER")
 
 
 def fit_vod(df: pd.DataFrame, outcome: str, full_controls: bool) -> dict:
@@ -36,8 +70,18 @@ def fit_vod(df: pd.DataFrame, outcome: str, full_controls: bool) -> dict:
     result = {
         "spec": spec, "n": int(len(df)), "coef": float("nan"), "se": float("nan"),
         "p": float("nan"), "odds_ratio": float("nan"), "converged": False,
+        "collapsed_units": 0, "min_unit_count": _MIN_UNIT_COUNT,
     }
     try:
+        if full_controls:
+            df = df.copy()
+            collapsed = 0
+            for col in _SPARSE_COLUMNS:
+                if col in df.columns:
+                    counts = df[col].value_counts()
+                    collapsed += int((counts < _MIN_UNIT_COUNT).sum())
+                    df[col] = _collapse_sparse_levels(df[col], _MIN_UNIT_COUNT)
+            result["collapsed_units"] = collapsed
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             model = smf.glm(formula, data=df, family=sm.families.Binomial())
@@ -52,6 +96,16 @@ def fit_vod(df: pd.DataFrame, outcome: str, full_controls: bool) -> dict:
             n=int(fit.nobs),
             converged=bool(fit.converged),
         )
+        if abs(result["coef"]) > _DEGENERATE_BOUND or result["se"] > _DEGENERATE_BOUND:
+            result["converged"] = False
+            result["degenerate"] = True
+            result["error"] = (
+                f"Degenerate fit: |coef|={abs(result['coef']):.3g}, se={result['se']:.3g} "
+                f"exceeds the plausible log-odds bound ({_DEGENERATE_BOUND:g}); this is almost "
+                "certainly quasi/complete separation in a sparse fixed-effect level, not a real "
+                "effect. Numbers are left in place for inspection but must not be treated as a "
+                "successful fit."
+            )
     except Exception as exc:  # separation, singular design matrix, empty cells
         result["error"] = f"{type(exc).__name__}: {exc}"
     return result
