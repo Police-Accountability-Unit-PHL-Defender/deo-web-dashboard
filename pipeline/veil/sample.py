@@ -17,6 +17,25 @@ import datetime as dt
 
 import pandas as pd
 
+# The inter-twilight window, taken verbatim from Hannon & Biddle (2026).
+#
+# These are DELIBERATELY the paper's numbers, not ours. `veil/sun.py`'s
+# `inter_twilight_window` derives the same window from the committed
+# Philadelphia sun-times table and returns 17:05-20:33 -- the earliest civil
+# dusk and the latest sunset across the study period, computed from astral
+# (see tests/test_veil_sun.py::test_inter_twilight_window). That is
+# 3 minutes wider at the start and 2 narrower at the end than the published
+# window, most likely because the authors used a different solar-position
+# source, horizon/elevation assumption or rounding rule.
+#
+# The paper's values win here because this page's job is to REPRODUCE the
+# published analysis: the sample must be the authors' sample, so a reader
+# comparing our counts against Table 1 is comparing like with like. Our own
+# derivation is kept, and unit-tested in tests/test_veil_sun.py, as an
+# independent sanity check that the published window is plausible -- if the
+# two ever diverged by more than a few minutes, that would signal a real
+# problem with the sun-times data rather than a rounding difference. Do not
+# "fix" these constants to match sun.py.
 WINDOW_START = dt.time(17, 8)
 WINDOW_END = dt.time(20, 35)
 DRIVING_EQUALITY_DATE = pd.Timestamp("2022-03-03")
@@ -41,6 +60,42 @@ def _first_non_null(s: pd.Series):
     """
     s = s.dropna()
     return s.min() if len(s) else None
+
+
+def int_code(value) -> str:
+    """Render a numeric-looking geographic code as a bare integer string.
+
+    ``districtoccur`` and ``psa`` arrive from the CSV as float64: pandas
+    infers a numeric dtype and reads the zero-padded text "02" as 2.0, and
+    SQLite then stores the column REAL. Stringifying naively therefore
+    yields "2.0", not "2". Round-tripping through int first restores the
+    code, and callers zero-pad the district separately.
+    """
+    if value is None or pd.isna(value):
+        return ""
+    try:
+        return str(int(float(value)))
+    except (TypeError, ValueError):
+        return str(value).strip()
+
+
+def police_area_key(district, psa) -> str:
+    """Globally unique police-service-area label, e.g. "02-1".
+
+    PPD numbers police service areas 1-4 (plus a 0 bucket) *within* each
+    district, so ``psa`` alone has only five distinct values across the
+    whole city: PSA 2 of the 12th District (Southwest) and PSA 2 of the 7th
+    (Far Northeast) are both "2". Using ``psa`` on its own as a location
+    control therefore pools unrelated neighbourhoods and controls for
+    almost nothing. The district-qualified pair is the real area -- 66
+    combinations in the analytic sample -- and because a PSA nests inside
+    exactly one district, this key subsumes the district as well.
+
+    The "DD-P" shape matches ``cube_builders/stops.py::_location_key``, so
+    a veil-page area label reads the same way as a stops-page one ('12-2').
+    """
+    d = int_code(district)
+    return f"{d.zfill(2) if d else ''}-{int_code(psa)}"
 
 
 def roll_up_stops(df: pd.DataFrame) -> pd.DataFrame:
@@ -70,6 +125,12 @@ def roll_up_stops(df: pd.DataFrame) -> pd.DataFrame:
         n_frisked=("individual_frisked", "sum"),
         n_ticketed=("ticket_issued", "sum"),
     ).reset_index()
+    # The location control the models actually use. Built here, once, so the
+    # column is carried into the table and every downstream consumer shares
+    # one definition of "area".
+    stops["police_area"] = [
+        police_area_key(d, p) for d, p in zip(stops.districtoccur, stops.psa)
+    ]
     return stops
 
 

@@ -34,7 +34,7 @@ USE_COLS = [
 
 OUT_COLS = [
     "ts_local", "stop_date", "clock_minutes", "year", "dow", "month",
-    "is_summer", "era", "districtoccur", "psa", "assigned_unit",
+    "is_summer", "era", "districtoccur", "psa", "police_area", "assigned_unit",
     "lighting", "obscured_view", "party_race", "party_size", "group_travel",
     "n_frisked", "n_ticketed",
 ]

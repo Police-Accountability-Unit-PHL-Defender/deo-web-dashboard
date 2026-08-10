@@ -18,9 +18,14 @@ import statsmodels.api as sm
 import statsmodels.formula.api as smf
 
 # Published coefficients, for reference and for the comparison display.
+#
+# `party_is_black` is deliberately NOT called `driver_is_black`: this sample
+# never identifies a driver (see veil/sample.py's module docstring), and the
+# homogeneous-party restriction makes it unnecessary -- the outcome is
+# "the party police stopped was Black rather than white".
 MODEL_TARGETS = {
-    "driver_is_black.model_1": -0.116,
-    "driver_is_black.model_2": -0.188,
+    "party_is_black.model_1": -0.116,
+    "party_is_black.model_2": -0.188,
     "has_black_passenger.model_1": -0.242,
     "has_black_passenger.model_2": -0.269,
 }
@@ -32,16 +37,35 @@ MODEL_TARGETS = {
 # tolerance is never satisfied even though the obscured_view estimate is
 # stable -- the model looks unconverged when it is really just redundant.
 _BASE = 'obscured_view + cr(clock_minutes, df=6, constraints="center") + C(dow) + C(year)'
-_FULL = _BASE + " + C(psa) + C(assigned_unit) + C(is_summer)"
+
+# The location control is C(police_area), NOT C(psa). `psa` holds only five
+# distinct values city-wide because PPD numbers service areas within each
+# district, so C(psa) would pool PSA 2 of the 12th District with PSA 2 of the
+# 7th -- four dummies standing in for 66 real areas. `police_area` is the
+# district-qualified key ("02-1") built in veil/sample.py.
+#
+# `districtoccur` is deliberately NOT a separate term. A PSA nests inside
+# exactly one district, so district dummies are a linear combination of the
+# area dummies: adding both makes the design rank-deficient without adding
+# information. The area fixed effects already absorb every district-level
+# difference. (Once sparse areas collapse into OTHER the nesting is no
+# longer exact, but adding a second, coarser geography the paper did not
+# specify is not a change this reproduction should make.)
+_FULL = _BASE + " + C(police_area) + C(assigned_unit) + C(is_summer)"
 
 # Sparse fixed-effect levels (e.g. a specialist unit with a handful of stops)
 # can perfectly separate a binary outcome: GLM then drives that level's
 # coefficient toward +/-infinity while still reporting converged=True. 100
 # was chosen by inspecting the real assigned_unit stop-count distribution: it
 # leaves a wide margin past the point (~20 stops) where zero-cell levels
-# against driver_is_black disappear, while keeping every real
-# district/unit as its own level. psa turned out to need the same
-# treatment -- a "0.0" psa level had only 2 stops and a zero cell.
+# against party_is_black disappear, while keeping every real unit as its own
+# level. police_area needs the same treatment: a handful of the 66 areas are
+# very thinly stopped in this evening window.
+#
+# Collapsing only protects the fit if the OTHER bucket stays small. If it
+# ever swallowed a large share of ROWS the location control would be hollow
+# again, so `other_row_share` is reported alongside every fit -- see
+# tests/test_veil_models.py.
 _MIN_UNIT_COUNT = 100
 
 # A log-odds coefficient or standard error beyond this is not a real effect
@@ -49,7 +73,7 @@ _MIN_UNIT_COUNT = 100
 # exception for.
 _DEGENERATE_BOUND = 10.0
 
-_SPARSE_COLUMNS = ("assigned_unit", "psa")
+_SPARSE_COLUMNS = ("assigned_unit", "police_area")
 
 
 def _collapse_sparse_levels(series: pd.Series, min_count: int) -> pd.Series:
@@ -71,6 +95,7 @@ def fit_vod(df: pd.DataFrame, outcome: str, full_controls: bool) -> dict:
         "spec": spec, "n": int(len(df)), "coef": float("nan"), "se": float("nan"),
         "p": float("nan"), "odds_ratio": float("nan"), "converged": False,
         "collapsed_units": 0, "min_unit_count": _MIN_UNIT_COUNT,
+        "other_row_share": {},
     }
     try:
         if full_controls:
@@ -81,6 +106,13 @@ def fit_vod(df: pd.DataFrame, outcome: str, full_controls: bool) -> dict:
                     counts = df[col].value_counts()
                     collapsed += int((counts < _MIN_UNIT_COUNT).sum())
                     df[col] = _collapse_sparse_levels(df[col], _MIN_UNIT_COUNT)
+                    # Share of ROWS, not levels: many rare levels folding
+                    # together is harmless, a large fraction of the sample
+                    # losing its fixed effect is not.
+                    result["other_row_share"][col] = (
+                        float((df[col] == "OTHER").mean()) if len(df) else 0.0
+                    )
+                    result[f"{col}_levels"] = int(df[col].nunique())
             result["collapsed_units"] = collapsed
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")

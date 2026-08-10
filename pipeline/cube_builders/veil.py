@@ -15,6 +15,7 @@ import sqlite3
 import pandas as pd
 
 from veil.models import MODEL_TARGETS, fit_vod
+from veil.sample import int_code
 
 CUBE_VERSION = 1
 
@@ -27,10 +28,18 @@ WHITE = "White - Non-Latino"
 
 
 def _normalize_district(d) -> str:
-    if d is None:
-        return ""
-    s = str(d).strip()
-    return "0" + s if s.isdigit() and len(s) == 1 else s
+    """Zero-pad a district code to two digits: 2.0 -> "02", 12.0 -> "12".
+
+    ``districtoccur`` is stored REAL in SQLite -- pandas infers a numeric
+    dtype from the CSV and reads the zero-padded text "02" as 2.0 -- so a
+    bare ``str()`` yields "2.0", whose ``isdigit()`` is False. An earlier
+    version of this helper tested ``isdigit()`` directly on that string and
+    was therefore a no-op, emitting "12.0" into the cube's `district`
+    dimension where its sibling builders emit "12". Route through
+    ``veil.sample.int_code`` so the float representation is stripped first.
+    """
+    code = int_code(d)
+    return code.zfill(2) if code else ""
 
 
 def _descriptive_rows(df: pd.DataFrame) -> list[list]:
@@ -57,11 +66,32 @@ def _descriptive_rows(df: pd.DataFrame) -> list[list]:
     ]
 
 
+def _time_rounding(df: pd.DataFrame) -> dict:
+    """How heavily officers round the recorded stop time.
+
+    The page tells readers that logged times are rounded, which is why the
+    ~30-minute band between sunset and full dusk is excluded. That claim
+    needs a number attached to it, and the number has to come from our own
+    data rather than being asserted in the page's voice: `clock_minutes` is
+    minute-level, so this cannot be recomputed from the 15-minute
+    `clock_bin` dimension and has to be measured here.
+    """
+    minutes = df.clock_minutes
+    return {
+        "n": int(len(minutes)),
+        "pct_multiple_of_5": float(100 * (minutes % 5 == 0).mean()),
+        "pct_multiple_of_15": float(100 * (minutes % 15 == 0).mean()),
+    }
+
+
 def _fit_all(df: pd.DataFrame) -> dict:
     models: dict = {}
 
     inter = df.copy()
-    inter["driver_is_black"] = (inter.party_race == BLACK).astype(int)
+    # `party_is_black`, not `driver_is_black`: no driver is ever identified in
+    # this sample (see veil/sample.py). Every occupant of a retained stop is a
+    # young man of the same race, so the outcome is a property of the party.
+    inter["party_is_black"] = (inter.party_race == BLACK).astype(int)
 
     black = df[df.party_race == BLACK].copy()
     black["has_black_passenger"] = black.group_travel
@@ -70,7 +100,7 @@ def _fit_all(df: pd.DataFrame) -> dict:
     white["has_white_passenger"] = white.group_travel
 
     jobs = [
-        ("driver_is_black", inter, "driver_is_black"),
+        ("party_is_black", inter, "party_is_black"),
         ("has_black_passenger", black, "has_black_passenger"),
         ("placebo_white", white, "has_white_passenger"),
     ]
@@ -99,5 +129,6 @@ def build(conn: sqlite3.Connection) -> tuple[dict, dict]:
         "measures": MEASURES,
         "rows": _descriptive_rows(df),
         "models": _fit_all(replication),
+        "time_rounding": _time_rounding(replication),
     }
     return cube, {}
