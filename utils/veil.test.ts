@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest'
+import { readFileSync } from 'node:fs'
 import {
   frisksAndTickets,
   groupTravelByClockBin,
   motoristsByRace,
   pctMotoristsInGroups,
+  REPLICATION_YEARS,
   restrictToYears,
   type VeilCube,
   type VeilModel,
@@ -138,5 +140,54 @@ describe('restrictToYears', () => {
     const restricted = restrictToYears(figureCube, 2021, 2024)
     const pct = pctMotoristsInGroups(restricted)
     expect(pct['Black - Non-Latino']).toBeCloseTo(27.2, 5)
+  })
+})
+
+// -----------------------------------------------------------------
+// Real-cube regression tests. These load the actual built cube from
+// disk (mirroring utils/reasons.test.ts) and pin the published
+// figures. If the Python builder ever changes a unit convention,
+// introduces a bad join, or shifts a denominator, these fail — the
+// synthetic-fixture tests above cannot catch that because they don't
+// touch the real data.
+describe('real cube (public/cubes/veil.json), restricted to the paper study window', () => {
+  const realCube: VeilCube = JSON.parse(readFileSync('public/cubes/veil.json', 'utf8'))
+  const studyCube = restrictToYears(realCube, REPLICATION_YEARS.from, REPLICATION_YEARS.to)
+
+  it('reproduces the published motorist counts by race', () => {
+    const counts = motoristsByRace(studyCube)
+    expect(counts['Black - Non-Latino']).toBe(36781)
+    expect(counts['White - Non-Latino']).toBe(5529)
+  })
+
+  it('reproduces the published group-travel share by race', () => {
+    const pct = pctMotoristsInGroups(studyCube)
+    expect(pct['Black - Non-Latino']).toBeCloseTo(27.24, 2)
+    expect(pct['White - Non-Latino']).toBeCloseTo(5.32, 2)
+  })
+
+  it('reproduces the published frisk and ticket rates for Black motorists', () => {
+    const r = frisksAndTickets(studyCube, 'Black - Non-Latino')
+    expect(r.solo.friskRate).toBeCloseTo(7.14, 2)
+    expect(r.solo.ticketRate).toBeCloseTo(11.07, 2)
+    expect(r.group.friskRate).toBeCloseTo(19.31, 2)
+    expect(r.group.ticketRate).toBeCloseTo(7.24, 2)
+  })
+
+  it('fits the four headline models with negative coefficients, each carrying its diagnostics', () => {
+    const headlineKeys = [
+      'driver_is_black.model_1',
+      'driver_is_black.model_2',
+      'has_black_passenger.model_1',
+      'has_black_passenger.model_2',
+    ]
+    for (const key of headlineKeys) {
+      const model = realCube.models[key]
+      expect(model, `missing model ${key}`).toBeDefined()
+      expect(model.coef, `${key} coef should be negative`).toBeLessThan(0)
+      expect(model).toHaveProperty('collapsed_units')
+      expect(model).toHaveProperty('min_unit_count')
+      expect(model).toHaveProperty('seasonality_weight')
+    }
   })
 })

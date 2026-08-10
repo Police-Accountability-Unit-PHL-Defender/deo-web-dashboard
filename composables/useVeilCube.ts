@@ -4,19 +4,25 @@
  * Unlike the other cubes this one carries an extra `models` block holding
  * fitted regression results computed at build time.
  *
- * Returns the `useAsyncData` result directly (i.e. `{ data, pending,
- * error, ... }` with `data` typed as `VeilCube | null`) — unlike
- * `useReasonsCube`, it does not wrap the cube in a `{ cube }` object.
+ * Matches `useReasonsCube`/`useStopsCube`: the `useAsyncData` result's
+ * `data` is a `VeilCubeBundle` (`{ cube: VeilCube }`), not the bare cube.
  * The fetched cube spans 2014-2026; callers that want the paper's
  * 2021-2024 study window must call `restrictToYears` from `~/utils/veil`
- * on `data.value` before passing it to any selector.
+ * on `data.value.cube` before passing it to any selector.
  */
 import type { VeilCube } from '~/utils/veil'
 
+export interface VeilCubeBundle {
+  cube: VeilCube
+}
+
 export function useVeilCube() {
-  return useAsyncData<VeilCube>(
+  return useAsyncData<VeilCubeBundle>(
     'veil-cube',
-    () => $fetch<VeilCube>('/cubes/veil.json'),
+    async () => {
+      const cube = await $fetch<VeilCube>('/cubes/veil.json')
+      return { cube }
+    },
     { server: false, lazy: true },
   )
 }
