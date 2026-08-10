@@ -25,10 +25,32 @@ export interface VeilModel {
   converged: boolean
   seasonality_weight: boolean
   paper_coef: number | null
+  /**
+   * Share of ROWS whose value for a collapsible fixed effect was folded
+   * into the "OTHER" bucket, keyed by column (`police_area`,
+   * `assigned_unit`). Only present on model_2 fits. A large share means
+   * that control is hollow for that fit and must be disclosed, not shipped
+   * silently.
+   */
+  other_row_share?: Record<string, number>
+}
+
+/**
+ * How heavily officers round the recorded stop time, measured by the
+ * pipeline on the replication slice. `clock_minutes` is minute-level and
+ * the cube's `clock_bin` dimension is 15-minute, so these cannot be
+ * recomputed from `rows` — they are carried here so the page can state a
+ * measured figure instead of an unsourced one.
+ */
+export interface VeilTimeRounding {
+  n: number
+  pct_multiple_of_5: number
+  pct_multiple_of_15: number
 }
 
 export interface VeilCube extends Cube {
   models: Record<string, VeilModel>
+  time_rounding?: VeilTimeRounding
 }
 
 type Row = Array<string | number | null>
@@ -123,6 +145,53 @@ export function frisksAndTickets(cube: VeilCube, race: string) {
     }
   }
   return { solo: bucket(0), group: bucket(1) }
+}
+
+/**
+ * The dashboard-wide definition of a majority-white police district:
+ * resident whiteness above 50% in `public/cubes/districts.json`. Same rule
+ * the neighborhoods page and the disparity sentence use — see
+ * `pages/data.vue`'s "How does this dashboard calculate majority-white
+ * districts?" entry.
+ */
+export const MAJORITY_WHITE_THRESHOLD = 50
+
+/**
+ * Share of stops of one race that happened in a majority-white police
+ * district. Per stop.
+ *
+ * Depends on the cube's `district` dimension carrying zero-padded two-digit
+ * codes ('02', '12') so it can be keyed against `districts.json`. Districts
+ * missing from the demographics table (e.g. '77', an airport district with
+ * no residents) are excluded from BOTH numerator and denominator, so the
+ * result is "of stops in districts we can classify".
+ */
+export function pctStopsInMajorityWhiteDistricts(
+  cube: VeilCube,
+  race: string,
+  demographics: Record<string, { whiteness: number }>,
+): { pct: number; stops: number; classifiedStops: number } {
+  const districtIdx = column(cube, 'district')
+  const raceIdx = column(cube, 'party_race')
+  const stopsIdx = column(cube, 'n_stops')
+
+  let stops = 0
+  let classified = 0
+  let inMajorityWhite = 0
+  for (const row of cube.rows as Row[]) {
+    if (row[raceIdx] !== race) continue
+    const n = Number(row[stopsIdx] ?? 0)
+    stops += n
+    const entry = demographics[String(row[districtIdx])]
+    if (!entry) continue
+    classified += n
+    if (entry.whiteness > MAJORITY_WHITE_THRESHOLD) inMajorityWhite += n
+  }
+  return {
+    pct: classified === 0 ? 0 : (inMajorityWhite / classified) * 100,
+    stops,
+    classifiedStops: classified,
+  }
 }
 
 /** Display order for lighting states: daylight side of the veil first. */

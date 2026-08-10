@@ -5,6 +5,7 @@ import {
   groupTravelByClockBin,
   motoristsByRace,
   pctMotoristsInGroups,
+  pctStopsInMajorityWhiteDistricts,
   REPLICATION_YEARS,
   restrictToYears,
   type VeilCube,
@@ -70,6 +71,56 @@ describe('groupTravelByClockBin', () => {
   })
 })
 
+describe('pctStopsInMajorityWhiteDistricts', () => {
+  // District 18 is 25.8% white, district 05 is 75.3% white in the real
+  // districts.json; only the latter clears the >50% rule.
+  const demographics = { '18': { whiteness: 25.8 }, '05': { whiteness: 75.3 } }
+
+  const twoDistrictCube: VeilCube = {
+    ...cube,
+    rows: [
+      [2023, 'post_deo', 1080, 'daylight', 'Black - Non-Latino', 0, '18', 75, 75, 0, 0],
+      [2023, 'post_deo', 1080, 'daylight', 'Black - Non-Latino', 0, '05', 25, 25, 0, 0],
+      [2023, 'post_deo', 1080, 'daylight', 'White - Non-Latino', 0, '05', 90, 90, 0, 0],
+    ],
+  }
+
+  it('counts stops, not motorists, and only the requested race', () => {
+    const r = pctStopsInMajorityWhiteDistricts(twoDistrictCube, 'Black - Non-Latino', demographics)
+    expect(r.stops).toBe(100)
+    expect(r.pct).toBeCloseTo(25, 5)
+  })
+
+  it('excludes districts absent from the demographics table from both sides', () => {
+    // '77' is a real PPD district code with no entry in districts.json.
+    const withUnknown: VeilCube = {
+      ...twoDistrictCube,
+      rows: [
+        ...twoDistrictCube.rows,
+        [2023, 'post_deo', 1080, 'daylight', 'Black - Non-Latino', 0, '77', 400, 400, 0, 0],
+      ],
+    }
+    const r = pctStopsInMajorityWhiteDistricts(withUnknown, 'Black - Non-Latino', demographics)
+    expect(r.stops).toBe(500)
+    expect(r.classifiedStops).toBe(100)
+    // Unchanged by the 400 unclassifiable stops, rather than diluted to 5%.
+    expect(r.pct).toBeCloseTo(25, 5)
+  })
+
+  it('reads the real cube, where the district dimension must not be a float string', () => {
+    const realCube: VeilCube = JSON.parse(readFileSync('public/cubes/veil.json', 'utf8'))
+    const studyCube = restrictToYears(realCube, REPLICATION_YEARS.from, REPLICATION_YEARS.to)
+    const real = JSON.parse(readFileSync('public/cubes/districts.json', 'utf8'))
+    const r = pctStopsInMajorityWhiteDistricts(studyCube, 'Black - Non-Latino', real)
+    // Every stop must be classifiable. If the cube shipped '12.0'-style
+    // district codes again, none of them would key against districts.json
+    // and this would collapse to 0.
+    expect(r.classifiedStops).toBe(r.stops)
+    expect(r.stops).toBe(31209)
+    expect(r.pct).toBeCloseTo(6.95, 2)
+  })
+})
+
 describe('restrictToYears', () => {
   const sampleModel: VeilModel = {
     coef: 0.5,
@@ -94,7 +145,7 @@ describe('restrictToYears', () => {
       [2024, 'post_deo', 1095, 'daylight', 'White - Non-Latino', 0, '18', 50, 50, 2, 6],
       [2025, 'post_deo', 1095, 'dark', 'White - Non-Latino', 1, '18', 5, 11, 1, 1],
     ],
-    models: { 'driver_is_black.model_1': sampleModel },
+    models: { 'party_is_black.model_1': sampleModel },
   }
 
   it('keeps only rows with year within the inclusive range', () => {
@@ -196,10 +247,23 @@ describe('real cube (public/cubes/veil.json), restricted to the paper study wind
     for (const point of series) expect(point.stops).toBeGreaterThan(0)
   })
 
+  it('carries measured stop-time rounding, which the page states instead of asserting a figure', () => {
+    // These cannot be recomputed from `rows` (clock_bin is 15-minute), so if
+    // the pipeline stops emitting them the page silently loses the numbers
+    // behind its "recorded stop times are rounded" caveat.
+    const rounding = realCube.time_rounding
+    expect(rounding).toBeDefined()
+    expect(rounding!.n).toBe(36587)
+    // Heaping is real and large: chance alone would give 20% and 6.7%.
+    expect(rounding!.pct_multiple_of_5).toBeGreaterThan(40)
+    expect(rounding!.pct_multiple_of_15).toBeGreaterThan(15)
+    expect(rounding!.pct_multiple_of_5).toBeGreaterThan(rounding!.pct_multiple_of_15)
+  })
+
   it('fits the four headline models with negative coefficients, each carrying its diagnostics', () => {
     const headlineKeys = [
-      'driver_is_black.model_1',
-      'driver_is_black.model_2',
+      'party_is_black.model_1',
+      'party_is_black.model_2',
       'has_black_passenger.model_1',
       'has_black_passenger.model_2',
     ]

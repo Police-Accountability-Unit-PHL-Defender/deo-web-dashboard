@@ -88,8 +88,10 @@
               2026 (<a href="https://doi.org/10.21428/cb6ab371.f1d81a4b" class="text-hyperlink-blue" target="_blank">doi.org/10.21428/cb6ab371.f1d81a4b</a>),
               using Philadelphia's own published traffic stop data for 2021 through 2024. Every figure below is drawn
               from that four-year window and from the evening hours the authors studied. Our sample counts land within
-              about 5% of the published figures and our main coefficients within 0.008 of theirs, on a data snapshot
-              roughly two years newer than the one the authors used.
+              about 5% of the published figures, and our Model 1
+              coefficients<template v-if="model1MaxDelta !== null"> within
+              {{ model1MaxDelta.toFixed(3) }} of theirs</template><template v-else> closely track
+              theirs</template>, on a data snapshot roughly two years newer than the one the authors used.
             </p>
           </AnswerText>
         </section>
@@ -124,9 +126,11 @@
                 highest. Sending more officers into some neighborhoods than others produces more stops of the people who
                 live and drive in those neighborhoods, whatever each individual officer does. That mechanism &mdash;
                 sometimes called neighborhood profiling &mdash; plausibly explains much of the difference above. The
-                charts that follow compare young Black men with young Black men rather than comparing across races,
+                central results on this page are not cross-race comparisons at all: the frisk and ticket chart, the
+                veil-of-darkness chart, and the headline model row all compare young Black men with young Black men,
                 which removes the part of this problem that comes from Black and white motorists being stopped in
-                different neighborhoods. Only the Model 2 specification below controls for location directly.
+                different neighborhoods. The next chart and one model row do still compare across races, and are
+                labelled where they appear. Only the Model 2 specification below controls for location directly.
               </p>
             </AnswerText>
           </Answer>
@@ -161,6 +165,11 @@
                 different rates. The paper's authors checked that against American Community Survey commuting data,
                 which puts carpooling at roughly 14% for both Black and white Philadelphians. Different travel habits do
                 not account for the difference above.
+              </p>
+              <p class="text-body-4 mt-6">
+                This chart, like the one before it, is a comparison <em>across</em> races, and so carries the
+                neighborhood-profiling caveat above. Everything from here on compares young Black men with young Black
+                men, with one clearly marked exception in the model table.
               </p>
             </AnswerText>
           </Answer>
@@ -227,9 +236,9 @@
                 <p class="text-caption text-neutral-800 pt-4 px-4 max-w-[860px] mx-auto">
                   Stops of young Black male motorists (ages 18&ndash;29), 2021&ndash;2024, in 15-minute clock-time bins.
                   Counted <strong>per stop</strong>: each stop counts once regardless of how many people were in the
-                  car, which mirrors what the models below predict. Two clock times are not shown. The sample window
-                  starts at 5:08pm and ends at 8:35pm, so the earliest dark bin and the latest daylight bin are clipped
-                  and rest on very few stops &mdash; {{ chart4.suppressedSummary }}. Percentages built on that few stops
+                  car, which mirrors what the models below predict. {{ chart4.suppressedBars }} bars are not shown. The
+                  sample window starts at 5:08pm and ends at 8:35pm, so the earliest dark bin and the latest daylight bin
+                  are clipped and rest on very few stops &mdash; {{ chart4.suppressedSummary }}. Percentages built on that few stops
                   swing widely enough to stretch the chart's vertical scale and flatten the real differences, so any
                   clock time with fewer than {{ MIN_BIN_STOPS }} stops on either side of the veil is left out here.
                   Hover any bar for its own stop count. The models below use every stop, including the ones behind the
@@ -300,12 +309,12 @@
               </table>
             </div>
           </div>
-          <AnswerText v-if="passenger1 && driver1 && placebo1">
+          <AnswerText v-if="passenger1 && party1 && placebo1">
             <p class="text-body-4">
               Among stops of young Black men, the odds that the stopped car was carrying another young Black man were
               {{ pctBelowOne(passenger1.oddsRatio) }} lower after dark than in daylight at the same clock time. Across
               stops of young Black and white men together, the odds that the person stopped was Black were
-              {{ pctBelowOne(driver1.oddsRatio) }} lower after dark. Both intervals exclude 1, so neither is comfortably
+              {{ pctBelowOne(party1.oddsRatio) }} lower after dark. Both intervals exclude 1, so neither is comfortably
               explained by chance.
             </p>
             <p class="text-body-4 mt-6">
@@ -356,14 +365,25 @@
             </div>
             <!-- Tooltip renders a <div>, which the HTML parser would hoist out of a <p>. -->
             <div class="text-caption text-neutral-800 p-4 max-w-[860px] mx-auto">
-              Model 2 adds police service area<Tooltip term="PSA"/>, officer assignment and a summer indicator to the
-              controls. Two differences from the published version matter and we state them rather than bury them.
+              Model 2 adds police service area<Tooltip term="PSA"/> &mdash; identified by district <em>and</em> area
+              number, since Philadelphia numbers its service areas 1&ndash;4 within each district &mdash; along with
+              officer assignment and a summer indicator. Differences from the published version matter and we state them
+              rather than bury them.
               First, our Model 2 <strong>omits the seasonality weight the source paper applies</strong>; the paper does
               not publish that weight's formula, so we could not reproduce it. Second, officer-assignment and service-area
               categories with fewer than {{ model2Detail.minUnitCount.toLocaleString() }} stops are collapsed into a
               single &ldquo;other&rdquo; category
               <template v-if="model2Detail.collapsedRange">({{ model2Detail.collapsedRange }} categories, depending on
               the model)</template>, because categories that rare can perfectly predict the outcome and break the fit.
+              <template v-if="areaOtherShares.headlineMax !== null">In the two rows above the placebo, collapsing costs
+              little: areas holding just {{ areaOtherShares.headlineMax.toFixed(1) }}% of stops or fewer end up in that
+              &ldquo;other&rdquo; bucket, so the location control is doing real work.</template>
+              <template v-if="areaOtherShares.placebo !== null && placebo2">The placebo row is the exception, and it is
+              worth being blunt about: its {{ placebo2.n.toLocaleString() }} stops of young white men are spread across
+              dozens of service areas, so areas holding
+              {{ areaOtherShares.placebo.toFixed(0) }}% of those stops fall below the threshold and lose
+              their own effect. That row's location control is largely hollow, and its Model 2 estimate should not be
+              read as location-adjusted.</template>
               Treat these numbers as supporting detail. The Model 1 results above are the reproduction we stand behind.
               <template v-if="placebo2">
                 Note that the placebo row here, though its odds ratio of {{ placebo2.oddsRatio.toFixed(3) }} looks larger
@@ -399,23 +419,35 @@
             </p>
             <!-- Tooltip renders a <div>, which the HTML parser would hoist out of a <p>. -->
             <div class="text-body-4 mt-6">
-              <strong>Philadelphia's segregation strains any cross-race comparison.</strong> Only about 5% of stops of
-              young Black men happen in majority-white police districts<Tooltip term="District"/>, so comparing Black
+              <strong>Philadelphia's segregation strains any cross-race comparison.</strong>
+              <template v-if="blackStopsInMajorityWhiteDistricts !== null">In our sample, only
+              {{ blackStopsInMajorityWhiteDistricts.toFixed(1) }}% of stops of young Black men happened in a
+              majority-white police district<Tooltip term="District"/> &mdash; one where more than half of residents are
+              white.</template><template v-else>Very few stops of young Black men happen in majority-white police
+              districts<Tooltip term="District"/>.</template> So comparing Black
               and white motorists always means comparing different places as well as different people. That is why the
               paper's within-race test matters most: it holds race constant, compares young Black men with young Black
               men, and asks only what changes when officers can no longer see into the car.
             </div>
             <p class="text-body-4 mt-6">
-              <strong>Recorded stop times are rounded.</strong> About 55% of stop times fall on a multiple of five
-              minutes and 22% on a quarter hour, which means a stop logged at 7:30pm may have happened somewhat earlier
-              or later. Near the boundary between light and dark that rounding can put a stop on the wrong side of the
+              <strong>Recorded stop times are rounded.</strong>
+              <template v-if="timeRounding">In our sample,
+              {{ timeRounding.pct_multiple_of_5.toFixed(0) }}% of recorded stop times fall on a multiple of five minutes
+              and {{ timeRounding.pct_multiple_of_15.toFixed(0) }}% on a quarter hour, far more than chance would
+              produce (20% and 6.7%).</template><template v-else>Officers log times in round numbers far more often than
+              chance would produce.</template> A stop logged at 7:30pm may therefore have happened somewhat earlier or
+              later. Near the boundary between light and dark that rounding can put a stop on the wrong side of the
               veil, so the roughly 30-minute window between sunset and full dusk is excluded from the analysis
               altogether.
             </p>
             <p class="text-body-4 mt-6">
               <strong>How close this reproduction lands.</strong> Working from Philadelphia's published stop data on a
               snapshot roughly two years newer than the authors', our sample counts come within about 5% of the
-              published figures and our Model 1 coefficients within 0.008 of the published ones. The original analysis is
+              published figures and our Model 1
+              coefficients<template v-if="model1MaxDelta !== null"> within {{ model1MaxDelta.toFixed(3) }} of the
+              published ones</template><template v-else> closely track the published ones</template>. Our Model 2
+              coefficients are further off, and deliberately so: it omits a weight the paper applies, as noted above.
+              The original analysis is
               by Lance Hannon and Molly Biddle, Villanova University, 2026:
               <a href="https://doi.org/10.21428/cb6ab371.f1d81a4b" class="text-hyperlink-blue" target="_blank">https://doi.org/10.21428/cb6ab371.f1d81a4b</a>.
             </p>
@@ -431,6 +463,7 @@ import Graph from '~/components/Graph.vue'
 import QuestionHeader from '~/components/QuestionHeader.vue'
 import HorizontalLine from '~/components/ui/HorizontalLine.vue'
 import Tooltip from '~/components/ui/Tooltip.vue'
+import { useDistrictsDemographics } from '~/composables/useDistrictsDemographics'
 import { useVeilCube } from '~/composables/useVeilCube'
 import {
   REPLICATION_YEARS,
@@ -438,6 +471,7 @@ import {
   groupTravelByClockBin,
   motoristsByRace,
   pctMotoristsInGroups,
+  pctStopsInMajorityWhiteDistricts,
   restrictToYears,
   type ClockBinPoint,
   type VeilCube,
@@ -456,6 +490,7 @@ const RACE_LABEL: Record<string, string> = {
 }
 
 const { data: veilBundle } = useVeilCube()
+const { data: districtDemographics } = useDistrictsDemographics()
 
 /**
  * The shipped cube spans 2014-2026 but every figure on this page is a
@@ -601,6 +636,9 @@ const LIGHTING_LABEL: Record<string, string> = {
   dark: 'After dark',
 }
 
+/** Both sides of the veil. A bin missing either one is not a comparison. */
+const LIGHTING_STATES = ['daylight', 'dark'] as const
+
 /**
  * Minimum stops in BOTH lighting states for a clock bin to be plotted.
  *
@@ -631,11 +669,29 @@ const chart4 = computed(() => {
     else bins.set(p.clockBin, [p])
   }
 
+  // A bin is only a veil-of-darkness comparison if BOTH lighting states are
+  // present and both are thick enough. Testing thickness alone is not
+  // sufficient: `Array.prototype.every` is vacuously true for a
+  // single-element array, so a clock time observed in only one lighting
+  // state would have been kept, drawn as a lone unpaired bar, counted in
+  // `shownBins` and — having no counterpart to beat — never counted in
+  // `daylightHigherBins`, quietly deflating the "12 of the 13 bins"
+  // sentence. No such bin exists in the current cube; this closes the case
+  // rather than relying on that staying true.
   const kept: ClockBinPoint[][] = []
-  const suppressed: ClockBinPoint[] = []
+  const suppressed: { point: ClockBinPoint; thin: boolean }[] = []
   for (const [, binPoints] of [...bins.entries()].sort((a, b) => a[0] - b[0])) {
-    if (binPoints.every((p) => p.stops >= MIN_BIN_STOPS)) kept.push(binPoints)
-    else suppressed.push(...binPoints.filter((p) => p.stops < MIN_BIN_STOPS))
+    const hasBothStates = LIGHTING_STATES.every(
+      (state) => binPoints.some((p) => p.lighting === state),
+    )
+    const allThick = binPoints.every((p) => p.stops >= MIN_BIN_STOPS)
+    if (hasBothStates && allThick) {
+      kept.push(binPoints)
+      continue
+    }
+    for (const point of binPoints) {
+      suppressed.push({ point, thin: point.stops < MIN_BIN_STOPS })
+    }
   }
 
   const data = kept.flat().map((p) => {
@@ -662,8 +718,11 @@ const chart4 = computed(() => {
     return day !== undefined && dark !== undefined && day.pctGroupStops > dark.pctGroupStops
   }).length
 
+  const lightWord = (p: ClockBinPoint) => (p.lighting === 'dark' ? 'after dark' : 'in daylight')
   const suppressedSummary = suppressed
-    .map((p) => `${clockLabel(p.clockBin)} ${p.lighting === 'dark' ? 'after dark' : 'in daylight'} has only ${p.stops.toLocaleString()} stops`)
+    .map(({ point, thin }) => (thin
+      ? `${clockLabel(point.clockBin)} ${lightWord(point)} has only ${point.stops.toLocaleString()} stops`
+      : `${clockLabel(point.clockBin)} appears only ${lightWord(point)}, with nothing to compare it against`))
     .join(', and ')
 
   return {
@@ -674,6 +733,7 @@ const chart4 = computed(() => {
     shownBins: kept.length,
     daylightHigherBins,
     suppressedSummary,
+    suppressedBars: suppressed.length,
   }
 })
 
@@ -701,7 +761,7 @@ const MODEL_META: Record<string, { label: string; description: string }> = {
     label: 'A stopped young Black man was traveling with another young Black man',
     description: 'Among stops of young Black male motorists',
   },
-  driver_is_black: {
+  party_is_black: {
     label: 'The young man police stopped was Black rather than white',
     description: 'Among stops of young Black and white male motorists',
   },
@@ -711,7 +771,7 @@ const MODEL_META: Record<string, { label: string; description: string }> = {
   },
 }
 
-const MODEL_ORDER = ['has_black_passenger', 'driver_is_black', 'placebo_white'] as const
+const MODEL_ORDER = ['has_black_passenger', 'party_is_black', 'placebo_white'] as const
 
 function toRow(key: string, model: VeilModel | undefined): ModelRow | null {
   if (!model) return null
@@ -751,9 +811,72 @@ const model2Rows = computed(() => rowsForSpec('model_2'))
 
 const byKey = (rows: ModelRow[], family: string) => rows.find((r) => r.key.startsWith(`${family}.`)) ?? null
 const passenger1 = computed(() => byKey(model1Rows.value, 'has_black_passenger'))
-const driver1 = computed(() => byKey(model1Rows.value, 'driver_is_black'))
+const party1 = computed(() => byKey(model1Rows.value, 'party_is_black'))
 const placebo1 = computed(() => byKey(model1Rows.value, 'placebo_white'))
 const placebo2 = computed(() => byKey(model2Rows.value, 'placebo_white'))
+
+/**
+ * How far our Model 1 coefficients sit from the published ones — DERIVED,
+ * never typed in.
+ *
+ * This page previously asserted "within 0.008" in two places. That was true
+ * when it was written and false by the time it shipped: a cube rebuild moved
+ * has_black_passenger.model_1 to -0.23295 against a published -0.242, a gap
+ * of 0.00905, and the Model 1 table right below prints both numbers, so any
+ * reader could subtract and catch it. Computing the bound from the same
+ * models block the table renders means the sentence cannot drift again.
+ *
+ * Rounded UP to three decimals, deliberately: a bound that is rounded to
+ * nearest could understate the true gap, and understating accuracy is the
+ * failure mode that matters here.
+ */
+const model1MaxDelta = computed<number | null>(() => {
+  const deltas = model1Rows.value
+    .filter((row) => !row.failed && row.paperCoef !== null)
+    .map((row) => Math.abs(row.coef - (row.paperCoef as number)))
+  if (deltas.length === 0) return null
+  return Math.ceil(Math.max(...deltas) * 1000) / 1000
+})
+
+/**
+ * Share of stops of young Black men that happened in a majority-white
+ * police district. Computed from our own cube rather than quoted: the
+ * figure this page used to carry ("about 5%") had no source and no
+ * computation behind it anywhere in the codebase. Ours is higher.
+ */
+const blackStopsInMajorityWhiteDistricts = computed<number | null>(() => {
+  const c = cube.value
+  const demographics = districtDemographics.value
+  if (!c || !demographics) return null
+  return pctStopsInMajorityWhiteDistricts(c, BLACK, demographics).pct
+})
+
+/** Measured stop-time rounding, carried on the cube. See `utils/veil.ts`. */
+const timeRounding = computed(() => veilBundle.value?.cube?.time_rounding ?? null)
+
+/**
+ * Model 2's location control is real for the two headline rows and weak for
+ * the placebo row, and the page has to say which is which. Areas holding
+ * fewer than `min_unit_count` stops are folded into a single OTHER bucket;
+ * the white-motorist subsample is small enough (about 5,400 stops spread
+ * over 66 areas) that most of its areas fall below that line and lose their
+ * own fixed effect. Reported as a share of ROWS, since that is what decides
+ * whether the control is doing any work.
+ */
+const areaOtherShares = computed(() => {
+  const models = veilBundle.value?.cube?.models
+  const share = (key: string): number | null => {
+    const value = models?.[key]?.other_row_share?.police_area
+    return typeof value === 'number' ? value * 100 : null
+  }
+  const headline = ['party_is_black.model_2', 'has_black_passenger.model_2']
+    .map(share)
+    .filter((v): v is number => v !== null)
+  return {
+    headlineMax: headline.length ? Math.max(...headline) : null,
+    placebo: share('placebo_white.model_2'),
+  }
+})
 
 /** Collapsed-category counts for the Model 2 disclosure. */
 const model2Detail = computed(() => {
