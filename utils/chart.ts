@@ -117,11 +117,25 @@ export function drawYAxis(
 // hideTooltip / setPosition local functions). The mouseover/mouseleave
 // wiring and datum lookup (stack vs. group vs. plain) are data-model-specific
 // and stay in the calling component; this covers only visibility + position
-// + content, generalized to take the container element directly instead of
-// closing over drawGraph's local `width`/`height` variables.
+// + content.
+//
+// IMPORTANT: `size` must be the same `width`/`height` values drawGraph used
+// to build the chart's own scales — NOT anything measured off `container`.
+// In the original Graph.vue, `width` was `Math.max(containerWidth, props.
+// minimumContainerWidth ?? 640)` (a floor, routinely 1080 on some charts,
+// e.g. pages/reasons.vue) and `height` was the constant 380. Charts that sit
+// inside an `overflow-x-auto` scroller have a visible `container.clientWidth`
+// that is often much smaller than that floor, and the SVG's `height: auto`
+// means `container.clientHeight` can be less than 380 on narrow viewports —
+// so measuring the container instead of using drawGraph's own numbers moves
+// the left/right and top/bottom flip thresholds and changes tooltip
+// placement. `container` is kept as a parameter for callers that have no
+// better source of dimensions, but Graph.vue always passes its computed
+// `width`/`height` explicitly to preserve the original behaviour exactly.
 export function createTooltip(
   container: HTMLElement,
-  tooltipDiv: HTMLElement
+  tooltipDiv: HTMLElement,
+  size?: { width: number; height: number }
 ): { show(html: string): void; move(event: any): void; hide(): void } {
   const MOUSE_POS_Y_OFFSET = 8
   const MOUSE_POS_X_OFFSET = 0
@@ -134,8 +148,8 @@ export function createTooltip(
     },
     move(event: any) {
       const { offsetX, offsetY } = event
-      const width = container.clientWidth
-      const height = container.clientHeight
+      const width = size ? size.width : container.clientWidth
+      const height = size ? size.height : container.clientHeight
       tooltip
         .style(
           "top",

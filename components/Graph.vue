@@ -240,7 +240,7 @@ const tickValues = averageTickLength > 4 && props.quarterlyXAxisTicks
   drawYAxis(svg, y, { marginLeft: margin.left, marginTop: margin.top, label: props.axisProperties.y })
 
   const tooltipDiv = d3.select(container.value).select('.tooltip')
-  const tip = createTooltip(container.value, tooltipDiv.node())
+  const tip = createTooltip(container.value, tooltipDiv.node(), { width, height })
   const tooltip = (selectionGroup, trendline = false, isStack = false) => {
     selectionGroup.each(function () {
       d3.select(this)
