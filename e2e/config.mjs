@@ -111,4 +111,20 @@ export const CHECKS = [
       return missing.length === 0 || `operational trend chart missing legend text: ${missing.join(', ')}`
     },
   },
+  {
+    name: 'majority-white disparity sentence renders a plausible ratio',
+    // Guards the published claim itself: a zero population denominator would
+    // print Infinity, and a failed demographics fetch would drop the sentence
+    // silently rather than erroring.
+    pages: ['neighborhoods'],
+    assert: ({ text }) => {
+      const m = text.match(/In majority white districts, Black drivers were stopped by Philadelphia police ([\d.]+)x more often/)
+      if (!m) return 'disparity sentence missing from the neighborhoods page'
+      const ratio = Number(m[1])
+      if (!Number.isFinite(ratio)) return `disparity ratio is not a number: ${m[1]}`
+      if (ratio <= 1) return `disparity ratio implausibly low: ${ratio}`
+      if (ratio > 20) return `disparity ratio implausibly high: ${ratio}`
+      return true
+    },
+  },
 ]

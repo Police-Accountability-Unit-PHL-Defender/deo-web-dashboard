@@ -153,6 +153,10 @@
               <h4>{{ q3A.figures.barplot3.properties.title }}</h4>
             </Graph>
           </Answer>
+          <p v-if="disparity" class="text-body-2 max-w-3xl mt-8">
+            In majority white districts, Black drivers were stopped by Philadelphia police
+            <span class="whitespace-nowrap">{{ disparity.ratio }}x</span> more often than white drivers in {{ disparity.year }}.
+          </p>
         </section>
         <HorizontalLine class="my-4 md:my-12"/>
         <section>
@@ -199,6 +203,7 @@ import {
 } from '~/utils/cube';
 import { useStopsCube } from '~/composables/useStopsCube';
 import { useDistrictsDemographics } from '~/composables/useDistrictsDemographics';
+import { majorityWhiteDisparity } from '~/utils/neighborhoods';
 
 useHead({
   title: 'Do police treat people and neighborhoods differently?',
@@ -225,6 +230,14 @@ const selectedDistricts = ref(['District 05', 'District 12'])
 // Shared cube + districts demographics. Both endpoints are pure derivations.
 const { data: stopsBundle } = await useStopsCube()
 const { data: districtsDemo } = await useDistrictsDemographics()
+
+// Stop-rate disparity across majority-white districts. Null until both the
+// stops cube and the demographics have loaded.
+const disparity = computed(() => {
+  const bundle = stopsBundle.value
+  if (!bundle || !districtsDemo.value) return null
+  return majorityWhiteDisparity(bundle.cube, districtsDemo.value, mostRecentQuarter.toParamString())
+})
 
 // --- Location helpers -----------------------------------------------------
 
