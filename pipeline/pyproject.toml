@@ -13,4 +13,7 @@ dependencies = [
 ]
 
 [dependency-groups]
-dev = ["pytest>=8.0"]
+dev = ["pytest>=8.0", "astral>=3.2"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
