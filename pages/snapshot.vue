@@ -100,12 +100,20 @@ import QuestionHeader from '~/components/QuestionHeader.vue';
 import Graph from '~/components/Graph.vue';
 import HorizontalLine from '~/components/ui/HorizontalLine.vue';
 import Tooltip from '~/components/ui/Tooltip.vue';
+import { useStopsCube } from '~/composables/useStopsCube';
+import { buildAnnualSummary } from '~/utils/snapshot';
+import { Quarter } from '~/utils/index';
 
 useHead({
   title: 'Snapshot of traffic enforcement in Philadelphia',
 })
 
-const { data: snapshotCube } = await useSnapshotCube()
-const q1A = computed(() => snapshotCube.value?.annual_summary ?? null)
+const { data: stopsBundle } = await useStopsCube()
+const mostRecentQuarter = Quarter.fromParamString(useState('mostRecentQuarter').value)
+// Was a prebuilt snapshot.json; now computed from the stops cube like every
+// other page. See utils/snapshot.ts.
+const q1A = computed(() =>
+  stopsBundle.value ? buildAnnualSummary(stopsBundle.value.cube, mostRecentQuarter) : null,
+)
 
 </script>

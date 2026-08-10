@@ -1,0 +1,16 @@
+# pipeline/pyproject.toml
+[project]
+name = "deo-pipeline"
+version = "1.0.0"
+description = "Builds the Driving Equality dashboard's static cubes from Open Data Philly backups."
+requires-python = ">=3.10.4"
+dependencies = [
+    "pandas>=2.1.1",
+    "shapely>=2.0",
+    "rtree>=1.0",
+    "tqdm>=4.66",
+    "click>=8.0",
+]
+
+[dependency-groups]
+dev = ["pytest>=8.0"]
