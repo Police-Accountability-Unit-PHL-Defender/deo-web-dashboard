@@ -56,10 +56,26 @@ def build_veil_table(zip_path: Path, db_path: Path, years: list[int] | None = No
     sun = load_sun_times()
     frames = []
 
+    # CSVs are named by the UTC year of datetimeoccur, but the "year" column
+    # in the output is derived from ts_local (local time) in
+    # apply_paper_restrictions. The inter-twilight window (17:08-20:35
+    # local) is 22:08-01:35 UTC, so most of it falls on the *next* UTC day
+    # -- every 31 December evening in the analytic sample therefore lives in
+    # the following year's UTC-named CSV. A `years=[2021..2024]` request
+    # must also open the 2020 and 2025 CSVs to pick up those boundary
+    # stops, then filter the result down to the requested *local* years
+    # below. Reading a neighbouring year that isn't in the zip (e.g. no
+    # 2013 or 2027 file) is fine: it just never appears among
+    # `_stop_csv_names`, so the loop below skips it without error.
+    read_years = (
+        {neighbor for y in years for neighbor in (y - 1, y, y + 1)}
+        if years is not None else None
+    )
+
     with zipfile.ZipFile(zip_path) as zf:
         for name in sorted(_stop_csv_names(zf)):
             year = _year_of(name)
-            if years is not None and year not in years:
+            if read_years is not None and year not in read_years:
                 continue
             with zf.open(name) as fh:
                 # Non-MVC rows are kept through the rollup and dropped by
@@ -93,6 +109,11 @@ def build_veil_table(zip_path: Path, db_path: Path, years: list[int] | None = No
 
     out = pd.concat(frames, ignore_index=True) if frames else pd.DataFrame(columns=OUT_COLS)
     out = out[OUT_COLS]
+    if years is not None:
+        # Neighbouring-year CSVs were opened only to catch local-year
+        # boundary stops (see above); anything from them that is NOT in the
+        # requested local years does not belong in this build.
+        out = out[out.year.isin(years)]
     out["ts_local"] = out.ts_local.astype(str)
     out["stop_date"] = out.stop_date.astype(str)
 

@@ -103,6 +103,35 @@ def test_literal_na_mvc_code_is_not_dropped_as_null():
 
 
 @requires_zip
+def test_years_filter_returns_exactly_the_requested_local_years(tmp_path):
+    """Regression test for a UTC/local year-boundary bug.
+
+    CSVs are named by the UTC year of datetimeoccur, but the "year" column
+    is derived from local time. The inter-twilight window (17:08-20:35
+    local) is 22:08-01:35 UTC, so a 31-December-evening stop's UTC
+    timestamp falls on 1 January of the *next* year, putting that stop in
+    the next year's CSV. A naive years=[2021..2024] build that only opens
+    those four CSVs therefore silently drops every 31-December-2024 stop
+    (which lives in the 2025 CSV) -- exactly the assertion below that used
+    to fail.
+    """
+    db = tmp_path / "test.db"
+    build_veil_table(_latest_zip(), db, years=[2021, 2022, 2023, 2024])
+    with sqlite3.connect(db) as conn:
+        df = pd.read_sql("SELECT year, stop_date FROM car_ped_stops_veil", conn)
+
+    assert set(df.year.unique()) <= {2021, 2022, 2023, 2024}, (
+        f"years outside the request leaked in: {sorted(df.year.unique())}"
+    )
+
+    dec_31_2024 = df[df.stop_date == "2024-12-31"]
+    assert len(dec_31_2024) > 0, (
+        "no 2024-12-31 stops present -- the local-year boundary is being "
+        "dropped again"
+    )
+
+
+@requires_zip
 def test_2024_row_count_reflects_na_mvc_codes_being_kept(tmp_path):
     """Without the mvc_code converter, 2024 alone builds ~8,910 rows.
 
