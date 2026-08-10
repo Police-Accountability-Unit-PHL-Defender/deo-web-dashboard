@@ -6,6 +6,7 @@
  * keyed by zero-padded district code (e.g. `"22"`). Each entry has
  *  - `total`     – total residents
  *  - `white`     – white residents
+ *  - `black`     – Black residents
  *  - `whiteness` – `100 * white / total`, rounded to one decimal
  *
  * Used by the neighborhoods page to order districts from
@@ -15,6 +16,7 @@
 export interface DistrictDemographics {
   total: number
   white: number
+  black: number
   whiteness: number
 }
 
