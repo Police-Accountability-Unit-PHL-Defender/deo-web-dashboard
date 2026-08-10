@@ -1,9 +1,12 @@
 """Pin the published quantities from Hannon & Biddle (2026).
 
-Tolerances are wide (10%) because OpenDataPhilly revises records and our
-backup postdates the authors' download by years. They are tight enough to
-catch a structural break -- a bad dedup key, a dropped restriction, a
-lighting inversion -- which is the point.
+Sample-count tolerances are wide (10% relative) because OpenDataPhilly
+revises records and our backup postdates the authors' download by years.
+Rate assertions (Figures 3-4) use absolute percentage-point tolerances
+instead, since the underlying quantities are already percentages. All
+tolerances are tight enough to catch a structural break -- a bad dedup
+key, a dropped restriction -- and the dedicated solstice tests below
+independently catch a lighting inversion.
 """
 
 import sqlite3
@@ -81,8 +84,49 @@ def test_figure_4_frisk_and_ticket_rates(sample):
     assert abs(group_frisk - 19.5) < 3.0, f"group frisk {group_frisk:.1f}%"
     assert group_frisk > 2 * solo_frisk, "group frisk rate should be far higher"
 
+    solo_ticket = 100 * solo.n_ticketed.sum() / solo.party_size.sum()
+    group_ticket = 100 * group.n_ticketed.sum() / group.party_size.sum()
+    assert abs(solo_ticket - 11.1) < 3.0, f"solo ticket {solo_ticket:.1f}%"
+    assert abs(group_ticket - 7.3) < 3.0, f"group ticket {group_ticket:.1f}%"
+    assert group_frisk > group_ticket, (
+        "group stops should be more likely to end in a frisk than a ticket"
+    )
+
 
 def test_lighting_is_roughly_balanced(sample):
     """The paper reports the window splits its sample about evenly."""
     share_dark = sample.obscured_view.mean()
     assert 0.35 < share_dark < 0.65, share_dark
+
+
+def test_lighting_matches_almanac_facts_at_the_solstices(sample):
+    """Ground truth independent of our own sunset/dusk computation.
+
+    In late June, Philadelphia civil dusk (~21:05) falls after the whole
+    inter-twilight window closes (20:35), so essentially every late-June stop
+    must be classified daylight. In late December, sunset (~16:38) and civil
+    dusk (~17:09) both fall at or before the window opens (17:08), so
+    essentially every late-December stop must be classified dark. A full
+    daylight/dark inversion flips both checks at once, which is exactly the
+    failure mode this test exists to catch -- an inversion would otherwise be
+    invisible to every other assertion in this file.
+    """
+    day = pd.to_datetime(sample.stop_date).dt.day
+
+    late_june = sample[(sample.month == 6) & (day >= 15)]
+    late_december = sample[(sample.month == 12) & (day >= 15)]
+
+    assert len(late_june) > 0, "no late-June stops in sample"
+    assert len(late_december) > 0, "no late-December stops in sample"
+
+    pct_daylight_june = 100 * (late_june.obscured_view == 0).mean()
+    pct_dark_december = 100 * (late_december.obscured_view == 1).mean()
+
+    assert pct_daylight_june > 95, (
+        f"late-June daylight share {pct_daylight_june:.1f}% -- expected >95%, "
+        "possible lighting inversion"
+    )
+    assert pct_dark_december > 95, (
+        f"late-December dark share {pct_dark_december:.1f}% -- expected >95%, "
+        "possible lighting inversion"
+    )
