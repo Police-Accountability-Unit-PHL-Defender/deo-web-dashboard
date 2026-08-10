@@ -49,10 +49,11 @@ const pathCoords = (d) => [...(d ?? '').matchAll(/[ML]([-\d.]+),([-\d.]+)/g)].ma
 
 describe('LineGraph', () => {
   it('draws one path per series', () => {
-    const svg = factory().find('svg')
-    const solid = svg.findAll('path').filter((p) => !p.attributes('stroke-dasharray'))
-    // Two series, plus however many axis paths d3 leaves behind.
-    expect(solid.length).toBeGreaterThanOrEqual(2)
+    const wrapper = factory()
+    // Exactly two series (Operational, Non-operational); seriesPaths already
+    // excludes d3's own axis chrome (e.g. `<path class="domain">`), so this
+    // asserts the real count rather than a loose lower bound.
+    expect(seriesPaths(wrapper)).toHaveLength(2)
   })
 
   it('applies each series its own stroke class', () => {

@@ -91,14 +91,11 @@ export function buildYScale(
 export function drawYAxis(
   svg: d3.Selection<any, any, any, any>,
   y: d3.ScaleLinear<number, number>,
-  opts: { marginLeft: number; marginTop: number; label: string; tickFormat?: (d: any) => string }
+  opts: { marginLeft: number; marginTop: number; label: string }
 ): void {
-  const { marginLeft, marginTop, label, tickFormat } = opts
+  const { marginLeft, marginTop, label } = opts
   const width = +svg.attr('width')
   const axis = d3.axisLeft(y).tickSizeInner(-width, 0, 0).tickSizeOuter(0).tickPadding(8)
-  if (tickFormat) {
-    axis.tickFormat(tickFormat)
-  }
   svg.append("g")
     .attr("transform", `translate(${marginLeft},0)`)
     .attr("class", "text-caption")
@@ -129,13 +126,11 @@ export function drawYAxis(
 // means `container.clientHeight` can be less than 380 on narrow viewports —
 // so measuring the container instead of using drawGraph's own numbers moves
 // the left/right and top/bottom flip thresholds and changes tooltip
-// placement. `container` is kept as a parameter for callers that have no
-// better source of dimensions, but Graph.vue always passes its computed
-// `width`/`height` explicitly to preserve the original behaviour exactly.
+// placement. Both production callers (Graph.vue, LineGraph.vue) always pass
+// `size` explicitly, so there is no container-measuring fallback here.
 export function createTooltip(
-  container: HTMLElement,
   tooltipDiv: HTMLElement,
-  size?: { width: number; height: number }
+  size: { width: number; height: number }
 ): { show(html: string): void; move(event: any): void; hide(): void } {
   const MOUSE_POS_Y_OFFSET = 8
   const MOUSE_POS_X_OFFSET = 0
@@ -148,8 +143,8 @@ export function createTooltip(
     },
     move(event: any) {
       const { offsetX, offsetY } = event
-      const width = size ? size.width : container.clientWidth
-      const height = size ? size.height : container.clientHeight
+      const width = size.width
+      const height = size.height
       tooltip
         .style(
           "top",

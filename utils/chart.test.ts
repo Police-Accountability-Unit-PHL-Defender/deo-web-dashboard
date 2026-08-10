@@ -64,11 +64,9 @@ describe('createTooltip', () => {
   // given for applyLineBreaks — this asserts the actual behaviour instead
   // of a value that would silently change what eight live tooltips do.
   it('shows, moves and hides without throwing', () => {
-    const container = document.createElement('div')
     const div = document.createElement('div')
-    container.appendChild(div)
-    document.body.appendChild(container)
-    const tip = createTooltip(container, div)
+    document.body.appendChild(div)
+    const tip = createTooltip(div, { width: 400, height: 300 })
     tip.show('<b>42%</b>')
     expect(div.innerHTML).toContain('42%')
     expect(div.style.visibility).toBe('visible')
@@ -76,47 +74,29 @@ describe('createTooltip', () => {
     expect(div.style.visibility).toBe('hidden')
   })
 
-  it('moves the tooltip based on the mouse position within the container when no size is given', () => {
-    const container = document.createElement('div')
-    Object.defineProperty(container, 'clientWidth', { value: 400 })
-    Object.defineProperty(container, 'clientHeight', { value: 300 })
+  it('moves the tooltip based on the mouse position within the given size', () => {
     const div = document.createElement('div')
-    container.appendChild(div)
-    document.body.appendChild(container)
-    const tip = createTooltip(container, div)
+    document.body.appendChild(div)
+    const tip = createTooltip(div, { width: 400, height: 300 })
     tip.move({ offsetX: 10, offsetY: 10 })
     expect(div.style.left).toBe('10px')
     expect(div.style.top).toBe('18px')
   })
 
   // Pins the fix-round-1 regression: Graph.vue's real `width`/`height` are
-  // NOT the container's measured client box (see the comment on
+  // NOT any container's measured client box (see the comment on
   // createTooltip in chart.ts — `width` has a `minimumContainerWidth` floor,
   // routinely 1080 on charts inside an overflow-x-auto scroller, and
   // `height` is the constant 380 regardless of how the SVG scales down).
-  // A container that is small (as it would be inside a horizontal scroller
-  // with a wide chart) must NOT change the flip decision when an explicit
-  // `size` is passed in.
-  it('uses the explicit size, not the container client box, when size is provided', () => {
-    const container = document.createElement('div')
-    // Container is visually small (e.g. clipped by an overflow-x-auto
-    // wrapper), but the chart's real width/height (from drawGraph) are large.
-    Object.defineProperty(container, 'clientWidth', { value: 300 })
-    Object.defineProperty(container, 'clientHeight', { value: 200 })
+  it('anchors using the given size for a chart much larger than a typical viewport', () => {
     const div = document.createElement('div')
-    container.appendChild(div)
-    document.body.appendChild(container)
-    const tip = createTooltip(container, div, { width: 1080, height: 380 })
+    document.body.appendChild(div)
+    const tip = createTooltip(div, { width: 1080, height: 380 })
 
-    // offsetX=600 is > container.clientWidth/2 (150) but < size.width/2 (540)
-    // is false too — pick a point that only disagrees between the two: past
-    // the container's half-width (150) but before the real half-width (540).
     tip.move({ offsetX: 200, offsetY: 100 })
 
-    // Using the container's small clientWidth/clientHeight, 200 > 150 and
-    // 100 < 100 is false (equal), so it would anchor differently. Using the
-    // real size (1080x380), 200 < 540 and 100 < 190, so it must anchor
-    // top-left, not flip to right/bottom.
+    // 200 < 540 (half of 1080) and 100 < 190 (half of 380), so it must
+    // anchor top-left, not flip to right/bottom.
     expect(div.style.left).toBe('200px')
     expect(div.style.top).toBe('108px')
     expect(div.style.right).toBe('initial')

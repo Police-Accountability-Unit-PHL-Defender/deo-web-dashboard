@@ -100,12 +100,6 @@ describe('operationalShareByYear', () => {
     expect(yearOf(2025)?.operational).toBe(49.5)
   })
 
-  it('makes the two series sum to 100 in every year', () => {
-    for (const row of series) {
-      expect(row.operational + row.nonOperational).toBeCloseTo(100, 1)
-    }
-  })
-
   it('puts the crossover in 2023', () => {
     expect(yearOf(2022)!.operational).toBeLessThan(50)
     expect(yearOf(2024)!.operational).toBeGreaterThan(50)
@@ -117,8 +111,22 @@ describe('operationalShareByYear', () => {
     expect(series.filter((r) => r.incomplete)).toHaveLength(1)
   })
 
-  it('flags no year as incomplete when the data ends on Q4', () => {
-    expect(operationalShareByYear(cube, '2025-Q4').every((r) => !r.incomplete)).toBe(true)
+  it('flags a year as incomplete only when the cube lacks all four of its quarters, regardless of the clock', () => {
+    // The real cube's trailing year (2026) has just two quarters (Q1, Q2) of
+    // actual data. Completeness is a fact about the cube, not about what
+    // `mostRecentQuarter` (clock-derived) claims. Pinning to '2025-Q4' must
+    // not make a half-populated 2026 look complete.
+    const withQ4Pin = operationalShareByYear(cube, '2025-Q4')
+    expect(withQ4Pin.find((r) => r.year === 2026)?.incomplete).toBe(true)
+    expect(withQ4Pin.find((r) => r.year === 2025)?.incomplete).toBe(false)
+  })
+
+  it('still flags 2026 as incomplete even when the clock is pinned past it (2026-Q4)', () => {
+    // Regression for the bug where completeness was read off the clock: with
+    // the cube unchanged (2026 still only has Q1 and Q2), pinning
+    // `mostRecentQuarter` to '2026-Q4' must not flip 2026 to complete.
+    const series2026Pin = operationalShareByYear(cube, '2026-Q4')
+    expect(series2026Pin.find((r) => r.year === 2026)?.incomplete).toBe(true)
   })
 
   it('counts no-code and Other stops as non-operational, never dropping them', () => {

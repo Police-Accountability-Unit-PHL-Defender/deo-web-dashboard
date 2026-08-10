@@ -152,7 +152,7 @@ const drawGraph = (graphData) => {
   drawYAxis(svg, y, { marginLeft: margin.left, marginTop: margin.top, label: props.axisProperties.y })
 
   const tooltipDiv = d3.select(container.value).select('.tooltip')
-  const tip = createTooltip(container.value, tooltipDiv.node(), { width, height })
+  const tip = createTooltip(tooltipDiv.node(), { width, height })
 
   const attachTooltip = (selection, datum) => {
     selection

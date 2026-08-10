@@ -1,4 +1,4 @@
-import { groupSum, groupTupleSum, VIOLATION_CATEGORIES_OPERATIONAL, type Cube } from './cube'
+import { completeYears, groupSum, groupTupleSum, VIOLATION_CATEGORIES_OPERATIONAL, type Cube } from './cube'
 
 const RACE_ORDER = ['Asian', 'Black', 'Latino', 'White', 'All Other Races'] as const
 
@@ -50,6 +50,13 @@ export interface YearShare {
  *
  * Denominator is every stop. See the note in reasons.test.ts for why `None`
  * and `Other` stay in: they are non-operational stops, not missing data.
+ *
+ * A year is `incomplete` when the cube does not yet contain all four of its
+ * quarters — a fact about the data, not the wall clock. `mostRecentQuarter`
+ * (clock-derived; see plugins/mostRecentQuarter.js) is used only to cap which
+ * years may be treated as complete, so that the e2e parity harness's
+ * `--quarter` pin stays meaningful: a year the pinned quarter hasn't reached
+ * yet is never called complete even if a fuller cube happens to contain it.
  */
 export function operationalShareByYear(cube: Cube, mostRecentQuarter: string): YearShare[] {
   const operational = new Set(VIOLATION_CATEGORIES_OPERATIONAL)
@@ -64,7 +71,9 @@ export function operationalShareByYear(cube: Cube, mostRecentQuarter: string): Y
     totals.set(year, bucket)
   }
 
-  const partialYear = mostRecentQuarter.endsWith('Q4') ? null : Number(mostRecentQuarter.slice(0, 4))
+  const complete = completeYears(cube)
+  const trailingYear = Number(mostRecentQuarter.slice(0, 4))
+  const capYear = mostRecentQuarter.endsWith('Q4') ? trailingYear : trailingYear - 1
 
   return [...totals.keys()]
     .sort((a, b) => a - b)
@@ -75,7 +84,7 @@ export function operationalShareByYear(cube: Cube, mostRecentQuarter: string): Y
         year,
         operational: pct,
         nonOperational: Math.round((100 - pct) * 10) / 10,
-        incomplete: year === partialYear,
+        incomplete: !complete.has(year) || year > capYear,
       }
     })
 }

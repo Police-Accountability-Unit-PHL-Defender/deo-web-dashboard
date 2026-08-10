@@ -23,14 +23,19 @@ describe('majorityWhiteDisparity', () => {
     expect(result.ratio).toBe(4.5)
   })
 
-  it('produces a finite ratio above 1', () => {
-    expect(Number.isFinite(result.ratio)).toBe(true)
-    expect(result.ratio).toBeGreaterThan(1)
-  })
-
   it('steps back a year when the trailing year is incomplete', () => {
     expect(majorityWhiteDisparity(cube, demographics, '2025-Q4')!.year).toBe(2025)
     expect(majorityWhiteDisparity(cube, demographics, '2025-Q2')!.year).toBe(2024)
+  })
+
+  it('still publishes 2025 even when the clock is pinned past a half-populated 2026 (2026-Q4)', () => {
+    // Regression for the bug where "most recent complete calendar year" was
+    // read off the clock: the real cube's 2026 has only two quarters of
+    // data. Pinning `mostRecentQuarter` to '2026-Q4' must not make the
+    // published year 2026 (which would compute a ratio off six months of
+    // data) — it must still fall back to 2025, the last year the cube
+    // actually completes.
+    expect(majorityWhiteDisparity(cube, demographics, '2026-Q4')!.year).toBe(2025)
   })
 
   it('returns null when demographics have not loaded', () => {
