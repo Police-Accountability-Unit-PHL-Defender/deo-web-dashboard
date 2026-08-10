@@ -99,4 +99,16 @@ export const CHECKS = [
     assert: ({ text }) =>
       !/\n(Quarter|Year)\n\s*\n/.test(text) || 'an axis rendered with no tick labels',
   },
+  {
+    name: 'operational trend chart renders both series',
+    // The chart is client-rendered from the cube; if the computed returns
+    // null or the component throws, the section silently disappears rather
+    // than erroring, so assert on the rendered legend.
+    pages: ['reasons'],
+    assert: ({ text }) => {
+      const missing = ['Operational violations', 'Non-operational violations']
+        .filter((s) => !text.includes(s))
+      return missing.length === 0 || `operational trend chart missing legend text: ${missing.join(', ')}`
+    },
+  },
 ]

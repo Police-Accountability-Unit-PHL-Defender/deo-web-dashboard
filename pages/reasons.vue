@@ -88,6 +88,24 @@
         <HorizontalLine class="my-4 md:my-12"/>
         <section>
           <QuestionHeader>
+            <h3>Out of all traffic stops, how has the share made for operational<Tooltip term="Operational"/> violations changed over time?</h3>
+          </QuestionHeader>
+          <Answer v-if="q3b" :arrow="true">
+            <LineGraph
+              :graph-data="q3b.figures.lineplot.data"
+              :axis-properties="{x: q3b.figures.lineplot.properties.xAxis, y: q3b.figures.lineplot.properties.yAxis}"
+              group-name="group"
+              :group-classes="{'Operational': 'stroke-purple fill-purple bg-purple', 'Non-operational': 'stroke-mint fill-mint bg-mint'}"
+              :chart-legend="{'Operational': 'Operational violations', 'Non-operational': 'Non-operational violations'}"
+              :dashed-from-x="q3b.figures.lineplot.dashedFromX"
+              :y-scale-domain-max="100">
+              <h4>{{ q3b.figures.lineplot.properties.title }}</h4>
+            </LineGraph>
+          </Answer>
+        </section>
+        <HorizontalLine class="my-4 md:my-12"/>
+        <section>
+          <QuestionHeader>
             <h3>How often do Philadelphia police stop drivers for operational<Tooltip term="Operational"/> violations? Are there racial disparities<Tooltip term="Disparity"/> in these traffic stops? Out of all traffic stops, how often did police stop people of different races for operational violations in <span class="whitespace-nowrap"><SelectYear v-model="q1Year"/>?</span></h3>
           </QuestionHeader>
           <Answer v-if="q4" :arrow="true">
@@ -103,6 +121,7 @@
 
 <script setup>
 import Graph from '~/components/Graph.vue';
+import LineGraph from '~/components/LineGraph.vue';
 import QuestionHeader from '~/components/QuestionHeader.vue';
 import SelectTimeGranularity from '~/components/SelectTimeGranularity.vue';
 import HorizontalLine from '~/components/ui/HorizontalLine.vue';
@@ -113,7 +132,7 @@ import {
   sumMeasure,
   VIOLATION_CATEGORIES_DEO_IMPACTED,
 } from '~/utils/cube';
-import { operationalShareByRace } from '~/utils/reasons';
+import { operationalShareByRace, operationalShareByYear } from '~/utils/reasons';
 import { useReasonsCube } from '~/composables/useReasonsCube';
 import { useDistrictsDemographics } from '~/composables/useDistrictsDemographics';
 
@@ -122,6 +141,7 @@ useHead({
 })
 
 const deoYears = useState('deoYears')
+const mostRecentQuarter = useState('mostRecentQuarter')
 
 const selectedNeighborhoodMajority = ref('Non-white')
 const selectedTimeGranularity = ref('quarter')
@@ -376,6 +396,50 @@ const q3 = computed(() => {
       },
     },
     tables: {}, geojsons: [], data: {},
+  }
+})
+
+// =========================================================================
+// q3b: reasons-operational-trend
+// =========================================================================
+const q3b = computed(() => {
+  const bundle = reasonsBundle.value
+  if (!bundle) return null
+
+  const series = operationalShareByYear(bundle.cube, mostRecentQuarter.value)
+  const xAxis = 'Year'
+  const yAxis = 'Percentage (%)'
+  const incomplete = series.find(r => r.incomplete)
+
+  const data = []
+  for (const row of series) {
+    const suffix = row.incomplete ? ' (partial year)' : ''
+    data.push({
+      group: 'Operational',
+      [xAxis]: row.year,
+      [yAxis]: row.operational,
+      hover_text: [`${row.year}${suffix}`, `${row.operational}% operational`],
+    })
+    data.push({
+      group: 'Non-operational',
+      [xAxis]: row.year,
+      [yAxis]: row.nonOperational,
+      hover_text: [`${row.year}${suffix}`, `${row.nonOperational}% non-operational`],
+    })
+  }
+
+  return {
+    figures: {
+      lineplot: {
+        properties: {
+          xAxis,
+          yAxis,
+          title: 'Share of PPD Traffic Stops for Operational vs. Non-Operational Violations',
+        },
+        dashedFromX: incomplete ? incomplete.year : null,
+        data,
+      },
+    },
   }
 })
 
