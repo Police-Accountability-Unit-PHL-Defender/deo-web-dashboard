@@ -8,6 +8,7 @@ import pandas as pd
 import pytest
 
 from veil.build import USE_COLS, _stop_csv_names, build_veil_table
+from veil.sample import roll_up_stops
 
 PIPELINE_ROOT = Path(__file__).resolve().parents[1]
 DATA_DIR = PIPELINE_ROOT / "data"
@@ -33,7 +34,7 @@ def test_builds_table_for_the_replication_period(tmp_path):
         cols = {r[1] for r in conn.execute("PRAGMA table_info(car_ped_stops_veil)")}
     for expected in [
         "ts_local", "clock_minutes", "year", "era", "districtoccur", "psa",
-        "assigned_unit", "lighting", "obscured_view", "party_race",
+        "police_area", "assigned_unit", "lighting", "obscured_view", "party_race",
         "party_size", "group_travel", "n_frisked", "n_ticketed", "dow",
         "month", "is_summer",
     ]:
@@ -97,9 +98,55 @@ def test_literal_na_mvc_code_is_not_dropped_as_null():
     assert blank_count > 20000, (
         f"expected >20k true-blank mvc_code rows, got {blank_count}"
     )
-    # The two categories must stay distinct -- collapsing them together
-    # would silently reintroduce a version of the same bug.
-    assert na_string_count != blank_count or na_string_count > 0
+    # Real numeric codes must still be there too: if the converter or the
+    # read ever mangled the column into just these two buckets, the counts
+    # above would still pass.
+    other_count = len(df) - na_string_count - blank_count
+    assert other_count > 0, (
+        "every mvc_code row is either 'NA' or blank -- the real numeric codes "
+        "have been collapsed away"
+    )
+
+
+def test_literal_na_and_blank_mvc_code_land_on_opposite_sides_of_is_mvc():
+    """The two categories must stay behaviourally distinct, not just distinct
+    in count.
+
+    The bug this guards is a change that collapses the literal string "NA"
+    into the true-blank category (or the reverse): the counts would still
+    look plausible, but ~21k genuine MVC stops per year would silently drop
+    out of the analytic sample. So assert on the thing that decides their
+    fate -- roll_up_stops' is_mvc -- rather than on the counts.
+
+    The previous assertion here was
+    ``na_string_count != blank_count or na_string_count > 0``, whose right
+    disjunct is always true once the >20,000 assertions above have passed.
+    It could not fail, so it guarded nothing.
+    """
+    rows = pd.DataFrame({
+        "objectid": [1, 2],
+        "datetimeoccur": pd.to_datetime(["2024-06-01 18:00", "2024-06-01 18:05"]),
+        "location": ["A", "B"],
+        "districtoccur": [12.0, 12.0],
+        "psa": [1.0, 1.0],
+        "assigned_unit": ["u", "u"],
+        "gender": ["Male", "Male"],
+        "race": ["Black - Non-Latino", "Black - Non-Latino"],
+        "age": [22.0, 22.0],
+        "mvc_code": ["NA", ""],  # literal "NA" vs a true blank
+        "individual_arrested": [0, 0],
+        "individual_frisked": [0, 0],
+        "ticket_issued": [0, 0],
+        "ts_local": pd.to_datetime(["2024-06-01 18:00", "2024-06-01 18:05"]),
+    })
+    stops = roll_up_stops(rows).set_index("location")
+
+    assert stops.loc["A", "is_mvc"] == 1, (
+        'a literal "NA" mvc_code must count as a genuine MVC stop'
+    )
+    assert stops.loc["B", "is_mvc"] == 0, (
+        "a true-blank mvc_code must not count as an MVC stop"
+    )
 
 
 @requires_zip

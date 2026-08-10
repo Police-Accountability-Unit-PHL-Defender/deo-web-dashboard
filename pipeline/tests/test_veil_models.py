@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from veil.models import _collapse_sparse_levels, fit_vod
+from veil.models import _DEGENERATE_BOUND, _collapse_sparse_levels, fit_vod
 
 
 def synthetic(n=6000, effect=-0.5, seed=0):
@@ -19,7 +19,9 @@ def synthetic(n=6000, effect=-0.5, seed=0):
         "clock_minutes": rng.integers(1028, 1235, n),
         "dow": rng.integers(0, 7, n),
         "year": rng.choice([2021, 2022, 2023, 2024], n),
-        "psa": rng.choice(["18-1", "18-2", "22-1", "22-2"], n),
+        # District-qualified police service areas, the shape veil/sample.py
+        # emits ("DD-P"). `psa` on its own is not a usable location control.
+        "police_area": rng.choice(["18-1", "18-2", "22-1", "22-2"], n),
         "assigned_unit": rng.choice(["A", "B", "C"], n),
         "is_summer": rng.integers(0, 2, n),
     })
@@ -54,11 +56,33 @@ def test_reduced_spec_is_labelled():
 
 
 def test_separation_is_reported_not_raised():
-    """Sparse fixed-effect cells must degrade gracefully, not explode."""
+    """Sparse fixed-effect cells must degrade gracefully, not explode.
+
+    "Gracefully" means exactly one of two outcomes, and this test rejects
+    everything else. It used to assert ``converged is False or se > 0``,
+    which passed for the precise Task-5 defect it was written against: a
+    separated fit returning coef=-3.56e14 and a huge *positive* se
+    alongside converged=True satisfies the right-hand disjunct, so the
+    assertion could not fail on the bug.
+    """
     df = synthetic(n=200)
-    df["psa"] = [f"psa-{i}" for i in range(len(df))]  # one level per row
+    df["police_area"] = [f"area-{i}" for i in range(len(df))]  # one level per row
     result = fit_vod(df, outcome="outcome", full_controls=True)
-    assert result["converged"] is False or result["se"] > 0
+
+    if result["converged"]:
+        # Reported as usable, so the estimate must be on a plausible
+        # log-odds scale -- not an exploded separation artifact.
+        assert abs(result["coef"]) <= _DEGENERATE_BOUND, result
+        assert 0 < result["se"] <= _DEGENERATE_BOUND, result
+        assert result.get("degenerate") is not True, result
+        # It converges here only because every singleton level folded into
+        # OTHER, which removes the control entirely. Pin that, so a change
+        # that stops collapsing cannot quietly land back on a garbage fit.
+        assert result["other_row_share"]["police_area"] == pytest.approx(1.0), result
+    else:
+        # Reported as unusable, so it must say why rather than looking like
+        # a finding to anything downstream.
+        assert "error" in result, result
 
 
 def test_collapse_sparse_levels_folds_rare_categories():
@@ -72,7 +96,7 @@ def test_collapse_sparse_levels_folds_rare_categories():
 
 
 def test_full_controls_spec_collapses_sparse_units():
-    """assigned_unit/psa levels below the threshold get folded before fitting."""
+    """assigned_unit/police_area levels below the threshold get folded first."""
     df = synthetic(n=2000)
     # Add plenty of rare assigned_unit levels alongside the common A/B/C ones.
     rng = np.random.default_rng(1)

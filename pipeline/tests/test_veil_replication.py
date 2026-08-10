@@ -67,11 +67,33 @@ def test_table_2_solo_and_group(sample):
 
 
 def test_figure_3_percent_motorists_in_multi_occupant_cars(sample):
-    """Per motorist, not per stop -- this is the 'five times' headline."""
-    for race, expected in [("Black - Non-Latino", 25.1), ("White - Non-Latino", 4.6)]:
+    """Per motorist, not per stop -- this is the 'five times' headline.
+
+    Each half of this test must independently reject a denominator swap.
+    Counted per STOP instead of per motorist the same quantities are 14.2%
+    (Black) and 2.66% (White). The Black half rejects 14.2% with room to
+    spare at +/-3.0pp. The White half does not: +/-3.0pp around 4.6 is
+    [1.6, 7.6], which ADMITS 2.66%, so on its own it could not catch the
+    swap -- it was relying on the Black half to fail first. +/-1.5pp gives
+    [3.1, 6.1]: it still absorbs our 0.7pp vintage gap (we measure 5.32%)
+    while excluding the per-stop value by 0.44pp.
+    """
+    cases = [
+        ("Black - Non-Latino", 25.1, 3.0, 14.2),
+        ("White - Non-Latino", 4.6, 1.5, 2.66),
+    ]
+    for race, expected, tol, per_stop_value in cases:
         sub = sample[sample.party_race == race]
         pct = 100 * sub[sub.group_travel == 1].party_size.sum() / sub.party_size.sum()
-        assert abs(pct - expected) < 3.0, f"{race}: {pct:.1f}% vs paper {expected}%"
+        assert abs(pct - expected) < tol, (
+            f"{race}: {pct:.2f}% vs paper {expected}% (tolerance {tol}pp)"
+        )
+        # The tolerance must be narrow enough that the per-stop denominator
+        # is outside it, or this assertion cannot catch a denominator swap.
+        assert abs(per_stop_value - expected) >= tol, (
+            f"{race}: tolerance {tol}pp admits the per-stop value "
+            f"{per_stop_value}% -- widen nothing, narrow the tolerance"
+        )
 
 
 def test_figure_4_frisk_and_ticket_rates(sample):
