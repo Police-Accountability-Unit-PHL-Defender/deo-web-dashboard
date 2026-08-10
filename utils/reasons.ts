@@ -1,4 +1,4 @@
-import { groupSum, VIOLATION_CATEGORIES_OPERATIONAL, type Cube } from './cube'
+import { groupSum, groupTupleSum, VIOLATION_CATEGORIES_OPERATIONAL, type Cube } from './cube'
 
 const RACE_ORDER = ['Asian', 'Black', 'Latino', 'White', 'All Other Races'] as const
 
@@ -36,4 +36,46 @@ export function operationalShareByRace(cube: Cube, year: number): OperationalSha
     const op = opStopsByRace.get(race) ?? 0
     return { race, pct: total ? Math.round((1000 * op) / total) / 10 : 0 }
   })
+}
+
+export interface YearShare {
+  year: number
+  operational: number
+  nonOperational: number
+  incomplete: boolean
+}
+
+/**
+ * Share of traffic stops made for operational violations, by calendar year.
+ *
+ * Denominator is every stop. See the note in reasons.test.ts for why `None`
+ * and `Other` stay in: they are non-operational stops, not missing data.
+ */
+export function operationalShareByYear(cube: Cube, mostRecentQuarter: string): YearShare[] {
+  const operational = new Set(VIOLATION_CATEGORIES_OPERATIONAL)
+  const totals = new Map<number, { op: number; all: number }>()
+
+  for (const { keys, value } of groupTupleSum(cube, ['quarter', 'violation_category'], 'n_stopped')) {
+    const [quarter, violationCategory] = keys
+    const year = Number(quarter.slice(0, 4))
+    const bucket = totals.get(year) ?? { op: 0, all: 0 }
+    bucket.all += value
+    if (operational.has(violationCategory)) bucket.op += value
+    totals.set(year, bucket)
+  }
+
+  const partialYear = mostRecentQuarter.endsWith('Q4') ? null : Number(mostRecentQuarter.slice(0, 4))
+
+  return [...totals.keys()]
+    .sort((a, b) => a - b)
+    .map((year) => {
+      const { op, all } = totals.get(year)!
+      const pct = all ? Math.round((1000 * op) / all) / 10 : 0
+      return {
+        year,
+        operational: pct,
+        nonOperational: Math.round((100 - pct) * 10) / 10,
+        incomplete: year === partialYear,
+      }
+    })
 }

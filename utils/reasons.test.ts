@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { readFileSync } from 'node:fs'
-import { operationalShareByRace } from './reasons'
+import { operationalShareByRace, operationalShareByYear } from './reasons'
 import type { Cube } from './cube'
 
 const cube: Cube = JSON.parse(readFileSync('public/cubes/reasons.json', 'utf8'))
@@ -79,5 +79,60 @@ describe('operationalShareByRace', () => {
       'White',
       'All Other Races',
     ])
+  })
+})
+
+describe('operationalShareByYear', () => {
+  const series = operationalShareByYear(cube, '2026-Q2')
+  const yearOf = (y: number) => series.find((r) => r.year === y)
+
+  it('covers every year present in the cube, in ascending order', () => {
+    const years = series.map((r) => r.year)
+    expect(years[0]).toBe(2014)
+    expect(years).toEqual([...years].sort((a, b) => a - b))
+    expect(new Set(years).size).toBe(years.length)
+  })
+
+  it('reproduces the published all-stops denominator', () => {
+    expect(yearOf(2019)?.operational).toBe(26.7)
+    expect(yearOf(2022)?.operational).toBe(47.0)
+    expect(yearOf(2023)?.operational).toBe(53.7)
+    expect(yearOf(2025)?.operational).toBe(49.5)
+  })
+
+  it('makes the two series sum to 100 in every year', () => {
+    for (const row of series) {
+      expect(row.operational + row.nonOperational).toBeCloseTo(100, 1)
+    }
+  })
+
+  it('puts the crossover in 2023', () => {
+    expect(yearOf(2022)!.operational).toBeLessThan(50)
+    expect(yearOf(2024)!.operational).toBeGreaterThan(50)
+  })
+
+  it('flags only the trailing partial year as incomplete', () => {
+    expect(yearOf(2026)?.incomplete).toBe(true)
+    expect(yearOf(2025)?.incomplete).toBe(false)
+    expect(series.filter((r) => r.incomplete)).toHaveLength(1)
+  })
+
+  it('flags no year as incomplete when the data ends on Q4', () => {
+    expect(operationalShareByYear(cube, '2025-Q4').every((r) => !r.incomplete)).toBe(true)
+  })
+
+  it('counts no-code and Other stops as non-operational, never dropping them', () => {
+    const c: Cube = {
+      version: 2,
+      dimensions: ['quarter', 'location', 'race', 'violation_category'],
+      measures: ['n_stopped'],
+      rows: [
+        ['2025-Q1', '01', 'Black', 'Red Light/Stop Sign/Yield', 1],
+        ['2025-Q1', '01', 'Black', 'None', 1],
+        ['2025-Q1', '01', 'Black', 'Other', 1],
+        ['2025-Q1', '01', 'Black', 'Lights', 1],
+      ],
+    }
+    expect(operationalShareByYear(c, '2025-Q4')[0].operational).toBe(25)
   })
 })
