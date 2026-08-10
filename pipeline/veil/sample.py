@@ -29,6 +29,20 @@ def dedupe_people(df: pd.DataFrame) -> pd.DataFrame:
     return df.drop_duplicates(subset=["objectid"], keep="first")
 
 
+def _first_non_null(s: pd.Series):
+    """Like ``min`` but skips NaN instead of choking on mixed str/float dtype.
+
+    A stop's occupant rows sometimes have this column populated for some
+    people and missing (NaN) for others. ``Series.min()`` on an
+    object-dtype column containing both strings and float NaNs raises
+    ``TypeError`` in current pandas -- it does not silently skip the NaNs
+    the way numeric ``min`` does. Dropping the nulls first restores the
+    intended "pick whichever value is present" behavior.
+    """
+    s = s.dropna()
+    return s.min() if len(s) else None
+
+
 def roll_up_stops(df: pd.DataFrame) -> pd.DataFrame:
     """Collapse person rows into one row per stop, keyed on (time, location)."""
     df = df.copy()
@@ -42,9 +56,9 @@ def roll_up_stops(df: pd.DataFrame) -> pd.DataFrame:
 
     grouped = df.groupby(["datetimeoccur", "location"], dropna=False)
     stops = grouped.agg(
-        districtoccur=("districtoccur", "min"),
-        psa=("psa", "min"),
-        assigned_unit=("assigned_unit", "min"),
+        districtoccur=("districtoccur", _first_non_null),
+        psa=("psa", _first_non_null),
+        assigned_unit=("assigned_unit", _first_non_null),
         ts_local=("ts_local", "max"),
         party_size=("objectid", "size"),
         n_races=("race", "nunique"),

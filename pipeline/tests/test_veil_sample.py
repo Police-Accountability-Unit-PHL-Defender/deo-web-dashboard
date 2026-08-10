@@ -10,7 +10,10 @@ import datetime as dt
 import pandas as pd
 import pytest
 
+import numpy as np
+
 from veil.sample import (
+    _first_non_null,
     apply_paper_restrictions,
     classify_lighting,
     dedupe_people,
@@ -54,6 +57,27 @@ def test_dedupe_drops_a_genuinely_repeated_row():
         person(1, "2024-06-01 19:00"),
     ])
     assert len(dedupe_people(df)) == 1
+
+
+def test_first_non_null_returns_none_for_all_null_group():
+    """An object-dtype Series of only NaNs has nothing to pick."""
+    assert _first_non_null(pd.Series([np.nan, np.nan], dtype=object)) is None
+
+
+def test_first_non_null_skips_nan_mixed_with_a_string():
+    """This is the regression case: plain ``min`` raises TypeError here
+    because the Series mixes ``str`` and float ``NaN`` -- exactly what a
+    stop's occupant rows look like when this column is populated for some
+    people and missing for others."""
+    assert _first_non_null(pd.Series(["18TH DISTRICT", np.nan], dtype=object)) == "18TH DISTRICT"
+    assert _first_non_null(pd.Series([np.nan, "18TH DISTRICT"], dtype=object)) == "18TH DISTRICT"
+
+
+def test_first_non_null_picks_deterministically_among_several_values():
+    """With more than one real value present, the choice must be stable
+    (alphabetically smallest), not order-dependent."""
+    assert _first_non_null(pd.Series(["22ND DISTRICT", "6TH DISTRICT", np.nan], dtype=object)) == "22ND DISTRICT"
+    assert _first_non_null(pd.Series(["6TH DISTRICT", "22ND DISTRICT", np.nan], dtype=object)) == "22ND DISTRICT"
 
 
 def test_roll_up_counts_party_size():
