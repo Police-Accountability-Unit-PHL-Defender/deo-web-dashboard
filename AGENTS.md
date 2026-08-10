@@ -9,7 +9,7 @@ Open Data Philly (phl.carto.com)
 odp-data-backups ──> car_ped_stops_<timestamp>.zip ──> Google Drive
         │                                                   │  (download by hand)
         │  uses PyPI: open-data-philly-downloader            ▼
-        │                                    deo-backend/deo_backend/data/
+        │                                    deo-web-dashboard/pipeline/data/
         │                                                   │
         │                            update_db.py ──> open_data_philly_<date>.db
         │                                                   │
@@ -17,6 +17,11 @@ odp-data-backups ──> car_ped_stops_<timestamp>.zip ──> Google Drive
         │                                                   ▼
         │                                    Nuxt static site (Vercel)
 ```
+
+(Archival note: this pipeline used to run out of a separate `deo-backend`
+repo, which also hosted a retired Plotly Dash app and FastAPI service. It was
+consolidated into `deo-web-dashboard/pipeline/` in 2026-08; `deo-backend` is
+now kept read-only for history.)
 
 The live site is **https://driving-equality.phillydefenders.org** — note the
 **s** in `phillydefenders`. `phillydefender.org` (no s) is a parked
@@ -33,70 +38,58 @@ This is a quarterly job: publish the quarter that just ended.
 The monthly Action uploads `car_ped_stops_<timestamp>.zip` to a Google Drive
 folder owned by the Police Accountability Unit. There is **no public source** —
 the repo is private and publishes no releases — so someone with Drive access
-has to download it and drop it in `deo-backend/deo_backend/data/`.
+has to download it and drop it in `deo-web-dashboard/pipeline/data/`.
 
 Pick a zip dated *after* the quarter you want to publish. To publish 2026-Q2
 you need a zip from July 2026 or later.
 
-### 2. Point the backend at it
-
-```
-deo-backend/deo_backend/env.py  →  ZIP_FILENAME = "car_ped_stops_2026-07-20T03_45_06.zip"
-```
-
-Keep the `:` → `_` form used in the existing value.
-
-### 3. Build the database
+### 2-4. Build
 
 ```bash
-cd deo-backend
-poetry run python deo_backend/update_db/update_db.py
+cd deo-web-dashboard
+npm run update-data -- --zip car_ped_stops_2026-10-20T03_45_06.zip
 ```
 
+Runs zip → SQLite → cubes, reports what moved versus the published cubes, and
+runs the e2e checks. Takes ~30 minutes, almost all of it stage 1.
+
+Requires [uv](https://docs.astral.sh/uv/). The pipeline lives in `pipeline/`;
+`pipeline/ASSETS.md` records where every static input came from.
+
 The most recent quarter is inferred from `summary.json` inside the zip (the
-last full quarter before `last_dt`); it prints `Using 2026-Q2`. If that is
-wrong, pass `--most-recent-quarter-override 2026-Q2`.
+last full quarter before `last_dt`).
 
-This takes ~20-40 minutes — it reads roughly 2 GB of CSV.
+**If that inferred quarter is wrong**, `pipeline/update_db.py` still has a
+`--most-recent-quarter-override` flag. This bypasses `npm run update-data`
+entirely — run stage 1 directly instead:
 
-Two things that have bitten us here:
+```bash
+cd pipeline
+uv run python update_db.py --zip car_ped_stops_2026-10-20T03_45_06.zip --most-recent-quarter-override 2026-Q2
+```
+
+Then pick back up at stage 2 (`build_cubes.py`) by hand, or point
+`update-data.mjs` at the resulting `.db` if you'd rather resume there.
+
+One thing that has bitten us here:
 
 - **CSV names change between backup versions.** Files used to be
   `car_ped_stops_year_2022.csv`; since the 2026-07-20 backup they carry the
   split column too (`car_ped_stops_datetimeoccur_year_2022.csv`). Table
   dispatch matches on the containing directory and the 2022 `mvc_code`
   override matches on year, so both layouts work — but if a future backup
-  changes shape again, that is where to look (`update_db/models.py`,
-  `csv_year()` and `csv_dir`).
-- **The README seed check in `deo-backend/README.md` is stale.** It expects
-  1,916,962; the real value has been 2,043,22x for a long time. A mismatch
-  there is not evidence of a problem.
-
-### 4. Build the cubes
-
-```bash
-poetry run python build_cubes.py                 # all topics
-poetry run python build_cubes.py --only stops    # while iterating
-```
-
-`--db` must name a file in `deo_backend/data/`; it is exported as
-`DB_FILENAME` so every builder, including snapshot (which resolves the
-database itself at import time), reads the same one.
+  changes shape again, that is where to look (`pipeline/update_db_models.py`,
+  `csv_year()` and the `csv_dir` property).
 
 ### 5. Verify before publishing
 
-```bash
-cd ../deo-web-dashboard
-npm run e2e:checks          # invariants on the new build
-```
-
-Then compare against production — see **Checking a build against live** below.
+`npm run update-data` already runs the e2e checks as its last stage. Also
+compare against production — see **Checking a build against live** below.
 Expect the newly added quarter to differ and nothing else.
 
 ### 6. Commit
 
-Commit the cubes in `deo-web-dashboard` and push; Vercel redeploys. The
-`env.py` change belongs in `deo-backend`.
+Commit the cubes in `deo-web-dashboard` and push; Vercel redeploys.
 
 ---
 
@@ -123,8 +116,8 @@ that same vintage; then any difference is a *code* change, which is what you
 want to see. Rebuild the old cubes with:
 
 ```bash
-cd deo-backend
-poetry run python build_cubes.py --db deo_backend/data/<older>.db --out /tmp/old-cubes
+cd pipeline
+uv run python build_cubes.py --db data/<older>.db --out /tmp/old-cubes
 ```
 
 `--cubes` is swapped into the build output, never into `public/`, so a parity

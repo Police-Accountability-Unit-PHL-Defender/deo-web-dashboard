@@ -10,7 +10,8 @@
     "postinstall": "nuxt prepare",
     "test": "vitest run",
     "e2e": "node e2e/parity.mjs",
-    "e2e:checks": "node e2e/parity.mjs --checks-only"
+    "e2e:checks": "node e2e/parity.mjs --checks-only",
+    "update-data": "node scripts/update-data.mjs"
   },
   "devDependencies": {
     "@nuxt/devtools": "latest",

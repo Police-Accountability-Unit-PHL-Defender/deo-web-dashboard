@@ -23,3 +23,16 @@ e2e/.artifacts/
 
 # Legacy build output symlink
 dist
+
+# Pipeline inputs: multi-hundred-MB backups and the SQLite built from them.
+# Patterns, not the directory — pipeline/data/demographics/ is tracked and is
+# the only record of where districts.json's numbers come from.
+pipeline/data/*.zip
+pipeline/data/*.db
+
+# uv virtual environment for the pipeline project
+pipeline/.venv
+
+# Python bytecode and test caches from pipeline/
+__pycache__/
+.pytest_cache/
