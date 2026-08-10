@@ -185,26 +185,56 @@ const drawGraph = (graphData) => {
       (a, b) => xValues.indexOf(a[props.axisProperties.x]) - xValues.indexOf(b[props.axisProperties.x])
     )
 
-    if (props.dashedFromX !== null && props.dashedFromX !== undefined) {
-      const dashIndex = sorted.findIndex((d) => d[props.axisProperties.x] === props.dashedFromX)
-      if (dashIndex > 0) {
-        const solidPoints = sorted.slice(0, dashIndex + 1)
-        const dashedPoints = sorted.slice(dashIndex - 1)
+    // A line needs at least two points; a single-point series draws its
+    // marker only, with no path at all (see the branch below).
+    if (sorted.length >= 2) {
+      if (props.dashedFromX !== null && props.dashedFromX !== undefined) {
+        const dashIndex = sorted.findIndex((d) => d[props.axisProperties.x] === props.dashedFromX)
 
-        svg.append('path')
-          .datum(solidPoints)
-          .attr('fill', 'none')
-          .attr('class', strokeClass)
-          .attr('stroke-width', 2)
-          .attr('d', line)
+        // Three cases for where `dashedFromX` lands in this series:
+        //  - Not found at all (dashIndex === -1): no boundary to split at,
+        //    so render the whole series solid — the safe fallback.
+        //  - The first point (dashIndex === 0): everything in the series is
+        //    "from this x onward", i.e. all of it is provisional. Dash the
+        //    whole series rather than rendering it solid, which would
+        //    misrepresent provisional data as settled.
+        //  - Anywhere else (dashIndex > 0): solid up to and including that
+        //    point, plus a dashed path starting one point earlier so the
+        //    two paths share a point and join visually.
+        if (dashIndex === -1) {
+          svg.append('path')
+            .datum(sorted)
+            .attr('fill', 'none')
+            .attr('class', strokeClass)
+            .attr('stroke-width', 2)
+            .attr('d', line)
+        } else if (dashIndex === 0) {
+          svg.append('path')
+            .datum(sorted)
+            .attr('fill', 'none')
+            .attr('class', strokeClass)
+            .attr('stroke-width', 2)
+            .attr('stroke-dasharray', '4 4')
+            .attr('d', line)
+        } else {
+          const solidPoints = sorted.slice(0, dashIndex + 1)
+          const dashedPoints = sorted.slice(dashIndex - 1)
 
-        svg.append('path')
-          .datum(dashedPoints)
-          .attr('fill', 'none')
-          .attr('class', strokeClass)
-          .attr('stroke-width', 2)
-          .attr('stroke-dasharray', '4 4')
-          .attr('d', line)
+          svg.append('path')
+            .datum(solidPoints)
+            .attr('fill', 'none')
+            .attr('class', strokeClass)
+            .attr('stroke-width', 2)
+            .attr('d', line)
+
+          svg.append('path')
+            .datum(dashedPoints)
+            .attr('fill', 'none')
+            .attr('class', strokeClass)
+            .attr('stroke-width', 2)
+            .attr('stroke-dasharray', '4 4')
+            .attr('d', line)
+        }
       } else {
         svg.append('path')
           .datum(sorted)
@@ -213,13 +243,6 @@ const drawGraph = (graphData) => {
           .attr('stroke-width', 2)
           .attr('d', line)
       }
-    } else {
-      svg.append('path')
-        .datum(sorted)
-        .attr('fill', 'none')
-        .attr('class', strokeClass)
-        .attr('stroke-width', 2)
-        .attr('d', line)
     }
 
     svg.append('g')

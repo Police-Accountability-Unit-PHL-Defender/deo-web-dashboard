@@ -36,6 +36,17 @@ const factory = (props = {}) =>
     },
   })
 
+// Series line paths carry a `stroke-*` class from `groupClasses`; d3's own
+// axis machinery emits `<path class="domain">` elements that don't, so
+// filtering on this class is how we isolate "our" paths from axis chrome.
+const seriesPaths = (wrapper) =>
+  wrapper.find('svg').findAll('path').filter((p) => /stroke-/.test(p.attributes('class') || ''))
+
+// Pulls the (x, y) pairs out of a `d3.line()`-generated `d` attribute
+// (default linear curve emits "M x,y L x,y L x,y ..."), so tests can assert
+// on how many points a path actually spans, and where its endpoints sit.
+const pathCoords = (d) => [...(d ?? '').matchAll(/[ML]([-\d.]+),([-\d.]+)/g)].map(([, x, y]) => [Number(x), Number(y)])
+
 describe('LineGraph', () => {
   it('draws one path per series', () => {
     const svg = factory().find('svg')
@@ -55,13 +66,83 @@ describe('LineGraph', () => {
   })
 
   it('renders no dashed segment when dashedFromX is null', () => {
-    const dashed = factory().findAll('path').filter((p) => p.attributes('stroke-dasharray'))
+    const wrapper = factory()
+    const paths = seriesPaths(wrapper)
+    const dashed = paths.filter((p) => p.attributes('stroke-dasharray'))
+    const solid = paths.filter((p) => !p.attributes('stroke-dasharray'))
     expect(dashed).toHaveLength(0)
+    // Every point stays on one undivided solid path per series — nothing is
+    // silently dropped by a split that shouldn't be happening.
+    expect(solid).toHaveLength(2)
+    for (const p of solid) {
+      expect(pathCoords(p.attributes('d'))).toHaveLength(3)
+    }
   })
 
-  it('dashes the trailing segment of each series when dashedFromX is set', () => {
-    const dashed = factory({ dashedFromX: 2024 }).findAll('path').filter((p) => p.attributes('stroke-dasharray'))
+  it('dashes the trailing segment of each series, joined at the point before the boundary, when dashedFromX is set', () => {
+    const wrapper = factory({ dashedFromX: 2024 })
+    const paths = seriesPaths(wrapper)
+    const dashed = paths.filter((p) => p.attributes('stroke-dasharray'))
+    const solid = paths.filter((p) => !p.attributes('stroke-dasharray'))
     expect(dashed).toHaveLength(2)
+    expect(solid).toHaveLength(2)
+
+    for (const cls of ['stroke-purple', 'stroke-mint']) {
+      const solidPath = solid.find((p) => p.attributes('class') === cls)
+      const dashedPath = dashed.find((p) => p.attributes('class') === cls)
+      expect(solidPath).toBeTruthy()
+      expect(dashedPath).toBeTruthy()
+
+      const solidCoords = pathCoords(solidPath.attributes('d'))
+      const dashedCoords = pathCoords(dashedPath.attributes('d'))
+      // Solid spans all three years (2022, 2023, 2024); dashed spans only
+      // the trailing two (2023, 2024) — a real split, not the same path
+      // relabeled, and not the split inverted.
+      expect(solidCoords).toHaveLength(3)
+      expect(dashedCoords).toHaveLength(2)
+      // The dashed path's first point must be the solid path's
+      // second-to-last point, so the two paths share it and join visually.
+      expect(dashedCoords[0]).toEqual(solidCoords[solidCoords.length - 2])
+    }
+  })
+
+  it('renders the whole series solid when dashedFromX is not present in the data', () => {
+    const wrapper = factory({ dashedFromX: 9999 })
+    const paths = seriesPaths(wrapper)
+    const dashed = paths.filter((p) => p.attributes('stroke-dasharray'))
+    const solid = paths.filter((p) => !p.attributes('stroke-dasharray'))
+    expect(dashed).toHaveLength(0)
+    expect(solid).toHaveLength(2)
+    for (const p of solid) {
+      expect(pathCoords(p.attributes('d'))).toHaveLength(3)
+    }
+  })
+
+  it('dashes the entire series when dashedFromX is the first point', () => {
+    const wrapper = factory({ dashedFromX: 2022 })
+    const paths = seriesPaths(wrapper)
+    const dashed = paths.filter((p) => p.attributes('stroke-dasharray'))
+    const solid = paths.filter((p) => !p.attributes('stroke-dasharray'))
+    // The first point means "everything from here on is provisional" — the
+    // whole series must dash, not render solid as if it were settled.
+    expect(solid).toHaveLength(0)
+    expect(dashed).toHaveLength(2)
+    for (const p of dashed) {
+      expect(pathCoords(p.attributes('d'))).toHaveLength(3)
+    }
+  })
+
+  it('renders a marker but no line path for a single-point series', () => {
+    const singlePoint = [
+      { group: 'Operational', Year: 2024, 'Percentage (%)': 54.3 },
+      { group: 'Non-operational', Year: 2024, 'Percentage (%)': 45.7 },
+    ]
+    let wrapper
+    expect(() => {
+      wrapper = factory({ graphData: singlePoint, dashedFromX: 2024 })
+    }).not.toThrow()
+    expect(seriesPaths(wrapper)).toHaveLength(0)
+    expect(wrapper.findAll('circle')).toHaveLength(2)
   })
 
   it('renders a legend entry per series', () => {
