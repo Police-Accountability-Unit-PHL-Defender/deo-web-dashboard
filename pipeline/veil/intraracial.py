@@ -69,6 +69,16 @@ def build_sample(stops: pd.DataFrame, sun: pd.DataFrame) -> pd.DataFrame:
     stops = stops.copy()
     stops["_district"] = stops.districtoccur.map(_district_code)
 
+    # `car_ped_stops_veil_intraracial` stores ts_local as sqlite TEXT, same as
+    # stop_date (already coerced below). A plain `pd.read_sql(...)` with no
+    # `parse_dates` -- the obvious, and the way Task 4's cube builder reads
+    # this table -- hands us ts_local as Python str, and comparing a str
+    # against window_start_ts/window_end_ts raises TypeError. Coerce
+    # unconditionally so build_sample is correct regardless of how the
+    # caller loaded the frame; pd.to_datetime on an already-Timestamp column
+    # (as the unit tests pass in) is a no-op.
+    stops["ts_local"] = pd.to_datetime(stops.ts_local)
+
     window_start_ts = pd.Timestamp(WINDOW[0])
     window_end_ts = pd.Timestamp(WINDOW[1]) + pd.Timedelta(days=1)  # exclusive
 

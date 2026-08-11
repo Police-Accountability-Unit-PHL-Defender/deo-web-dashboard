@@ -5,10 +5,18 @@ majority-Black districts 12/14/16/18/19/22/35/39, Jan 2022 - Aug 2025, sole
 occupant, Black adult 18+, MVC-initiated, inter-twilight, unambiguous lighting.
 """
 
+import sqlite3
+from pathlib import Path
+
 import pandas as pd
 import pytest
 
 from veil.intraracial import DISTRICTS, OUTCOMES, build_sample
+from veil.sun import load_sun_times
+
+REPO = Path(__file__).resolve().parents[1]
+DB = REPO / "data" / "open_data_philly_2026_07_20.db"
+PAPER_N = 76_274
 
 
 def _stop(**kw):
@@ -158,4 +166,22 @@ def test_no_row_ever_has_a_null_weight():
     )
     out = build_sample(stops, _sun())
     assert len(out) == 1
+    assert out.weight.notna().all()
+
+
+def test_real_table_read_plainly_still_builds_the_sample():
+    # The obvious way to load this table -- no parse_dates -- hands
+    # ts_local and stop_date to build_sample as plain strings (sqlite TEXT).
+    # Task 4's cube builder reads the table exactly this way, so this is the
+    # integration path that actually matters, not just the Timestamp-typed
+    # fixtures the other tests pass in.
+    if not DB.exists():
+        pytest.skip(f"{DB} not present")
+    with sqlite3.connect(DB) as conn:
+        stops = pd.read_sql("SELECT * FROM car_ped_stops_veil_intraracial", conn)
+    assert stops.ts_local.dtype == object  # confirms this is the str-typed path
+
+    out = build_sample(stops, load_sun_times())
+
+    assert abs(len(out) - PAPER_N) / PAPER_N < 0.05
     assert out.weight.notna().all()
