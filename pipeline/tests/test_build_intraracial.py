@@ -47,11 +47,19 @@ def test_no_stop_appears_twice(built):
     assert not df.duplicated(subset=["ts_local", "location"]).any()
 
 
-def test_ages_are_plausible_adult_and_juvenile_mix(built):
+def test_age_distribution_is_sane_rather_than_mis_parsed(built):
+    # Not a max-value check: PPD's records genuinely contain a handful of
+    # implausible ages (27 rows >= 100, max 120), and the paper applies no
+    # upper bound, so filtering them would deviate from the sample we are
+    # reproducing. What we actually want to catch is a PARSE error -- a year
+    # read as an age, or a column offset -- which would move the whole
+    # distribution, not just its tail.
     _, df = built
-    assert df.age.min() >= 0
-    assert df.age.max() < 120
-    assert (df.age >= 30).any(), "no older drivers -- the roll-up is over-filtering"
+    age = pd.to_numeric(df.age, errors="coerce")
+    assert age.median() == pytest.approx(33, abs=5)
+    assert age.quantile(0.99) < 90, "99th percentile implausible -- likely mis-parsed"
+    assert (age >= 100).mean() < 0.001, "too many centenarians -- likely mis-parsed"
+    assert (age >= 30).any(), "no older drivers -- the roll-up is over-filtering"
     assert (df.gender.str.lower() == "female").any(), "no women -- over-filtering"
 
 
