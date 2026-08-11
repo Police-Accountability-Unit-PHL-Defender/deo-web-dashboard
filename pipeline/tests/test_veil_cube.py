@@ -166,7 +166,7 @@ def test_cube_carries_the_intraracial_block(cube_outputs):
     cube, _ = cube_outputs
     assert "intraracial" in cube
     block = cube["intraracial"]
-    assert set(block) == {"sample", "models", "probabilities"}
+    assert set(block) == {"sample", "models", "probabilities", "by_year"}
 
 
 def test_intraracial_models_cover_all_six_outcomes(cube_outputs):
@@ -299,3 +299,59 @@ def test_existing_cube_keys_are_untouched(cube_outputs):
         "placebo_white.model_1", "placebo_white.model_2",
     }
     assert len(cube["rows"]) > 0
+
+
+# --- the year-by-year trend block ---------------------------------------
+
+
+def test_by_year_covers_every_year_and_charted_outcome(cube_outputs):
+    cube, _ = cube_outputs
+    by_year = cube["intraracial"]["by_year"]
+    assert by_year["years"] == [2021, 2022, 2023, 2024, 2025]
+    assert by_year["window"] == {"start": "2021-01-01", "end": "2025-12-31"}
+
+    seen = {(e["year"], e["outcome"]) for e in by_year["estimates"]}
+    assert seen == {
+        (year, outcome)
+        for year in by_year["years"]
+        for outcome in ("young_male", "young_female", "older_male", "older_female")
+    }
+
+
+def test_by_year_estimates_carry_a_bracketing_interval(cube_outputs):
+    cube, _ = cube_outputs
+    for e in cube["intraracial"]["by_year"]["estimates"]:
+        label = f"{e['year']}/{e['outcome']}"
+        assert e["converged"], label
+        assert e["ci_lo"] < e["coef"] < e["ci_hi"], label
+        assert e["n"] > 0, label
+
+
+def test_by_year_reproduces_the_headline_effects_in_every_year(cube_outputs):
+    """The point of the chart: neither headline finding rests on one year.
+
+    Young men are stopped LESS once officers cannot see in; older women MORE.
+    If a year ever flipped sign, the trend section's prose would be wrong.
+    """
+    cube, _ = cube_outputs
+    by_outcome = {}
+    for e in cube["intraracial"]["by_year"]["estimates"]:
+        by_outcome.setdefault(e["outcome"], []).append(e)
+
+    for e in by_outcome["young_male"]:
+        assert e["ci_hi"] < 0, f"{e['year']} young_male interval reaches zero"
+    for e in by_outcome["older_female"]:
+        assert e["ci_lo"] > 0, f"{e['year']} older_female interval reaches zero"
+
+
+def test_by_year_does_not_disturb_the_paper_window_block(cube_outputs):
+    """The trend block is a sibling, never a replacement.
+
+    The two samples differ (2021-2025 full years vs Jan 2022 - Aug 2025), so
+    a merge would silently restate the reproduction's figures.
+    """
+    cube, _ = cube_outputs
+    intraracial = cube["intraracial"]
+    assert intraracial["sample"]["window_start"] == "2022-01-01"
+    assert intraracial["sample"]["window_end"] == "2025-08-31"
+    assert set(intraracial["models"]) == set(INTRARACIAL_TARGETS)

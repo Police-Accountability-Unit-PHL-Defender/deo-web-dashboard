@@ -14,11 +14,20 @@ import sqlite3
 
 import pandas as pd
 
-from veil.intraracial import DISTRICTS, OUTCOMES, WINDOW, build_sample
+from veil.intraracial import (
+    DISTRICTS,
+    OUTCOMES,
+    TREND_OUTCOMES,
+    TREND_WINDOW,
+    TREND_YEARS,
+    WINDOW,
+    build_sample,
+)
 from veil.models import (
     INTRARACIAL_SE_TARGETS,
     INTRARACIAL_TARGETS,
     MODEL_TARGETS,
+    confidence_interval,
     fit_intraracial,
     fit_vod,
     predicted_probabilities,
@@ -123,6 +132,51 @@ def _fit_all(df: pd.DataFrame) -> dict:
     return models
 
 
+def _by_year(stops: pd.DataFrame, sun: pd.DataFrame) -> dict:
+    """Per-calendar-year fits, for the trend chart above the lead section.
+
+    ONE `build_sample` call over the whole TREND_WINDOW, then split by year --
+    deliberately not one call per year. `build_sample` derives both the
+    inter-twilight window and the seasonality weights from the window it is
+    given, so per-year calls would hand each year a slightly different
+    time-of-day window, and a year-over-year difference could then reflect
+    that moving window rather than a change in who gets stopped.
+
+    Only the four group outcomes are fitted (TREND_OUTCOMES): 5 years x 4
+    outcomes = 20 fits, roughly 35s of the cube build.
+
+    This sample is NOT the reproduction's sample and its 2025 is a full
+    calendar year where the paper's is January-August. The two must never be
+    presented as the same quantity -- see the caveats on the page.
+    """
+    df = build_sample(stops, sun, window=TREND_WINDOW)
+
+    estimates = []
+    for year in TREND_YEARS:
+        subset = df[df.year == year]
+        for outcome in TREND_OUTCOMES:
+            result = fit_intraracial(subset, outcome)
+            ci_lo, ci_hi = confidence_interval(result["coef"], result["se"])
+            estimates.append({
+                "year": int(year),
+                "outcome": outcome,
+                "coef": result["coef"],
+                "se": result["se"],
+                "ci_lo": ci_lo,
+                "ci_hi": ci_hi,
+                "odds_ratio": result["odds_ratio"],
+                "p_value": result["p_value"],
+                "n": result["n"],
+                "converged": result["converged"],
+            })
+
+    return {
+        "window": {"start": TREND_WINDOW[0], "end": TREND_WINDOW[1]},
+        "years": [int(y) for y in TREND_YEARS],
+        "estimates": estimates,
+    }
+
+
 def _intraracial(conn: sqlite3.Connection) -> dict:
     """Hannon & Biddle (2025) intraracial age/gender models and probabilities.
 
@@ -164,6 +218,10 @@ def _intraracial(conn: sqlite3.Connection) -> dict:
         },
         "models": models,
         "probabilities": probabilities,
+        # A second, wider sample over the same table: full calendar years
+        # 2021-2025, fitted one year at a time. Sibling to the three keys
+        # above, never merged into them.
+        "by_year": _by_year(stops, sun),
     }
 
 
