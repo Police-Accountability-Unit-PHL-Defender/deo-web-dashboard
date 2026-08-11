@@ -180,4 +180,15 @@ export const CHECKS = [
     pages: ['veil'],
     assert: ({ text }) => text.includes('Hannon') || 'the string "Hannon" is missing from the page',
   },
+  {
+    name: 'intraracial veil panels render with both lighting states',
+    // The panels are client-rendered from the cube; if the computed returns
+    // null the section vanishes silently rather than erroring.
+    pages: ['veil'],
+    assert: ({ text }) => {
+      const missing = ['under 30 and male', 'Daylight', 'Dusk']
+        .filter((s) => !text.includes(s))
+      return missing.length === 0 || `intraracial panels missing: ${missing.join(', ')}`
+    },
+  },
 ]

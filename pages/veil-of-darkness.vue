@@ -1,7 +1,7 @@
 <template>
   <LayoutPageHeader>
     <template #header>
-      Are young Black men traveling together targeted for traffic stops?
+      When police can see who's driving, who do they stop?
     </template>
     <template #image>
       <img class="w-full h-full object-cover object-center" src="~/assets/images/stops.jpg" alt="A street in Philadelphia at dusk"/>
@@ -24,6 +24,12 @@
         <nav class="flex flex-col gap-3 border-b border-neutral-400 pb-10">
           <h2 class="text-label-1">Jump to:</h2>
           <ul class="flex flex-col gap-3">
+            <li>
+              <a href="#intra-lead" class="deo_scroll text-hyperlink flex">
+                <IconsChevron class="fill-black -rotate-90"/>
+                Who gets stopped, by age and gender, in daylight and after dark?
+              </a>
+            </li>
             <li>
               <a href="#part1" class="deo_scroll text-hyperlink flex">
                 <IconsChevron class="fill-black -rotate-90"/>
@@ -62,6 +68,85 @@
             </li>
           </ul>
         </nav>
+
+        <!-- ================= Intraracial lead: age & gender (Hannon & Biddle 2025) ================= -->
+        <section>
+          <h2 id="intra-lead" class="text-heading-3 text-left pt-10 mb-6">When police can see who's driving, who do they stop?</h2>
+          <AnswerText>
+            <p class="text-body-4">
+              The chart below asks a different, narrower question than the rest of this page: among traffic stops of
+              Black motorists, does daylight change the <em>age and gender</em> of the person who gets pulled over?
+              This is an intraracial test &mdash; it does not compare Black motorists with white motorists at all. It
+              compares stops of Black motorists in daylight with stops of Black motorists after dark, and asks whether
+              the mix of who is stopped shifts when officers can no longer see into the car before deciding to pull it
+              over.
+            </p>
+            <p class="text-body-4 mt-6">
+              The sample is narrow and stated plainly: {{ intraracialSample?.n.toLocaleString() ?? 'about 75,900' }}
+              stops of a single Black adult occupant, initiated for a motor vehicle code<Tooltip term="MVC"/>
+              violation, during evening hours, in Philadelphia's majority-Black police
+              districts<Tooltip term="District"/> ({{ intraracialDistrictsLabel }}), from
+              {{ intraracialWindowLabel }}. This reproduces Lance Hannon and Molly Biddle's 2025 paper in the
+              <em>American Journal of Criminal Justice</em>
+              (<a href="https://doi.org/10.1007/s12103-025-09879-8" class="text-hyperlink-blue" target="_blank">doi.org/10.1007/s12103-025-09879-8</a>),
+              a different study from the group-travel analysis further down this page: a different sample, a
+              different window, and a different question. The two sets of numbers are not comparable to one another.
+            </p>
+          </AnswerText>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+            <LineGraph
+              v-for="panel in intraracialPanels"
+              :key="panel.key"
+              :graph-data="panel.data"
+              :axis-properties="{x: 'Lighting', y: 'Percentage (%)'}"
+              :group-classes="{[panel.key]: 'stroke-purple fill-purple bg-purple'}"
+              group-name="group"
+              :y-scale-domain-max="panel.yScaleDomainMax"
+              :minimum-container-width="480">
+              <h4>{{ panel.title }}</h4>
+            </LineGraph>
+          </div>
+
+          <AnswerText v-if="intraracialModels">
+            <p class="text-body-4 mt-6">
+              Two of these four results move, and they move in opposite directions. Darkness cuts the odds that a
+              stopped Black driver is a young man by about
+              {{ pctBelowOne(intraracialModels.young_male.odds_ratio) }} (p&nbsp;{{ fmtP(intraracialModels.young_male.p_value) }}),
+              and raises the odds that the stopped driver is an older woman by about
+              {{ pctAboveOne(intraracialModels.older_female.odds_ratio) }} (p&nbsp;{{ fmtP(intraracialModels.older_female.p_value) }}).
+              Those two results are the near-inverse of each other: when officers can see less, young men make up a
+              smaller share of who gets stopped and older women make up a larger share.
+            </p>
+            <p class="text-body-4 mt-6">
+              <strong>The other two groups show no detected effect, and that is part of the finding, not a gap in
+              it.</strong> Darkness does not move the odds that a stopped Black driver is a young woman
+              (p&nbsp;{{ fmtP(intraracialModels.young_female.p_value) }}) or an older man
+              (p&nbsp;{{ fmtP(intraracialModels.older_male.p_value) }}) &mdash; both confidence intervals comfortably
+              span 1, and neither should be read as a small effect. If darkness were driving some general shift in who
+              gets stopped, it is difficult to explain why it would move two of the four groups and leave the other two
+              untouched. The pattern is specific to young men and, inversely, older women, and it appears nowhere else
+              in this model.
+            </p>
+          </AnswerText>
+        </section>
+
+        <HorizontalLine class="my-12" :color="true"/>
+
+        <!-- ================= Demoted: group-travel analysis (Hannon & Biddle 2026) ================= -->
+        <section>
+          <h2 class="text-label-1">A different question: young Black men traveling together</h2>
+          <AnswerText>
+            <p class="text-body-4 mt-4">
+              The sections below reproduce a separate analysis by the same authors &mdash; Hannon and Biddle's 2026
+              paper on group travel, published a year after the age/gender study above and built on a different
+              sample: young Black men only, 2021&ndash;2024, city-wide rather than restricted to majority-Black
+              districts, asking whether a stopped driver was traveling with another young Black man rather than what
+              age or gender the driver was. The coefficients, sample sizes and charts in this section are unrelated to
+              the panels above and should not be compared to them.
+            </p>
+          </AnswerText>
+        </section>
 
         <!-- ================= Intro ================= -->
         <section>
@@ -479,6 +564,7 @@
 
 <script setup lang="ts">
 import Graph from '~/components/Graph.vue'
+import LineGraph from '~/components/LineGraph.vue'
 import QuestionHeader from '~/components/QuestionHeader.vue'
 import HorizontalLine from '~/components/ui/HorizontalLine.vue'
 import Tooltip from '~/components/ui/Tooltip.vue'
@@ -494,11 +580,13 @@ import {
   restrictToYears,
   type ClockBinPoint,
   type VeilCube,
+  type VeilIntraracialGroup,
+  type VeilIntraracialLighting,
   type VeilModel,
 } from '~/utils/veil'
 
 useHead({
-  title: 'Are young Black men traveling together targeted for traffic stops?',
+  title: "When police can see who's driving, who do they stop?",
 })
 
 const BLACK = 'Black - Non-Latino'
@@ -524,6 +612,91 @@ const cube = computed<VeilCube | null>(() => {
 
 const YEARS_LABEL = `${REPLICATION_YEARS.from}–${REPLICATION_YEARS.to}`
 
+// =========================================================================
+// Intraracial lead section: age & gender (Hannon & Biddle 2025).
+//
+// Unlike every other selector on this page, this reads `intraracial`
+// straight off the cube bundle rather than through a `utils/veil.ts`
+// selector — Task 4 shipped it pre-aggregated (sample, six fitted models,
+// eight daylight/dark probabilities), so there is no row-level aggregation
+// left to do here.
+// =========================================================================
+const MONTH_NAMES = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December',
+]
+
+/** "2022-01-01" -> "January 2022". */
+function monthYearLabel(isoDate: string): string {
+  const [year, month] = isoDate.split('-')
+  return `${MONTH_NAMES[Number(month) - 1]} ${year}`
+}
+
+const intraracial = computed(() => veilBundle.value?.cube?.intraracial ?? null)
+const intraracialSample = computed(() => intraracial.value?.sample ?? null)
+const intraracialModels = computed(() => intraracial.value?.models ?? null)
+
+const intraracialDistrictsLabel = computed(() => {
+  const districts = intraracialSample.value?.districts
+  return districts ? districts.join(', ') : '12, 14, 16, 18, 19, 22, 35, 39'
+})
+
+const intraracialWindowLabel = computed(() => {
+  const sample = intraracialSample.value
+  if (!sample) return 'January 2022 to August 2025'
+  return `${monthYearLabel(sample.window_start)} to ${monthYearLabel(sample.window_end)}`
+})
+
+interface IntraracialPanel {
+  key: VeilIntraracialGroup
+  title: string
+  yScaleDomainMax: number
+  data: Array<{ group: string; Lighting: string; 'Percentage (%)': number }>
+}
+
+/**
+ * Each panel's own y-axis ceiling. The four groups' probabilities span
+ * roughly 9%-50%, so a single shared domain (as the group-travel chart
+ * below uses) would flatten three of the four panels into apparently flat
+ * lines. Set with headroom above each group's own max, not derived from
+ * all four at once.
+ */
+const PANEL_META: Record<VeilIntraracialGroup, { title: string; yScaleDomainMax: number }> = {
+  young_male: { title: 'Stopped driver is under 30 and male', yScaleDomainMax: 30 },
+  young_female: { title: 'Stopped driver is under 30 and female', yScaleDomainMax: 12 },
+  older_male: { title: 'Stopped driver is 30 or older and male', yScaleDomainMax: 60 },
+  older_female: { title: 'Stopped driver is 30 or older and female', yScaleDomainMax: 22 },
+}
+
+const PANEL_ORDER: VeilIntraracialGroup[] = ['young_male', 'young_female', 'older_male', 'older_female']
+
+const LIGHTING_X_LABEL: Record<VeilIntraracialLighting, string> = {
+  daylight: 'Daylight',
+  dark: 'Dusk',
+}
+
+const intraracialPanels = computed<IntraracialPanel[]>(() => {
+  const probabilities = intraracial.value?.probabilities
+  if (!probabilities) return []
+  return PANEL_ORDER.map((key) => {
+    const points = probabilities.filter((p) => p.group === key)
+    const meta = PANEL_META[key]
+    return {
+      key,
+      title: meta.title,
+      yScaleDomainMax: meta.yScaleDomainMax,
+      data: (['daylight', 'dark'] as const).map((lighting) => {
+        const point = points.find((p) => p.lighting === lighting)
+        return {
+          group: key,
+          Lighting: LIGHTING_X_LABEL[lighting],
+          'Percentage (%)': point?.pct ?? 0,
+        }
+      }),
+    }
+  })
+})
+
 function fmtPct(value: number): string {
   return `${value.toFixed(1)}%`
 }
@@ -531,6 +704,16 @@ function fmtPct(value: number): string {
 /** "12% lower" style phrasing for an odds ratio below 1. */
 function pctBelowOne(oddsRatio: number): string {
   return `${Math.round((1 - oddsRatio) * 100)}%`
+}
+
+/** "29% higher" style phrasing for an odds ratio above 1. */
+function pctAboveOne(oddsRatio: number): string {
+  return `${Math.round((oddsRatio - 1) * 100)}%`
+}
+
+/** p-values render as "< .001" below that floor, else to three decimals. */
+function fmtP(p: number): string {
+  return p < 0.001 ? '< .001' : `= ${p.toFixed(3)}`
 }
 
 /** 1080 -> "6:00pm". Clock bins are minutes since midnight. */
