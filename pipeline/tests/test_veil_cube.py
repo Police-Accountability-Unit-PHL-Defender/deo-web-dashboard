@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from veil.models import MODEL_TARGETS
+from veil.models import INTRARACIAL_TARGETS, MODEL_TARGETS
 
 PIPELINE_ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = PIPELINE_ROOT / "build_cubes.py"
@@ -33,6 +33,12 @@ MODEL_1_TOLERANCE = 0.015
 # a sign flip, an order-of-magnitude error, or a collapsed control; the
 # largest observed Model 2 gap is 0.010.
 MODEL_2_TOLERANCE = 0.05
+
+# Tolerance for the 2025 intraracial (Hannon & Biddle) reproduction, per plan.
+INTRARACIAL_TOLERANCE = 0.08
+
+# Tolerance for the daylight/dark probability pairs in Figure 1, in points.
+INTRARACIAL_PROBABILITY_TOLERANCE = 2.5
 
 
 @pytest.fixture(scope="module")
@@ -187,6 +193,71 @@ def test_intraracial_sample_records_the_papers_districts(cube_outputs):
     assert cube["intraracial"]["sample"]["districts"] == [
         "12", "14", "16", "18", "19", "22", "35", "39"
     ]
+
+
+@pytest.mark.parametrize("outcome,paper_coef", sorted(INTRARACIAL_TARGETS.items()))
+def test_intraracial_coefficients_stay_close_to_the_published_ones(cube_outputs, outcome, paper_coef):
+    """Pin every intraracial coefficient against Hannon & Biddle (2025) Table 1.
+
+    The four structural tests added alongside the intraracial block check
+    which keys exist and that each probability is between 0 and 100 -- none
+    of them compare a fitted number to the paper. That is exactly the gap
+    that let has_black_passenger.model_1 drift 0.00905 away from
+    MODEL_TARGETS while the page still claimed "within 0.008" (see
+    test_fitted_coefficients_stay_close_to_the_published_ones above). This
+    is the same guard for the 2025 block: without it, a quarterly cube
+    rebuild could drift the reproduction away from Table 1 while the page
+    goes on describing itself as a reproduction.
+    """
+    cube, _ = cube_outputs
+    model = cube["intraracial"]["models"][outcome]
+    delta = abs(model["coef"] - paper_coef)
+    assert delta <= INTRARACIAL_TOLERANCE, (
+        f"{outcome}: fitted {model['coef']:.5f} vs published {paper_coef} "
+        f"(delta {delta:.5f} > tolerance {INTRARACIAL_TOLERANCE})"
+    )
+    assert model["converged"], f"{outcome}: model did not converge"
+
+
+def test_intraracial_probabilities_match_figure_1(cube_outputs):
+    """Pin the four group/lighting predicted probabilities and their direction.
+
+    A structural test asserting `0 < pct < 100` would pass even if daylight
+    and dark were swapped for a group, which would invert the paper's
+    finding while every number stayed "in range". The directional
+    assertions here are what would actually catch that: young_male's
+    daylight-exceeds-dark and older_female's dark-exceeds-daylight are the
+    two facts that carry Hannon & Biddle's headline result.
+    """
+    cube, _ = cube_outputs
+    probs = {(p["group"], p["lighting"]): p["pct"] for p in cube["intraracial"]["probabilities"]}
+
+    expected = {
+        ("young_male", "daylight"): 26.3,
+        ("young_male", "dark"): 21.9,
+        ("young_female", "daylight"): 9.0,
+        ("young_female", "dark"): 9.4,
+        ("older_male", "daylight"): 50.3,
+        ("older_male", "dark"): 50.1,
+        ("older_female", "daylight"): 14.9,
+        ("older_female", "dark"): 18.5,
+    }
+    for key, paper_pct in expected.items():
+        delta = abs(probs[key] - paper_pct)
+        assert delta <= INTRARACIAL_PROBABILITY_TOLERANCE, (
+            f"{key}: fitted {probs[key]} vs published {paper_pct} "
+            f"(delta {delta:.2f} > tolerance {INTRARACIAL_PROBABILITY_TOLERANCE})"
+        )
+
+    # The paper's headline finding: young men are stopped LESS in the dark,
+    # older women are stopped MORE in the dark. A swapped daylight/dark pair
+    # would keep every value above inside tolerance while inverting this.
+    assert probs[("young_male", "daylight")] > probs[("young_male", "dark")], (
+        "young_male: daylight should exceed dark (paper's headline finding)"
+    )
+    assert probs[("older_female", "dark")] > probs[("older_female", "daylight")], (
+        "older_female: dark should exceed daylight (paper's headline finding)"
+    )
 
 
 def test_existing_cube_keys_are_untouched(cube_outputs):
