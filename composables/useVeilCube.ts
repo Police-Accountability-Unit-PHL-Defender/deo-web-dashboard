@@ -10,28 +10,12 @@
  * 2021-2024 study window must call `restrictToYears` from `~/utils/veil`
  * on `data.value.cube` before passing it to any selector.
  */
-import type {
-  VeilCube,
-  VeilIntraracial,
-  VeilIntraracialByYear,
-  VeilIntraracialGroup,
-  VeilIntraracialLighting,
-  VeilIntraracialModel,
-  VeilIntraracialProbability,
-  VeilIntraracialSample,
-  VeilIntraracialYearEstimate,
-} from '~/utils/veil'
-
-export type {
-  VeilIntraracial,
-  VeilIntraracialByYear,
-  VeilIntraracialGroup,
-  VeilIntraracialLighting,
-  VeilIntraracialModel,
-  VeilIntraracialProbability,
-  VeilIntraracialSample,
-  VeilIntraracialYearEstimate,
-}
+// The intraracial types are NOT re-exported from here. Nuxt auto-imports
+// `utils/veil.ts` and `composables/` alike, so a re-export puts the same
+// name in the auto-import registry twice and Nuxt warns on every one of
+// them ("Duplicated imports ... has been ignored"). Nothing imported them
+// from this module anyway -- import them from `~/utils/veil` directly.
+import type { VeilCube } from '~/utils/veil'
 
 export interface VeilCubeBundle {
   cube: VeilCube
