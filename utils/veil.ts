@@ -48,9 +48,47 @@ export interface VeilTimeRounding {
   pct_multiple_of_15: number
 }
 
+/**
+ * One outcome's fitted intraracial (Hannon & Biddle 2025) model. Unlike
+ * `VeilModel` above, there is no `spec`/`seasonality_weight` split — every
+ * intraracial fit applies the full control set and the paper's seasonality
+ * weight.
+ */
+export interface VeilIntraracialModel {
+  coef: number
+  se: number
+  odds_ratio: number
+  p_value: number
+  n: number
+  converged: boolean
+}
+
+export type VeilIntraracialGroup = 'young_male' | 'young_female' | 'older_male' | 'older_female'
+export type VeilIntraracialLighting = 'daylight' | 'dark'
+
+export interface VeilIntraracialProbability {
+  group: VeilIntraracialGroup
+  lighting: VeilIntraracialLighting
+  pct: number
+}
+
+export interface VeilIntraracialSample {
+  n: number
+  window_start: string
+  window_end: string
+  districts: string[]
+}
+
+export interface VeilIntraracial {
+  sample: VeilIntraracialSample
+  models: Record<string, VeilIntraracialModel>
+  probabilities: VeilIntraracialProbability[]
+}
+
 export interface VeilCube extends Cube {
   models: Record<string, VeilModel>
   time_rounding?: VeilTimeRounding
+  intraracial?: VeilIntraracial
 }
 
 type Row = Array<string | number | null>

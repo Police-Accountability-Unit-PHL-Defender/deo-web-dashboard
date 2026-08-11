@@ -10,7 +10,24 @@
  * 2021-2024 study window must call `restrictToYears` from `~/utils/veil`
  * on `data.value.cube` before passing it to any selector.
  */
-import type { VeilCube } from '~/utils/veil'
+import type {
+  VeilCube,
+  VeilIntraracial,
+  VeilIntraracialGroup,
+  VeilIntraracialLighting,
+  VeilIntraracialModel,
+  VeilIntraracialProbability,
+  VeilIntraracialSample,
+} from '~/utils/veil'
+
+export type {
+  VeilIntraracial,
+  VeilIntraracialGroup,
+  VeilIntraracialLighting,
+  VeilIntraracialModel,
+  VeilIntraracialProbability,
+  VeilIntraracialSample,
+}
 
 export interface VeilCubeBundle {
   cube: VeilCube

@@ -146,3 +146,55 @@ def test_both_lighting_states_appear(cube):
     lighting_idx = cube["dimensions"].index("lighting")
     values = {r[lighting_idx] for r in cube["rows"]}
     assert values == {"daylight", "dark"}, values
+
+
+@pytest.fixture(scope="module")
+def cube_outputs(cube):
+    # `build()` returns (cube, scalars); the module-scoped `cube` fixture
+    # above already ran the real build via subprocess, so reuse it rather
+    # than building a second time.
+    return cube, {}
+
+
+def test_cube_carries_the_intraracial_block(cube_outputs):
+    cube, _ = cube_outputs
+    assert "intraracial" in cube
+    block = cube["intraracial"]
+    assert set(block) == {"sample", "models", "probabilities"}
+
+
+def test_intraracial_models_cover_all_six_outcomes(cube_outputs):
+    cube, _ = cube_outputs
+    assert set(cube["intraracial"]["models"]) == {
+        "is_young", "is_male", "young_male",
+        "young_female", "older_male", "older_female",
+    }
+
+
+def test_intraracial_probabilities_are_four_groups_times_two_lightings(cube_outputs):
+    cube, _ = cube_outputs
+    probs = cube["intraracial"]["probabilities"]
+    assert len(probs) == 8
+    assert {p["group"] for p in probs} == {
+        "young_male", "young_female", "older_male", "older_female"
+    }
+    assert {p["lighting"] for p in probs} == {"daylight", "dark"}
+    assert all(0 < p["pct"] < 100 for p in probs)
+
+
+def test_intraracial_sample_records_the_papers_districts(cube_outputs):
+    cube, _ = cube_outputs
+    assert cube["intraracial"]["sample"]["districts"] == [
+        "12", "14", "16", "18", "19", "22", "35", "39"
+    ]
+
+
+def test_existing_cube_keys_are_untouched(cube_outputs):
+    # The 2026 analysis must not move because the 2025 one was added.
+    cube, _ = cube_outputs
+    assert set(cube["models"]) == {
+        "party_is_black.model_1", "party_is_black.model_2",
+        "has_black_passenger.model_1", "has_black_passenger.model_2",
+        "placebo_white.model_1", "placebo_white.model_2",
+    }
+    assert len(cube["rows"]) > 0

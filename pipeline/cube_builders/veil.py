@@ -14,8 +14,10 @@ import sqlite3
 
 import pandas as pd
 
-from veil.models import MODEL_TARGETS, fit_vod
+from veil.intraracial import DISTRICTS, OUTCOMES, WINDOW, build_sample
+from veil.models import MODEL_TARGETS, fit_intraracial, fit_vod, predicted_probabilities
 from veil.sample import int_code
+from veil.sun import load_sun_times
 
 CUBE_VERSION = 1
 
@@ -114,6 +116,48 @@ def _fit_all(df: pd.DataFrame) -> dict:
     return models
 
 
+def _intraracial(conn: sqlite3.Connection) -> dict:
+    """Hannon & Biddle (2025) intraracial age/gender models and probabilities.
+
+    Reads the dedicated `car_ped_stops_veil_intraracial` table -- a
+    differently-filtered, differently-sampled table than `car_ped_stops_veil`
+    above -- and must never have its rows mixed into the 2026 group-travel
+    cube's `rows`/`models`/`time_rounding` keys.
+    """
+    stops = pd.read_sql("SELECT * FROM car_ped_stops_veil_intraracial", conn)
+    sun = load_sun_times()
+    df = build_sample(stops, sun)
+
+    models = {}
+    for outcome in OUTCOMES:
+        result = fit_intraracial(df, outcome)
+        models[outcome] = {
+            "coef": result["coef"],
+            "se": result["se"],
+            "odds_ratio": result["odds_ratio"],
+            "p_value": result["p_value"],
+            "n": result["n"],
+            "converged": result["converged"],
+        }
+
+    probabilities = []
+    for group in ("young_male", "young_female", "older_male", "older_female"):
+        probs = predicted_probabilities(df, group)
+        probabilities.append({"group": group, "lighting": "daylight", "pct": probs["daylight"]})
+        probabilities.append({"group": group, "lighting": "dark", "pct": probs["dark"]})
+
+    return {
+        "sample": {
+            "n": int(len(df)),
+            "window_start": WINDOW[0],
+            "window_end": WINDOW[1],
+            "districts": list(DISTRICTS),
+        },
+        "models": models,
+        "probabilities": probabilities,
+    }
+
+
 def build(conn: sqlite3.Connection) -> tuple[dict, dict]:
     df = pd.read_sql("SELECT * FROM car_ped_stops_veil", conn)
     if df.empty:
@@ -130,5 +174,6 @@ def build(conn: sqlite3.Connection) -> tuple[dict, dict]:
         "rows": _descriptive_rows(df),
         "models": _fit_all(replication),
         "time_rounding": _time_rounding(replication),
+        "intraracial": _intraracial(conn),
     }
     return cube, {}
