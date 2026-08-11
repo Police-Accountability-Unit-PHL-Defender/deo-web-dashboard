@@ -31,21 +31,21 @@
               </a>
             </li>
             <li>
-              <a href="#intra-lead" class="deo_scroll text-hyperlink flex">
-                <IconsChevron class="fill-black -rotate-90"/>
-                Who gets stopped, by age and gender, in daylight and after dark?
-              </a>
-            </li>
-            <li>
               <a href="#part1" class="deo_scroll text-hyperlink flex">
                 <IconsChevron class="fill-black -rotate-90"/>
                 How the veil-of-darkness test works
               </a>
             </li>
             <li>
+              <a href="#intra-lead" class="deo_scroll text-hyperlink flex">
+                <IconsChevron class="fill-black -rotate-90"/>
+                Study 1: who gets stopped, by age and gender?
+              </a>
+            </li>
+            <li>
               <a href="#part2" class="deo_scroll text-hyperlink flex">
                 <IconsChevron class="fill-black -rotate-90"/>
-                Who gets stopped, and who is traveling together?
+                Study 2: young Black men traveling together
               </a>
             </li>
             <li>
@@ -67,9 +67,15 @@
               </a>
             </li>
             <li>
+              <a href="#fidelity" class="deo_scroll text-hyperlink flex">
+                <IconsChevron class="fill-black -rotate-90"/>
+                How close these reproductions land
+              </a>
+            </li>
+            <li>
               <a href="#part6" class="deo_scroll text-hyperlink flex">
                 <IconsChevron class="fill-black -rotate-90"/>
-                What this analysis cannot tell us
+                What these analyses cannot tell us
               </a>
             </li>
           </ul>
@@ -80,7 +86,7 @@
           <h2 id="intra-trend" class="text-heading-3 text-left pt-10 mb-6">Does this pattern hold up year by year?</h2>
           <AnswerText>
             <p class="text-body-4">
-              Everything below this chart reproduces a published study over one fixed window, pooling roughly four
+              Study 1 further down this page reproduces a published paper over one fixed window, pooling roughly four
               years of stops into a single estimate. That is the right way to reproduce a paper, but it cannot show
               whether the finding is steady or whether one unusual year is carrying it. So here the same models are
               fitted again, one calendar year at a time, from {{ trendYearsLabel }}. Each dot is that year's estimate
@@ -149,28 +155,101 @@
           </AnswerText>
         </section>
 
-        <!-- ================= Intraracial lead: age & gender (Hannon & Biddle 2025) ================= -->
+        <HorizontalLine class="my-12" :color="true"/>
+
+        <!-- =================
+             How the test works. Deliberately ahead of BOTH studies: this page
+             leads with results, and a reader meeting a finding before the
+             reasoning that licenses it has no way to judge it. Everything
+             shared by the two reproductions -- the premise, the two papers,
+             how to read a coefficient -- is stated once, here, and never
+             restated in a study's own section.
+             ================= -->
         <section>
-          <h2 id="intra-lead" class="text-heading-3 text-left pt-10 mb-6">When police can see who's driving, who do they stop?</h2>
+          <h2 id="part1" class="text-heading-3 text-left pt-10 mb-6">How the veil-of-darkness test works</h2>
           <AnswerText>
             <p class="text-body-4">
-              The chart below asks a different, narrower question than the rest of this page: among traffic stops of
-              Black motorists, does daylight change the <em>age and gender</em> of the person who gets pulled over?
-              This is an intraracial test &mdash; it does not compare Black motorists with white motorists at all. It
-              compares stops of Black motorists in daylight with stops of Black motorists after dark, and asks whether
-              the mix of who is stopped shifts when officers can no longer see into the car before deciding to pull it
-              over.
+              In daylight, an officer can see who is in a car before deciding whether to pull it over. After dark, that
+              is much harder: the officer can see headlights and a shape, but usually not the number, age, race or
+              gender of the people inside. People's travel habits, by contrast, barely change at dusk &mdash; the same
+              commute at 7:15pm looks the same in June and in December. What changes at dusk is what an officer can
+              see.
+            </p>
+            <!-- Tooltip renders a <div>, which the HTML parser would hoist out of a <p>. -->
+            <div class="text-body-4 mt-6">
+              That difference is the test. If we compare traffic stops<Tooltip term="Traffic Stop"/> made just before
+              nightfall with stops made just after nightfall at the same time of day, then the main thing that has
+              changed is visibility. If the kinds of people police stop shift when the light goes, it is difficult to
+              explain that shift by anything other than what officers could see. This design is known as the
+              &ldquo;veil of darkness&rdquo;.
+            </div>
+          </AnswerText>
+
+          <h3 class="text-label-1 mt-10">The two studies reproduced on this page</h3>
+          <AnswerText>
+            <p class="text-body-4 mt-4">
+              This page reproduces two separate papers by Lance Hannon and Molly Biddle of Villanova University, both
+              applying that test to Philadelphia's own published traffic stop data.
+            </p>
+            <p class="text-body-4 mt-6">
+              <strong>Study 1 &mdash; age and gender</strong>, published in 2025 in the <em>American Journal of
+              Criminal Justice</em>
+              (<a href="https://doi.org/10.1007/s12103-025-09879-8" class="text-hyperlink-blue" target="_blank">doi.org/10.1007/s12103-025-09879-8</a>).
+              It asks an <em>intraracial</em> question: among stops of Black motorists, does darkness change the age
+              and gender of the person pulled over? It compares Black motorists with Black motorists and does not
+              involve white motorists at all.
+            </p>
+            <p class="text-body-4 mt-6">
+              <strong>Study 2 &mdash; group travel</strong>, published in 2026
+              (<a href="https://doi.org/10.21428/cb6ab371.f1d81a4b" class="text-hyperlink-blue" target="_blank">doi.org/10.21428/cb6ab371.f1d81a4b</a>).
+              It asks whether a stopped young Black man was traveling with another young Black man, and it includes one
+              comparison across races.
+            </p>
+            <p class="text-body-4 mt-6">
+              <strong>The two are not comparable to one another.</strong> Different samples, different years, different
+              geographies and different questions: Study 1 covers Black adults of any age and either gender in
+              Philadelphia's majority-Black police districts<Tooltip term="District"/>; Study 2 covers young men only,
+              city-wide. A coefficient from one cannot be set beside a coefficient from the other, and the sample sizes
+              are not versions of the same number.
+            </p>
+          </AnswerText>
+
+          <h3 class="text-label-1 mt-10">How to read the numbers on this page</h3>
+          <AnswerText>
+            <p class="text-body-4 mt-4">
+              The charts of raw shares describe what the data looks like. The models do the actual test: they hold
+              clock time, day of week and year constant and ask what darkness alone does to the odds of a given kind of
+              stop. Two ways of writing the same result appear below. An <strong>odds ratio</strong> below 1 means the
+              stop became <em>less</em> likely once officers could no longer see into the car &mdash; the direction
+              that indicates officers were selecting on what they could see; above 1 means more likely. A
+              <strong>coefficient</strong> is the same quantity on a scale where zero, rather than one, means no
+              effect, so a negative coefficient and an odds ratio below 1 say the same thing. In both cases a 95%
+              confidence interval that does not reach the no-effect mark means a result like this one would be unlikely
+              if darkness made no difference at all.
+            </p>
+          </AnswerText>
+        </section>
+
+        <HorizontalLine class="my-12" :color="true"/>
+
+        <!-- ================= Study 1: age & gender (Hannon & Biddle 2025) ================= -->
+        <section>
+          <h2 id="intra-lead" class="text-heading-3 text-left pt-10 mb-6">
+            Study 1: When police can see who's driving, who do they stop?
+          </h2>
+          <AnswerText>
+            <p class="text-body-4">
+              Among traffic stops of Black motorists, does daylight change the <em>age and gender</em> of the person
+              who gets pulled over? This compares stops of Black motorists in daylight with stops of Black motorists
+              after dark, and asks whether the mix of who is stopped shifts when officers can no longer see into the
+              car before deciding to pull it over.
             </p>
             <p class="text-body-4 mt-6">
               The sample is narrow and stated plainly: {{ intraracialSample?.n.toLocaleString() ?? 'about 75,900' }}
               stops of a single Black adult occupant, initiated for a motor vehicle code<Tooltip term="MVC"/>
               violation, during evening hours, in Philadelphia's majority-Black police
               districts<Tooltip term="District"/> ({{ intraracialDistrictsLabel }}), from
-              {{ intraracialWindowLabel }}. This reproduces Lance Hannon and Molly Biddle's 2025 paper in the
-              <em>American Journal of Criminal Justice</em>
-              (<a href="https://doi.org/10.1007/s12103-025-09879-8" class="text-hyperlink-blue" target="_blank">doi.org/10.1007/s12103-025-09879-8</a>),
-              a different study from the group-travel analysis further down this page: a different sample, a
-              different window, and a different question. The two sets of numbers are not comparable to one another.
+              {{ intraracialWindowLabel }}.
             </p>
           </AnswerText>
 
@@ -189,34 +268,6 @@
                 <p class="text-caption text-neutral-800 pt-4 px-4 max-w-[480px] mx-auto">{{ panel.footer }}</p>
               </template>
             </LineGraph>
-          </div>
-
-          <div v-if="intraracialTableRows.length" class="border border-neutral-400 pt-6 my-6">
-            <h4 class="text-center text-body-2 font-semibold text-primary-800 px-4">
-              Effect of darkness on who gets stopped, among Black motorists (Hannon &amp; Biddle 2025, Table 1)
-            </h4>
-            <div class="deo-table mt-6 text-body-4 overflow-x-auto">
-              <table class="w-full min-w-[720px]">
-                <thead>
-                  <tr>
-                    <th class="font-medium">What the model predicts</th>
-                    <th class="font-medium">Our coefficient</th>
-                    <th class="font-medium">Our SE</th>
-                    <th class="font-medium">Published coefficient</th>
-                    <th class="font-medium">Significant?</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="row in intraracialTableRows" :key="row.key">
-                    <td>{{ row.label }}</td>
-                    <td class="whitespace-nowrap">{{ row.coef.toFixed(3) }}</td>
-                    <td class="whitespace-nowrap">{{ row.se.toFixed(3) }}</td>
-                    <td class="whitespace-nowrap">{{ row.paperCoef === null ? 'not published' : row.paperCoef.toFixed(3) }}</td>
-                    <td class="whitespace-nowrap">{{ row.significant ? `Yes (p ${fmtP(row.p)})` : `No (p ${fmtP(row.p)})` }}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
           </div>
 
           <AnswerText v-if="intraracialModels">
@@ -240,81 +291,27 @@
               in this model.
             </p>
             <p class="text-body-4 mt-6">
-              <strong>What this section cannot tell us.</strong> These models compare Black motorists with Black
-              motorists after dark and in daylight; they say nothing about how Black and white motorists compare with
-              each other, which is a different question the sections below this one address. The outcome is the
-              driver's own age and gender, not whether officers stopped more or fewer people overall, so this is not
-              evidence about the total volume of stops. And like every veil-of-darkness design, it can only detect
-              selection on what officers can see before deciding to stop a car &mdash; it says nothing about what
-              happens once the stop begins.
-            </p>
-            <p class="text-body-4 mt-6">
-              <strong>How close this reproduction lands.</strong> Our sample is {{ intraracialSample?.n.toLocaleString() ?? 'about 75,900' }}
-              stops against the paper's published 76,274<template v-if="intraracialSamplePctDiff !== null">, a
-              difference of about {{ Math.abs(intraracialSamplePctDiff).toFixed(2) }}%</template>. Every one of the
-              six coefficients in the table above lands
-              <template v-if="intraracialMaxDelta !== null">within {{ intraracialMaxDelta.toFixed(3) }} of</template>
-              <template v-else>close to</template>
-              the corresponding published figure in Table 1.
+              The fitted coefficients behind these four panels, set against the published ones, are in the model
+              results below.
             </p>
           </AnswerText>
         </section>
 
         <HorizontalLine class="my-12" :color="true"/>
 
-        <!-- ================= Demoted: group-travel analysis (Hannon & Biddle 2026) ================= -->
+        <!-- ================= Study 2: group travel (Hannon & Biddle 2026) ================= -->
         <section>
-          <h2 class="text-label-1">A different question: young Black men traveling together</h2>
-          <AnswerText>
-            <p class="text-body-4 mt-4">
-              The sections below reproduce a separate analysis by the same authors &mdash; Hannon and Biddle's 2026
-              paper on group travel, published a year after the age/gender study above and built on a different
-              sample: young Black men only, 2021&ndash;2024, city-wide rather than restricted to majority-Black
-              districts, asking whether a stopped driver was traveling with another young Black man rather than what
-              age or gender the driver was. The coefficients, sample sizes and charts in this section are unrelated to
-              the panels above and should not be compared to them.
-            </p>
-          </AnswerText>
-        </section>
-
-        <!-- ================= Intro ================= -->
-        <section>
-          <h2 id="part1" class="text-heading-3 text-left pt-10 mb-6">How the veil-of-darkness test works</h2>
+          <h2 id="part2" class="text-heading-3 text-left pt-10 mb-6">
+            Study 2: Young Black men traveling together
+          </h2>
           <AnswerText>
             <p class="text-body-4">
-              In daylight, an officer can see who is in a car before deciding whether to pull it over. After dark, that
-              is much harder: the officer can see headlights and a shape, but usually not the number, age, race or
-              gender of the people inside. People's travel habits, by contrast, barely change at dusk &mdash; the same
-              commute at 7:15pm looks the same in June and in December. What changes at dusk is what an officer can
-              see.
-            </p>
-            <!-- Tooltip renders a <div>, which the HTML parser would hoist out of a <p>. -->
-            <div class="text-body-4 mt-6">
-              That difference is the test. If we compare traffic stops<Tooltip term="Traffic Stop"/> made just before
-              nightfall with stops made just after nightfall at the same time of day, then the main thing that has
-              changed is visibility. If the kinds of people police stop shift when the light goes, it is difficult to
-              explain that shift by anything other than what officers could see. This design is known as the
-              &ldquo;veil of darkness&rdquo;. The Model 2 specification below goes further and also holds the location
-              of the stop constant.
-            </div>
-            <p class="text-body-4 mt-6">
-              The sections that follow reproduce an analysis by Lance Hannon and Molly Biddle of Villanova University,
-              published in 2026 (<a href="https://doi.org/10.21428/cb6ab371.f1d81a4b" class="text-hyperlink-blue" target="_blank">doi.org/10.21428/cb6ab371.f1d81a4b</a>),
-              using Philadelphia's own published traffic stop data for 2021 through 2024. Every figure below is drawn
-              from that four-year window and from the evening hours the authors studied. Our sample counts land within
-              about 5% of the published figures, and our Model 1
-              coefficients<template v-if="model1MaxDelta !== null"> within
-              {{ model1MaxDelta.toFixed(3) }} of theirs</template><template v-else> closely track
-              theirs</template>, on a data snapshot roughly two years newer than the one the authors used.
+              The rest of the page reproduces the 2026 paper: young Black men only, 2021&ndash;2024, city-wide, asking
+              whether a stopped driver was traveling with another young Black man. Every figure from here on is drawn
+              from that four-year window and from the evening hours the authors studied.
             </p>
           </AnswerText>
-        </section>
 
-        <HorizontalLine class="my-12" :color="true"/>
-
-        <!-- ================= Chart 1: motorists by race ================= -->
-        <section>
-          <h2 id="part2" class="text-heading-3 text-left mb-6">Who gets stopped, and who is traveling together?</h2>
           <QuestionHeader>
             <h3>How many young male motorists did Philadelphia police stop during the evening hours, by race?</h3>
           </QuestionHeader>
@@ -475,18 +472,52 @@
 
         <HorizontalLine class="my-12" :color="true"/>
 
-        <!-- ================= Model results ================= -->
+        <!-- =================
+             Model results for BOTH studies, gathered in one place. The two
+             tables sit under their own study headings and are labelled with
+             their own samples: they are different models on different data
+             and must never read as rows of one analysis.
+             ================= -->
         <section>
           <h2 id="part5" class="text-heading-3 text-left mb-6">Model results</h2>
           <AnswerText>
             <p class="text-body-4">
-              The charts above show raw shares. The models below do the actual test: they hold clock time, day of week
-              and year constant and ask what darkness alone does to the odds of a given kind of stop. An odds ratio below
-              1 means the stop became <em>less</em> likely once officers could no longer see into the car &mdash; the
-              direction that indicates officers were selecting on what they could see. A 95% confidence interval that
-              does not include 1 means a result like this one would be unlikely if darkness made no difference at all.
+              Both studies' fitted models are collected here, each against the figures its paper published. See
+              &ldquo;How to read the numbers&rdquo; above for what a coefficient, an odds ratio and a confidence
+              interval mean here.
             </p>
           </AnswerText>
+
+          <h3 class="text-label-1 mt-10">Study 1: age and gender among Black motorists</h3>
+          <div v-if="intraracialTableRows.length" class="border border-neutral-400 pt-6 my-6">
+            <h4 class="text-center text-body-2 font-semibold text-primary-800 px-4">
+              Effect of darkness on who gets stopped, among Black motorists (Hannon &amp; Biddle 2025, Table 1)
+            </h4>
+            <div class="deo-table mt-6 text-body-4 overflow-x-auto">
+              <table class="w-full min-w-[720px]">
+                <thead>
+                  <tr>
+                    <th class="font-medium">What the model predicts</th>
+                    <th class="font-medium">Our coefficient</th>
+                    <th class="font-medium">Our SE</th>
+                    <th class="font-medium">Published coefficient</th>
+                    <th class="font-medium">Significant?</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="row in intraracialTableRows" :key="row.key">
+                    <td>{{ row.label }}</td>
+                    <td class="whitespace-nowrap">{{ row.coef.toFixed(3) }}</td>
+                    <td class="whitespace-nowrap">{{ row.se.toFixed(3) }}</td>
+                    <td class="whitespace-nowrap">{{ row.paperCoef === null ? 'not published' : row.paperCoef.toFixed(3) }}</td>
+                    <td class="whitespace-nowrap">{{ row.significant ? `Yes (p ${fmtP(row.p)})` : `No (p ${fmtP(row.p)})` }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <h3 class="text-label-1 mt-10">Study 2: young Black men traveling together</h3>
           <div v-if="model1Rows.length" class="border border-neutral-400 pt-6 my-6">
             <h4 class="text-center text-body-2 font-semibold text-primary-800 px-4">
               Effect of darkness on stop composition, 2021&ndash;2024 (Model 1)
@@ -594,12 +625,12 @@
             <div class="text-caption text-neutral-800 p-4 max-w-[860px] mx-auto">
               Model 2 adds police service area<Tooltip term="PSA"/> &mdash; identified by district <em>and</em> area
               number, since Philadelphia numbers its service areas 1&ndash;4 within each district &mdash; along with
-              officer assignment and a summer indicator. Differences from the published version matter and we state them
-              rather than bury them.
+              officer assignment and a summer indicator. It also holds the location of the stop constant, which Model 1
+              does not. Differences from the published version matter and we state them rather than bury them.
               First, our Model 2 <strong>omits the seasonality weight the source paper applies</strong>. The 2026 paper
               does not publish that weight's formula, but we later obtained it from a different paper the authors cite,
-              Knode et al. (2024), and it is applied to the six intraracial models in the lead section above. The
-              2026 Model 2 below has not been refit with it, so its figures predate that and still lack the weight.
+              Knode et al. (2024), and it is applied to the Study 1 models above. The
+              2026 Model 2 here has not been refit with it, so its figures predate that and still lack the weight.
               Second, officer-assignment and service-area
               categories with fewer than {{ model2Detail.minUnitCount.toLocaleString() }} stops are collapsed into a
               single &ldquo;other&rdquo; category
@@ -627,11 +658,58 @@
 
         <HorizontalLine class="my-12" :color="true"/>
 
-        <!-- ================= Caveats ================= -->
+        <!-- =================
+             Reproduction fidelity for both studies, in one place. This claim
+             was previously made three times -- twice for the 2026 paper in
+             near-identical wording -- which is how one copy drifted out of
+             step with the other in an earlier revision.
+             ================= -->
         <section>
-          <h2 id="part6" class="text-heading-3 text-left mb-6">What this analysis cannot tell us</h2>
+          <h2 id="fidelity" class="text-heading-3 text-left mb-6">How close these reproductions land</h2>
           <AnswerText>
             <p class="text-body-4">
+              Both reproductions work from Philadelphia's published stop data on a snapshot roughly two years newer
+              than the one each set of authors used. OpenDataPhilly revises records, so exact agreement is not the
+              standard; landing close on both sample counts and coefficients is.
+            </p>
+            <p class="text-body-4 mt-6">
+              <strong>Study 1 (age and gender).</strong> Our sample is
+              {{ intraracialSample?.n.toLocaleString() ?? 'about 75,900' }} stops against the paper's published
+              76,274<template v-if="intraracialSamplePctDiff !== null">, a difference of about
+              {{ Math.abs(intraracialSamplePctDiff).toFixed(2) }}%</template>. Every one of the six coefficients in the
+              Study 1 table above lands
+              <template v-if="intraracialMaxDelta !== null">within {{ intraracialMaxDelta.toFixed(3) }} of</template>
+              <template v-else>close to</template>
+              the corresponding published figure in Table 1.
+            </p>
+            <p class="text-body-4 mt-6">
+              <strong>Study 2 (group travel).</strong> Our sample counts come within about 5% of the published figures
+              and our Model 1 coefficients<template v-if="model1MaxDelta !== null"> within
+              {{ model1MaxDelta.toFixed(3) }} of the published ones</template><template v-else> closely track the
+              published ones</template>. Model 2 omits a weight the paper applies, as described in the note under that
+              table, so it is not quite the same model &mdash; how far its estimates sit from the published ones is not
+              a measure of how well this reproduction lands.
+            </p>
+          </AnswerText>
+        </section>
+
+        <HorizontalLine class="my-12" :color="true"/>
+
+        <!-- =================
+             Limitations for both studies. Previously split between a block
+             inside the Study 1 section and this one, with the pre-stop
+             selection limit stated in both.
+             ================= -->
+        <section>
+          <h2 id="part6" class="text-heading-3 text-left mb-6">What these analyses cannot tell us</h2>
+          <AnswerText>
+            <p class="text-body-4">
+              <strong>They only see the decision to stop.</strong> Every veil-of-darkness design can detect selection
+              on what officers could see <em>before</em> deciding to pull a car over, and nothing else. None of it
+              speaks to what happens once the stop begins. Nor is any of it evidence about the total volume of stops:
+              the outcome in each model is what <em>kind</em> of stop occurred, not how many.
+            </p>
+            <p class="text-body-4 mt-6">
               <strong>The veil-of-darkness effects are modest in size.</strong> They shift the odds of a given kind of
               stop by roughly 10% to 30%. Statistically significant does not mean large. The big number on this page is
               the frisk-rate gap &mdash; nearly triple &mdash; while the veil-of-darkness coefficients are the cleanly
@@ -656,8 +734,9 @@
               white.</template><template v-else>&#32;Very few stops of young Black men happen in majority-white police
               districts<Tooltip term="District"/>.</template> So comparing Black
               and white motorists always means comparing different places as well as different people. That is why the
-              paper's within-race test matters most: it holds race constant, compares young Black men with young Black
-              men, and asks only what changes when officers can no longer see into the car.
+              within-race tests matter most: they hold race constant &mdash; young Black men against young Black men in
+              Study 2, Black motorists against Black motorists in Study 1 &mdash; and ask only what changes when
+              officers can no longer see into the car.
             </div>
             <p class="text-body-4 mt-6">
               <strong>Recorded stop times are rounded.</strong>
@@ -675,17 +754,6 @@
               later. Near the boundary between light and dark that rounding can put a stop on the wrong side of the
               veil, so the roughly 30-minute window between sunset and full dusk is excluded from the analysis
               altogether.
-            </p>
-            <p class="text-body-4 mt-6">
-              <strong>How close this reproduction lands.</strong> Working from Philadelphia's published stop data on a
-              snapshot roughly two years newer than the authors', our sample counts come within about 5% of the
-              published figures and our Model 1
-              coefficients<template v-if="model1MaxDelta !== null"> within {{ model1MaxDelta.toFixed(3) }} of the
-              published ones</template><template v-else> closely track the published ones</template>. Model 2 omits a
-              weight the paper applies, as noted above, so it is not quite the same model, and how far its estimates sit
-              from the published ones is not a measure of how well this reproduction lands. The analysis reproduced in
-              this section is by Lance Hannon and Molly Biddle, Villanova University, 2026:
-              <a href="https://doi.org/10.21428/cb6ab371.f1d81a4b" class="text-hyperlink-blue" target="_blank">https://doi.org/10.21428/cb6ab371.f1d81a4b</a>.
             </p>
           </AnswerText>
         </section>
