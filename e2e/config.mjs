@@ -186,7 +186,7 @@ export const CHECKS = [
     // null the section vanishes silently rather than erroring.
     pages: ['veil'],
     assert: ({ text }) => {
-      const missing = ['under 30 and male', 'Daylight', 'Dusk']
+      const missing = ['under 30 and male', 'Daylight', 'After dark']
         .filter((s) => !text.includes(s))
       return missing.length === 0 || `intraracial panels missing: ${missing.join(', ')}`
     },

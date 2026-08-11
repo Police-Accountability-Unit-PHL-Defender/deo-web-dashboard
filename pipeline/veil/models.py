@@ -5,9 +5,13 @@ Follows Hannon & Biddle (2026) Tables 1 and 2. The key regressor is
 reduces the odds of the outcome, which is the direction that indicates
 visibility-dependent selection.
 
-Model 2 omits the Knode et al. (2024) seasonality weight, whose formula is
-not reproduced in the paper. Anything rendering a model_2 result must say
-so.
+Model 2 (the 2026 group-travel paper's fuller-controls specification) omits
+the Knode et al. (2024) seasonality weight: the 2026 paper does not publish
+that weight's formula. The formula was subsequently obtained from Knode et
+al. (2024) supplemental S.2 (see ``seasonality.py``) and is applied to the
+2025 intraracial models below via ``fit_intraracial`` -- it is NOT
+retrofitted onto Model 2, so Model 2's figures predate that and still lack
+the weight. Anything rendering a model_2 result must say so.
 """
 
 import warnings

@@ -122,8 +122,8 @@
               <strong>The other two groups show no detected effect, and that is part of the finding, not a gap in
               it.</strong> Darkness does not move the odds that a stopped Black driver is a young woman
               (p&nbsp;{{ fmtP(intraracialModels.young_female.p_value) }}) or an older man
-              (p&nbsp;{{ fmtP(intraracialModels.older_male.p_value) }}) &mdash; both confidence intervals comfortably
-              span 1, and neither should be read as a small effect. If darkness were driving some general shift in who
+              (p&nbsp;{{ fmtP(intraracialModels.older_male.p_value) }}) &mdash; both confidence intervals span 1, and
+              neither should be read as a small effect. If darkness were driving some general shift in who
               gets stopped, it is difficult to explain why it would move two of the four groups and leave the other two
               untouched. The pattern is specific to young men and, inversely, older women, and it appears nowhere else
               in this model.
@@ -169,8 +169,8 @@
               of the stop constant.
             </div>
             <p class="text-body-4 mt-6">
-              This page reproduces an analysis by Lance Hannon and Molly Biddle of Villanova University, published in
-              2026 (<a href="https://doi.org/10.21428/cb6ab371.f1d81a4b" class="text-hyperlink-blue" target="_blank">doi.org/10.21428/cb6ab371.f1d81a4b</a>),
+              The sections that follow reproduce an analysis by Lance Hannon and Molly Biddle of Villanova University,
+              published in 2026 (<a href="https://doi.org/10.21428/cb6ab371.f1d81a4b" class="text-hyperlink-blue" target="_blank">doi.org/10.21428/cb6ab371.f1d81a4b</a>),
               using Philadelphia's own published traffic stop data for 2021 through 2024. Every figure below is drawn
               from that four-year window and from the evening hours the authors studied. Our sample counts land within
               about 5% of the published figures, and our Model 1
@@ -467,8 +467,11 @@
               number, since Philadelphia numbers its service areas 1&ndash;4 within each district &mdash; along with
               officer assignment and a summer indicator. Differences from the published version matter and we state them
               rather than bury them.
-              First, our Model 2 <strong>omits the seasonality weight the source paper applies</strong>; the paper does
-              not publish that weight's formula, so we could not reproduce it. Second, officer-assignment and service-area
+              First, our Model 2 <strong>omits the seasonality weight the source paper applies</strong>. The 2026 paper
+              does not publish that weight's formula, but we later obtained it from a different paper the authors cite,
+              Knode et al. (2024), and it is applied to the six intraracial models in the lead section above. The
+              2026 Model 2 below has not been refit with it, so its figures predate that and still lack the weight.
+              Second, officer-assignment and service-area
               categories with fewer than {{ model2Detail.minUnitCount.toLocaleString() }} stops are collapsed into a
               single &ldquo;other&rdquo; category
               <template v-if="model2Detail.collapsedRange">({{ model2Detail.collapsedRange }} categories, depending on
@@ -501,7 +504,7 @@
           <AnswerText>
             <p class="text-body-4">
               <strong>The veil-of-darkness effects are modest in size.</strong> They shift the odds of a given kind of
-              stop by roughly 10% to 25%. Statistically significant does not mean large. The big number on this page is
+              stop by roughly 10% to 30%. Statistically significant does not mean large. The big number on this page is
               the frisk-rate gap &mdash; nearly triple &mdash; while the veil-of-darkness coefficients are the cleanly
               identified ones, the ones where we can be most confident about <em>why</em> the difference exists. They are
               answering different questions and should not be read as one finding.
@@ -551,8 +554,8 @@
               coefficients<template v-if="model1MaxDelta !== null"> within {{ model1MaxDelta.toFixed(3) }} of the
               published ones</template><template v-else> closely track the published ones</template>. Model 2 omits a
               weight the paper applies, as noted above, so it is not quite the same model, and how far its estimates sit
-              from the published ones is not a measure of how well this reproduction lands. The original analysis is
-              by Lance Hannon and Molly Biddle, Villanova University, 2026:
+              from the published ones is not a measure of how well this reproduction lands. The analysis reproduced in
+              this section is by Lance Hannon and Molly Biddle, Villanova University, 2026:
               <a href="https://doi.org/10.21428/cb6ab371.f1d81a4b" class="text-hyperlink-blue" target="_blank">https://doi.org/10.21428/cb6ab371.f1d81a4b</a>.
             </p>
           </AnswerText>
@@ -672,7 +675,7 @@ const PANEL_ORDER: VeilIntraracialGroup[] = ['young_male', 'young_female', 'olde
 
 const LIGHTING_X_LABEL: Record<VeilIntraracialLighting, string> = {
   daylight: 'Daylight',
-  dark: 'Dusk',
+  dark: 'After dark',
 }
 
 const intraracialPanels = computed<IntraracialPanel[]>(() => {
