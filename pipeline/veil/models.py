@@ -20,6 +20,23 @@ import numpy as np
 import pandas as pd
 import statsmodels.api as sm
 import statsmodels.formula.api as smf
+from scipy.stats import norm
+
+# The two-sided 95% normal critical value. Taken from scipy rather than
+# written as 1.96 so the intervals this module produces match the ones
+# statsmodels' own `.conf_int()` reports to full precision.
+Z95 = float(norm.ppf(0.975))
+
+
+def confidence_interval(coef: float, se: float) -> tuple[float, float]:
+    """The 95% Wald interval around a fitted coefficient.
+
+    Wald, not profile-likelihood: it is what statsmodels' summary prints for
+    these GLMs, so a reader checking our whiskers against a model summary
+    sees the same numbers.
+    """
+    half = Z95 * se
+    return coef - half, coef + half
 
 # Published coefficients, for reference and for the comparison display.
 #

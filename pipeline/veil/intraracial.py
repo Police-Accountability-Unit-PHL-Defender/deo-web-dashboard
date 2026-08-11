@@ -39,6 +39,22 @@ DISTRICTS = ("12", "14", "16", "18", "19", "22", "35", "39")
 # The paper's study window: January 2022 through August 2025.
 WINDOW = ("2022-01-01", "2025-08-31")
 
+# The trend chart's window: five full calendar years, deliberately wider than
+# WINDOW and deliberately whole years. A part-year covers only part of the
+# daylight cycle, which is exactly the imbalance the seasonality weight
+# exists to correct, so a truncated year is not comparable to a full one.
+# This is why 2026 is absent: the source data only runs through June.
+#
+# Consequence worth stating plainly: 2025 appears in both windows and is NOT
+# the same quantity in each -- Jan-Aug here versus a full year there.
+TREND_WINDOW = ("2021-01-01", "2025-12-31")
+TREND_YEARS = (2021, 2022, 2023, 2024, 2025)
+
+# The four mutually exclusive group outcomes. The two aggregate outcomes
+# (`is_young`, `is_male`) are deliberately excluded: they overlap these four,
+# so charting all six would plot the same motorists twice.
+TREND_OUTCOMES = ("young_male", "young_female", "older_male", "older_female")
+
 # The paper's race restriction. Matches the convention already used by
 # veil.sample.STUDY_RACES, which separates "Black - Non-Latino" from
 # "Black - Latino" as distinct categories in this source data.
@@ -62,10 +78,25 @@ def _district_code(value) -> str:
     return code.zfill(2) if code else ""
 
 
-def build_sample(stops: pd.DataFrame, sun: pd.DataFrame) -> pd.DataFrame:
+def build_sample(
+    stops: pd.DataFrame,
+    sun: pd.DataFrame,
+    window: tuple[str, str] = WINDOW,
+) -> pd.DataFrame:
     """Apply the 2025 paper's restrictions and derive its six outcomes.
 
-    Restrictions, in order: district in DISTRICTS; ts_local within WINDOW;
+    `window` defaults to the paper's WINDOW; the trend chart passes
+    TREND_WINDOW instead. Note what the parameter carries with it: BOTH the
+    inter-twilight window and the seasonality weights are derived from the
+    dates inside `window`, not from module constants. So one call spanning
+    several years gives every one of those years a single shared ITP and a
+    single shared weight schedule, whereas one call per year would give each
+    year its own slightly different time-of-day window. Callers comparing
+    years must make one wide call and split the result afterwards -- with
+    per-year calls, a year-over-year difference could reflect the moving
+    window rather than a change in who gets stopped.
+
+    Restrictions, in order: district in DISTRICTS; ts_local within `window`;
     race is Black; age >= 18 (age present); gender present and one of
     Male/Female; is_mvc == 1; lighting != "ambiguous"; assigned_unit present;
     clock_minutes within the sample's own inter-twilight window. The
@@ -102,8 +133,8 @@ def build_sample(stops: pd.DataFrame, sun: pd.DataFrame) -> pd.DataFrame:
     # (as the unit tests pass in) is a no-op.
     stops["ts_local"] = pd.to_datetime(stops.ts_local)
 
-    window_start_ts = pd.Timestamp(WINDOW[0])
-    window_end_ts = pd.Timestamp(WINDOW[1]) + pd.Timedelta(days=1)  # exclusive
+    window_start_ts = pd.Timestamp(window[0])
+    window_end_ts = pd.Timestamp(window[1]) + pd.Timedelta(days=1)  # exclusive
 
     keep = (
         stops["_district"].isin(DISTRICTS)
@@ -130,11 +161,11 @@ def build_sample(stops: pd.DataFrame, sun: pd.DataFrame) -> pd.DataFrame:
     out["older_female"] = (1 - is_young) * (1 - is_male)
     out["obscured_view"] = (out.lighting == "dark").astype(int)
 
-    # The inter-twilight window is derived from the sample's own dates
-    # (Jan 2022 - Aug 2025), not veil.sample's WINDOW_START/END constants,
-    # which were computed for a different study period (2021-2024).
+    # The inter-twilight window is derived from the sample's own dates (the
+    # `window` argument), not veil.sample's WINDOW_START/END constants, which
+    # were computed for a different study period (2021-2024).
     sun_dates = pd.to_datetime(sun.stop_date)
-    sun_in_window = sun[sun_dates.between(window_start_ts, pd.Timestamp(WINDOW[1]))]
+    sun_in_window = sun[sun_dates.between(window_start_ts, pd.Timestamp(window[1]))]
     itp_start, itp_end = inter_twilight_window(sun_in_window)
     itp_start_min = itp_start.hour * 60 + itp_start.minute
     itp_end_min = itp_end.hour * 60 + itp_end.minute

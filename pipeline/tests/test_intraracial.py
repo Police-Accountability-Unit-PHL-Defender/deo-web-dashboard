@@ -11,7 +11,14 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
-from veil.intraracial import DISTRICTS, OUTCOMES, build_sample
+from veil.intraracial import (
+    DISTRICTS,
+    OUTCOMES,
+    TREND_OUTCOMES,
+    TREND_WINDOW,
+    TREND_YEARS,
+    build_sample,
+)
 from veil.sun import load_sun_times
 
 REPO = Path(__file__).resolve().parents[1]
@@ -118,6 +125,35 @@ def test_window_start_boundary_is_exact():
 def test_window_end_boundary_is_exact():
     at_end = _stop(ts_local=pd.Timestamp("2025-08-31 23:59"))
     assert len(build_sample(pd.DataFrame([at_end]), _sun())) == 1
+
+
+def test_an_explicit_window_overrides_the_paper_window():
+    # The trend chart needs years the paper's window excludes. Passing a
+    # window must move the date restriction, not merely be accepted.
+    stop = _stop(ts_local=pd.Timestamp("2021-10-03 19:00"))
+    assert len(build_sample(pd.DataFrame([stop]), _sun())) == 0
+    wide = build_sample(pd.DataFrame([stop]), _sun(), window=TREND_WINDOW)
+    assert len(wide) == 1
+
+
+def test_trend_window_covers_whole_calendar_years():
+    # A part-year is unbalanced across the daylight cycle -- precisely what
+    # the seasonality weight corrects for -- so the trend window must start
+    # on 1 January and end on 31 December, and TREND_YEARS must enumerate
+    # exactly the years it spans.
+    start, end = TREND_WINDOW
+    assert start.endswith("-01-01"), start
+    assert end.endswith("-12-31"), end
+    assert list(TREND_YEARS) == list(range(int(start[:4]), int(end[:4]) + 1))
+
+
+def test_trend_outcomes_are_the_four_group_outcomes():
+    # The two aggregate outcomes (is_young, is_male) are not charted: they
+    # overlap the four groups and would double-plot the same motorists.
+    assert set(TREND_OUTCOMES) <= set(OUTCOMES)
+    assert set(TREND_OUTCOMES) == {
+        "young_male", "young_female", "older_male", "older_female",
+    }
 
     after = _stop(ts_local=pd.Timestamp("2025-09-01 00:00"))
     assert len(build_sample(pd.DataFrame([after]), _sun())) == 0

@@ -4,7 +4,12 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from veil.models import _DEGENERATE_BOUND, _collapse_sparse_levels, fit_vod
+from veil.models import (
+    _DEGENERATE_BOUND,
+    _collapse_sparse_levels,
+    confidence_interval,
+    fit_vod,
+)
 
 
 def synthetic(n=6000, effect=-0.5, seed=0):
@@ -116,3 +121,22 @@ def test_degenerate_fit_is_flagged_not_reported_as_success():
     assert result["converged"] is False
     assert result.get("degenerate") is True
     assert "error" in result
+
+
+def test_confidence_interval_is_the_wald_interval_around_the_coefficient():
+    """The 95% interval the trend chart's whiskers are drawn from.
+
+    Pinned against statsmodels' own summary interval rather than a
+    hand-rounded 1.96, so the whiskers and any published table agree.
+    """
+    lo, hi = confidence_interval(-0.25, 0.05)
+    assert lo == pytest.approx(-0.348, abs=1e-3)
+    assert hi == pytest.approx(-0.152, abs=1e-3)
+    # Symmetric about the point estimate, and wider for a noisier estimate.
+    assert (lo + hi) / 2 == pytest.approx(-0.25)
+    wide_lo, wide_hi = confidence_interval(-0.25, 0.10)
+    assert (wide_hi - wide_lo) > (hi - lo)
+
+
+def test_confidence_interval_of_a_zero_se_estimate_is_a_point():
+    assert confidence_interval(0.4, 0.0) == (0.4, 0.4)
