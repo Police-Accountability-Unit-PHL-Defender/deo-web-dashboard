@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from veil.models import INTRARACIAL_TARGETS, MODEL_TARGETS
+from veil.models import INTRARACIAL_SE_TARGETS, INTRARACIAL_TARGETS, MODEL_TARGETS
 
 PIPELINE_ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = PIPELINE_ROOT / "build_cubes.py"
@@ -217,6 +217,36 @@ def test_intraracial_coefficients_stay_close_to_the_published_ones(cube_outputs,
         f"(delta {delta:.5f} > tolerance {INTRARACIAL_TOLERANCE})"
     )
     assert model["converged"], f"{outcome}: model did not converge"
+
+
+@pytest.mark.parametrize("outcome,paper_se", sorted(INTRARACIAL_SE_TARGETS.items()))
+def test_intraracial_standard_errors_stay_close_to_the_published_ones(cube_outputs, outcome, paper_se):
+    """Pin every intraracial standard error against Hannon & Biddle (2025) Table 1.
+
+    SEs were the decisive evidence for using var_weights rather than
+    freq_weights in fit_intraracial -- the two weighting schemes give
+    near-identical coefficients but SEs an order of magnitude apart. A cube
+    rebuild that silently reintroduced freq_weights would still pass every
+    coefficient-only check above.
+    """
+    cube, _ = cube_outputs
+    model = cube["intraracial"]["models"][outcome]
+    delta = abs(model["se"] - paper_se)
+    assert delta <= 0.01, (
+        f"{outcome}: fitted se {model['se']:.5f} vs published {paper_se} "
+        f"(delta {delta:.5f} > tolerance 0.01)"
+    )
+
+
+def test_intraracial_sample_n_matches_every_models_n(cube_outputs):
+    # The page states cube["intraracial"]["sample"]["n"] as the sample the
+    # coefficients come from. build_sample restricts on assigned_unit
+    # presence (I7) so that no model's formula silently drops rows the
+    # reported sample size still counts.
+    cube, _ = cube_outputs
+    sample_n = cube["intraracial"]["sample"]["n"]
+    for outcome, model in cube["intraracial"]["models"].items():
+        assert model["n"] == sample_n, f"{outcome}: model n={model['n']} != sample n={sample_n}"
 
 
 def test_intraracial_probabilities_match_figure_1(cube_outputs):

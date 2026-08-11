@@ -9,7 +9,19 @@ gets pulled over.
 
 Input: `car_ped_stops_veil_intraracial` (built by `veil.build_intraracial`),
 one row per sole-occupant stop, deliberately unfiltered. Every restriction
-applied here is stated in the paper -- none is invented.
+applied here is stated in the paper -- none is invented. One exception,
+recorded honestly rather than glossed over: restriction 5 ("MVC-initiated")
+is implemented as a proxy, "has an MVC code" (`is_mvc`, built in
+`veil.build_intraracial._roll_up_sole_occupants`), not the paper's exact
+"MVC-initiated, excluding 'vehicle involved in crime' and 'vehicle matches
+flash information'". An `mvc_reason == "Police Investigation"` category
+(4,445 rows, 2022-2025) exists in the source data and is not excluded by the
+proxy. Applying the paper's exact exclusion was measured and moves our
+sample n further FROM the published 76,274 (to about -1.2% away, versus
+-0.49% under the current proxy), which is evidence the proxy, not the
+exact-text restriction, is the right implementation here -- so the behaviour
+is deliberately unchanged, and only the docstring's blanket claim is
+corrected.
 """
 
 import pandas as pd
@@ -55,9 +67,10 @@ def build_sample(stops: pd.DataFrame, sun: pd.DataFrame) -> pd.DataFrame:
 
     Restrictions, in order: district in DISTRICTS; ts_local within WINDOW;
     race is Black; age >= 18 (age present); gender present and one of
-    Male/Female; is_mvc == 1; lighting != "ambiguous"; clock_minutes within
-    the sample's own inter-twilight window. The sole-occupant restriction
-    already happened upstream in veil.build_intraracial.
+    Male/Female; is_mvc == 1; lighting != "ambiguous"; assigned_unit present;
+    clock_minutes within the sample's own inter-twilight window. The
+    sole-occupant restriction already happened upstream in
+    veil.build_intraracial.
 
     A null/blank gender or a null age is dropped explicitly rather than
     left to fall through comparison semantics: `gender == "Male"` on a null
@@ -65,6 +78,16 @@ def build_sample(stops: pd.DataFrame, sun: pd.DataFrame) -> pd.DataFrame:
     -- and two of the six outcomes here are female categories, one of them
     the paper's headline inverse finding (30+ & female). So nulls are
     excluded up front, never allowed to become a data point.
+
+    `assigned_unit` presence is stated as a restriction for the same reason:
+    every model in `veil.models.fit_intraracial` includes `C(assigned_unit)`
+    in its formula, and patsy silently drops any row with a null value there
+    before fitting. Exactly 22 of ~75,900 rows carry a null `assigned_unit`
+    (0.03%), so without this restriction the sample this function returns
+    (`len(out)`) and the `n` every fitted model reports disagree by 22 rows
+    -- immaterial in size, but the page states `len(out)` as "the sample the
+    coefficients come from," and that claim should be exactly true, not
+    approximately true.
     """
     stops = stops.copy()
     stops["_district"] = stops.districtoccur.map(_district_code)
@@ -82,14 +105,6 @@ def build_sample(stops: pd.DataFrame, sun: pd.DataFrame) -> pd.DataFrame:
     window_start_ts = pd.Timestamp(WINDOW[0])
     window_end_ts = pd.Timestamp(WINDOW[1]) + pd.Timedelta(days=1)  # exclusive
 
-    # The sun frame the paper/Task 1 fixtures use keys on "date"; the real
-    # committed table (veil.sun.load_sun_times) keys on "stop_date". Accept
-    # either without silently guessing: normalise "date" to "stop_date" only
-    # when the real column isn't already present.
-    sun = sun.copy()
-    if "stop_date" not in sun.columns and "date" in sun.columns:
-        sun["stop_date"] = sun["date"]
-
     keep = (
         stops["_district"].isin(DISTRICTS)
         & stops.ts_local.ge(window_start_ts)
@@ -101,6 +116,7 @@ def build_sample(stops: pd.DataFrame, sun: pd.DataFrame) -> pd.DataFrame:
         & (stops.lighting != "ambiguous")
         & stops.gender.notna()
         & stops.gender.isin(("Male", "Female"))
+        & stops.assigned_unit.notna()
     )
     out = stops[keep].copy()
 

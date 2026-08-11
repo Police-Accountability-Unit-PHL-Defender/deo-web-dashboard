@@ -15,7 +15,14 @@ import sqlite3
 import pandas as pd
 
 from veil.intraracial import DISTRICTS, OUTCOMES, WINDOW, build_sample
-from veil.models import MODEL_TARGETS, fit_intraracial, fit_vod, predicted_probabilities
+from veil.models import (
+    INTRARACIAL_SE_TARGETS,
+    INTRARACIAL_TARGETS,
+    MODEL_TARGETS,
+    fit_intraracial,
+    fit_vod,
+    predicted_probabilities,
+)
 from veil.sample import int_code
 from veil.sun import load_sun_times
 
@@ -138,6 +145,8 @@ def _intraracial(conn: sqlite3.Connection) -> dict:
             "p_value": result["p_value"],
             "n": result["n"],
             "converged": result["converged"],
+            "paper_coef": INTRARACIAL_TARGETS.get(outcome),
+            "paper_se": INTRARACIAL_SE_TARGETS.get(outcome),
         }
 
     probabilities = []

@@ -61,6 +61,10 @@ export interface VeilIntraracialModel {
   p_value: number
   n: number
   converged: boolean
+  /** Hannon & Biddle (2025) Table 1, "Dark Out" column -- from INTRARACIAL_TARGETS. */
+  paper_coef: number | null
+  /** Hannon & Biddle (2025) Table 1 standard error -- from INTRARACIAL_SE_TARGETS. */
+  paper_se: number | null
 }
 
 export type VeilIntraracialGroup = 'young_male' | 'young_female' | 'older_male' | 'older_female'

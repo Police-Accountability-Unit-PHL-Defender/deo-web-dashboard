@@ -58,7 +58,6 @@ def _roll_up_sole_occupants(df: pd.DataFrame) -> pd.DataFrame:
     sole = df[party_size == 1].copy()
 
     sole = sole.rename(columns={"_is_mvc": "is_mvc"})
-    sole["ts_local"] = sole["ts_local"]
     return sole[[
         "datetimeoccur", "location", "districtoccur", "psa", "assigned_unit",
         "race", "age", "gender", "is_mvc", "ts_local",

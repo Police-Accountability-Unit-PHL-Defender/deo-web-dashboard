@@ -54,17 +54,17 @@ def _sun():
     return pd.DataFrame(
         [
             {
-                "date": pd.Timestamp("2023-12-21"),
+                "stop_date": pd.Timestamp("2023-12-21"),
                 "sunset_local": pd.Timestamp("2023-12-21 16:35"),
                 "dusk_local": pd.Timestamp("2023-12-21 17:05"),
             },
             {
-                "date": pd.Timestamp("2023-06-21"),
+                "stop_date": pd.Timestamp("2023-06-21"),
                 "sunset_local": pd.Timestamp("2023-06-21 20:31"),
                 "dusk_local": pd.Timestamp("2023-06-21 21:02"),
             },
             {
-                "date": pd.Timestamp("2024-10-03"),
+                "stop_date": pd.Timestamp("2024-10-03"),
                 "sunset_local": pd.Timestamp("2024-10-03 18:51"),
                 "dusk_local": pd.Timestamp("2024-10-03 19:20"),
             },
@@ -102,6 +102,25 @@ def test_drops_dates_outside_the_papers_window():
     early = _stop(ts_local=pd.Timestamp("2021-10-03 19:00"))
     late = _stop(ts_local=pd.Timestamp("2025-10-03 19:00"))
     assert len(build_sample(pd.DataFrame([early, late]), _sun())) == 0
+
+
+def test_window_start_boundary_is_exact():
+    # WINDOW = ("2022-01-01", "2025-08-31"). The end bound is hand-rolled
+    # (WINDOW[1] + 1 day, exclusive) and defines both the published n and
+    # the page's "to August 2025" label, so pin all four corners exactly.
+    before = _stop(ts_local=pd.Timestamp("2021-12-31 23:59"))
+    assert len(build_sample(pd.DataFrame([before]), _sun())) == 0
+
+    at_start = _stop(ts_local=pd.Timestamp("2022-01-01 00:00"))
+    assert len(build_sample(pd.DataFrame([at_start]), _sun())) == 1
+
+
+def test_window_end_boundary_is_exact():
+    at_end = _stop(ts_local=pd.Timestamp("2025-08-31 23:59"))
+    assert len(build_sample(pd.DataFrame([at_end]), _sun())) == 1
+
+    after = _stop(ts_local=pd.Timestamp("2025-09-01 00:00"))
+    assert len(build_sample(pd.DataFrame([after]), _sun())) == 0
 
 
 def test_derives_all_six_outcomes():
@@ -155,6 +174,15 @@ def test_drops_null_age():
     assert len(out) == 0
 
 
+def test_drops_null_assigned_unit():
+    # Every model formula includes C(assigned_unit); patsy silently drops a
+    # null-valued row before fitting. Stating this as a sample restriction
+    # keeps the sample's row count and every model's reported `n` in
+    # agreement (see I7 / build_sample's docstring).
+    out = build_sample(pd.DataFrame([_stop(assigned_unit=None)]), _sun())
+    assert len(out) == 0
+
+
 def test_no_row_ever_has_a_null_weight():
     stops = pd.DataFrame(
         [
@@ -193,7 +221,7 @@ def test_real_table_read_plainly_still_builds_the_sample():
 #   uv run python -m veil.build --zip data/car_ped_stops_2026-07-20T03_45_06.zip \
 #       --db data/open_data_philly_2026_07_20.db
 
-from veil.models import INTRARACIAL_TARGETS, fit_intraracial, predicted_probabilities
+from veil.models import INTRARACIAL_SE_TARGETS, INTRARACIAL_TARGETS, fit_intraracial, predicted_probabilities
 
 
 @pytest.fixture(scope="module")
@@ -217,6 +245,24 @@ def test_coefficients_land_near_table_1(sample, outcome):
     got = fit_intraracial(sample, outcome)
     assert got["converged"], f"{outcome} did not converge"
     assert got["coef"] == pytest.approx(INTRARACIAL_TARGETS[outcome], abs=0.08)
+
+
+@pytest.mark.parametrize("outcome", list(INTRARACIAL_SE_TARGETS))
+def test_standard_errors_land_near_table_1(sample, outcome):
+    # SEs, not just coefficients, were the decisive evidence for var_weights
+    # over freq_weights: the two weighting schemes give near-identical
+    # coefficients but SEs that differ by an order of magnitude. Pin them too.
+    got = fit_intraracial(sample, outcome)
+    assert got["se"] == pytest.approx(INTRARACIAL_SE_TARGETS[outcome], abs=0.01)
+
+
+def test_a_models_n_equals_the_sample_length(sample):
+    # `sample.n` on the cube and every model's `n` must agree: the page
+    # states the sample's row count as "the sample the coefficients come
+    # from," so build_sample must restrict away anything a model's formula
+    # would otherwise silently drop (see assigned_unit, I7).
+    result = fit_intraracial(sample, "is_young")
+    assert result["n"] == len(sample)
 
 
 def test_the_two_null_results_stay_null(sample):

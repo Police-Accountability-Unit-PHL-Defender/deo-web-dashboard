@@ -159,6 +159,21 @@ INTRARACIAL_TARGETS = {
     "older_female": 0.25,
 }
 
+# Hannon & Biddle (2025), Table 1, "Dark Out" column, standard errors. These
+# were the decisive evidence for using `var_weights` rather than `freq_weights`
+# in `fit_intraracial`: under the two weighting schemes the coefficients above
+# are nearly identical, but `freq_weights` inflates `nobs` as though each row
+# were replicated `weight` times, which drives its SEs an order of magnitude
+# away from these published values while `var_weights` lands close.
+INTRARACIAL_SE_TARGETS = {
+    "is_young": 0.02,
+    "is_male": 0.02,
+    "young_male": 0.02,
+    "young_female": 0.03,
+    "older_male": 0.02,
+    "older_female": 0.02,
+}
+
 # The control set the 2025 paper uses is identical to the 2026 paper's full
 # model (_FULL above): obscured_view, the clock-minutes spline, day of week,
 # year, police area, assigned unit, and summer. Reused rather than

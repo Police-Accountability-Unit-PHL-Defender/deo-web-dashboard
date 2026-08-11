@@ -105,7 +105,38 @@
               :y-scale-domain-max="panel.yScaleDomainMax"
               :minimum-container-width="480">
               <h4>{{ panel.title }}</h4>
+              <template #footer>
+                <p class="text-caption text-neutral-800 pt-4 px-4 max-w-[480px] mx-auto">{{ panel.footer }}</p>
+              </template>
             </LineGraph>
+          </div>
+
+          <div v-if="intraracialTableRows.length" class="border border-neutral-400 pt-6 my-6">
+            <h4 class="text-center text-body-2 font-semibold text-primary-800 px-4">
+              Effect of darkness on who gets stopped, among Black motorists (Hannon &amp; Biddle 2025, Table 1)
+            </h4>
+            <div class="deo-table mt-6 text-body-4 overflow-x-auto">
+              <table class="w-full min-w-[720px]">
+                <thead>
+                  <tr>
+                    <th class="font-medium">What the model predicts</th>
+                    <th class="font-medium">Our coefficient</th>
+                    <th class="font-medium">Our SE</th>
+                    <th class="font-medium">Published coefficient</th>
+                    <th class="font-medium">Significant?</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="row in intraracialTableRows" :key="row.key">
+                    <td>{{ row.label }}</td>
+                    <td class="whitespace-nowrap">{{ row.coef.toFixed(3) }}</td>
+                    <td class="whitespace-nowrap">{{ row.se.toFixed(3) }}</td>
+                    <td class="whitespace-nowrap">{{ row.paperCoef === null ? 'not published' : row.paperCoef.toFixed(3) }}</td>
+                    <td class="whitespace-nowrap">{{ row.significant ? `Yes (p ${fmtP(row.p)})` : `No (p ${fmtP(row.p)})` }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
 
           <AnswerText v-if="intraracialModels">
@@ -127,6 +158,24 @@
               gets stopped, it is difficult to explain why it would move two of the four groups and leave the other two
               untouched. The pattern is specific to young men and, inversely, older women, and it appears nowhere else
               in this model.
+            </p>
+            <p class="text-body-4 mt-6">
+              <strong>What this section cannot tell us.</strong> These models compare Black motorists with Black
+              motorists after dark and in daylight; they say nothing about how Black and white motorists compare with
+              each other, which is a different question the sections below this one address. The outcome is the
+              driver's own age and gender, not whether officers stopped more or fewer people overall, so this is not
+              evidence about the total volume of stops. And like every veil-of-darkness design, it can only detect
+              selection on what officers can see before deciding to stop a car &mdash; it says nothing about what
+              happens once the stop begins.
+            </p>
+            <p class="text-body-4 mt-6">
+              <strong>How close this reproduction lands.</strong> Our sample is {{ intraracialSample?.n.toLocaleString() ?? 'about 75,900' }}
+              stops against the paper's published 76,274<template v-if="intraracialSamplePctDiff !== null">, a
+              difference of about {{ Math.abs(intraracialSamplePctDiff).toFixed(2) }}%</template>. Every one of the
+              six coefficients in the table above lands
+              <template v-if="intraracialMaxDelta !== null">within {{ intraracialMaxDelta.toFixed(3) }} of</template>
+              <template v-else>close to</template>
+              the corresponding published figure in Table 1.
             </p>
           </AnswerText>
         </section>
@@ -635,9 +684,87 @@ function monthYearLabel(isoDate: string): string {
   return `${MONTH_NAMES[Number(month) - 1]} ${year}`
 }
 
+/** Hannon & Biddle (2025), p.1083: the paper's published sample size. */
+const INTRARACIAL_PAPER_N = 76_274
+
 const intraracial = computed(() => veilBundle.value?.cube?.intraracial ?? null)
 const intraracialSample = computed(() => intraracial.value?.sample ?? null)
 const intraracialModels = computed(() => intraracial.value?.models ?? null)
+
+interface IntraracialTableRow {
+  key: string
+  label: string
+  coef: number
+  se: number
+  paperCoef: number | null
+  p: number
+  significant: boolean
+}
+
+const INTRARACIAL_OUTCOME_LABELS: Record<string, string> = {
+  is_young: 'Stopped driver is under 30 (any gender)',
+  is_male: 'Stopped driver is male (any age)',
+  young_male: 'Stopped driver is under 30 and male',
+  young_female: 'Stopped driver is under 30 and female',
+  older_male: 'Stopped driver is 30 or older and male',
+  older_female: 'Stopped driver is 30 or older and female',
+}
+
+const INTRARACIAL_OUTCOME_ORDER = [
+  'is_young', 'is_male', 'young_male', 'young_female', 'older_male', 'older_female',
+]
+
+/**
+ * All six intraracial outcomes, not just the four charted panels: `is_young`
+ * and `is_male` are fitted and shipped on the cube but were read by nothing
+ * on the page before this table existed. Every field is read off
+ * `intraracialModels` (the cube) and `paper_coef` on each model (also
+ * cube-sourced, ultimately from `veil.models.INTRARACIAL_TARGETS`) --
+ * neither our numbers nor the paper's are typed in here.
+ */
+const intraracialTableRows = computed<IntraracialTableRow[]>(() => {
+  const models = intraracialModels.value
+  if (!models) return []
+  return INTRARACIAL_OUTCOME_ORDER
+    .filter((key) => models[key])
+    .map((key) => {
+      const model = models[key]
+      return {
+        key,
+        label: INTRARACIAL_OUTCOME_LABELS[key] ?? key,
+        coef: model.coef,
+        se: model.se,
+        // `?? null`, not a bare read: a cube built before this table shipped
+        // (paper_coef/paper_se are new fields) carries `undefined` here, not
+        // `null`, and every `=== null` check below the table would then miss
+        // it and crash on `.toFixed()`. Coercing once here means the rest of
+        // this file can treat "no published figure" as exactly one value.
+        paperCoef: model.paper_coef ?? null,
+        p: model.p_value,
+        significant: model.p_value < 0.05,
+      }
+    })
+})
+
+/**
+ * How far our six intraracial coefficients sit from Table 1 -- DERIVED, so
+ * the "within 0.012" sentence below the table cannot drift the way the page
+ * previously drifted on the 2026 Model 1 sentence (see `model1MaxDelta`).
+ */
+const intraracialMaxDelta = computed<number | null>(() => {
+  const deltas = intraracialTableRows.value
+    .filter((row) => row.paperCoef !== null)
+    .map((row) => Math.abs(row.coef - (row.paperCoef as number)))
+  if (deltas.length === 0) return null
+  return Math.ceil(Math.max(...deltas) * 1000) / 1000
+})
+
+/** Our sample size against the paper's published 76,274, as a signed percentage. */
+const intraracialSamplePctDiff = computed<number | null>(() => {
+  const n = intraracialSample.value?.n
+  if (!n) return null
+  return ((n - INTRARACIAL_PAPER_N) / INTRARACIAL_PAPER_N) * 100
+})
 
 const intraracialDistrictsLabel = computed(() => {
   const districts = intraracialSample.value?.districts
@@ -654,7 +781,8 @@ interface IntraracialPanel {
   key: VeilIntraracialGroup
   title: string
   yScaleDomainMax: number
-  data: Array<{ group: string; Lighting: string; 'Percentage (%)': number }>
+  footer: string
+  data: Array<{ group: string; Lighting: string; 'Percentage (%)': number; hover_text: string[] }>
 }
 
 /**
@@ -663,12 +791,26 @@ interface IntraracialPanel {
  * below uses) would flatten three of the four panels into apparently flat
  * lines. Set with headroom above each group's own max, not derived from
  * all four at once.
+ *
+ * `isNull` marks the two groups where darkness does not move the odds
+ * (young_female, older_male) -- see `test_the_two_null_results_stay_null`
+ * in pipeline/tests/test_intraracial.py. The panel title and footer both
+ * say so; a reader skimming just the chart grid should not need the prose
+ * paragraph below it to know which two results are null.
  */
-const PANEL_META: Record<VeilIntraracialGroup, { title: string; yScaleDomainMax: number }> = {
-  young_male: { title: 'Stopped driver is under 30 and male', yScaleDomainMax: 30 },
-  young_female: { title: 'Stopped driver is under 30 and female', yScaleDomainMax: 12 },
-  older_male: { title: 'Stopped driver is 30 or older and male', yScaleDomainMax: 60 },
-  older_female: { title: 'Stopped driver is 30 or older and female', yScaleDomainMax: 22 },
+const PANEL_META: Record<VeilIntraracialGroup, { title: string; yScaleDomainMax: number; isNull: boolean }> = {
+  young_male: { title: 'Stopped driver is under 30 and male', yScaleDomainMax: 30, isNull: false },
+  young_female: {
+    title: 'Stopped driver is under 30 and female (no statistically significant change)',
+    yScaleDomainMax: 12,
+    isNull: true,
+  },
+  older_male: {
+    title: 'Stopped driver is 30 or older and male (no statistically significant change)',
+    yScaleDomainMax: 60,
+    isNull: true,
+  },
+  older_female: { title: 'Stopped driver is 30 or older and female', yScaleDomainMax: 22, isNull: false },
 }
 
 const PANEL_ORDER: VeilIntraracialGroup[] = ['young_male', 'young_female', 'older_male', 'older_female']
@@ -678,22 +820,50 @@ const LIGHTING_X_LABEL: Record<VeilIntraracialLighting, string> = {
   dark: 'After dark',
 }
 
+/**
+ * Footer caption for one intraracial panel: the two probabilities plotted,
+ * stated as model-adjusted predicted probabilities (not raw shares -- see
+ * `:354` for the same distinction made about the 2026 charts), the p-value
+ * driving the null/non-null label, and what the change means in words.
+ */
+function intraracialFooter(key: VeilIntraracialGroup, daylightPct: number, darkPct: number): string {
+  const model = intraracialModels.value?.[key]
+  const pText = model ? `p ${fmtP(model.p_value)}` : 'p not available'
+  const base = `Model-adjusted predicted probability that a stopped Black driver falls in this group, ` +
+    `holding clock time, day of week, year, police area, assigned unit and season fixed at their sample ` +
+    `average or most common level: ${fmtPct(daylightPct)} in daylight versus ${fmtPct(darkPct)} after dark (${pText}).`
+  if (PANEL_META[key].isNull) {
+    return `${base} Darkness does not move this probability by a statistically detectable amount.`
+  }
+  const verb = darkPct > daylightPct ? 'raises' : 'lowers'
+  return `${base} Darkness ${verb} this probability, part of the shift described above.`
+}
+
 const intraracialPanels = computed<IntraracialPanel[]>(() => {
   const probabilities = intraracial.value?.probabilities
   if (!probabilities) return []
   return PANEL_ORDER.map((key) => {
     const points = probabilities.filter((p) => p.group === key)
     const meta = PANEL_META[key]
+    const daylightPct = points.find((p) => p.lighting === 'daylight')?.pct ?? 0
+    const darkPct = points.find((p) => p.lighting === 'dark')?.pct ?? 0
     return {
       key,
       title: meta.title,
       yScaleDomainMax: meta.yScaleDomainMax,
+      footer: intraracialFooter(key, daylightPct, darkPct),
       data: (['daylight', 'dark'] as const).map((lighting) => {
         const point = points.find((p) => p.lighting === lighting)
+        const pct = point?.pct ?? 0
         return {
           group: key,
           Lighting: LIGHTING_X_LABEL[lighting],
-          'Percentage (%)': point?.pct ?? 0,
+          'Percentage (%)': pct,
+          hover_text: [
+            meta.title.replace(' (no statistically significant change)', ''),
+            LIGHTING_X_LABEL[lighting],
+            `${fmtPct(pct)} model-adjusted predicted probability`,
+          ],
         }
       }),
     }
