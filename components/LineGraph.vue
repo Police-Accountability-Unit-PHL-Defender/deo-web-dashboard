@@ -54,7 +54,10 @@ const props = defineProps({
     default: undefined
   },
   dashedFromX: {
-    type: [Number, String, null],
+    // `null` is not a valid member of a Vue type array -- the runtime checker
+    // expects constructors. Listing it emits a dev warning; omitting it while
+    // keeping `default: null` is the documented way to say "optional".
+    type: [Number, String],
     required: false,
     default: null
   },

@@ -47,3 +47,20 @@ describe('majorityWhiteDisparity', () => {
     expect(majorityWhiteDisparity(cube, zeroed, '2026-Q2')).toBeNull()
   })
 })
+
+  it('returns null rather than Infinity when the white population is zero', () => {
+    // The symmetric case to the test above. whitePop is the denominator of the
+    // rate this sentence divides by, so a zero there would reach the page as
+    // "Infinityx more often" -- the guard exists, but only blackPop was covered.
+    const zeroed = { '09': { total: 100, white: 0, black: 90, whiteness: 90 } }
+    expect(majorityWhiteDisparity(cube, zeroed, '2026-Q2')).toBeNull()
+  })
+
+  it('returns null rather than dividing by zero when no white drivers were stopped', () => {
+    // Distinct from a zero population: the district qualifies and has white
+    // residents, but the cube holds no white stops for the year, so whiteStops
+    // is 0. Guarded separately in the implementation and previously untested.
+    const noWhiteStops = { rows: [], dimensions: cube.dimensions, measures: cube.measures, version: cube.version }
+    const demographics = { '09': { total: 100, white: 50, black: 40, whiteness: 50 } }
+    expect(majorityWhiteDisparity(noWhiteStops as typeof cube, demographics, '2026-Q2')).toBeNull()
+  })
