@@ -201,12 +201,26 @@ def fit_intraracial(df: pd.DataFrame, outcome: str) -> dict:
     result = {
         "coef": float("nan"), "se": float("nan"), "odds_ratio": float("nan"),
         "p_value": float("nan"), "n": int(len(df)), "converged": False,
+        "collapsed_units": 0, "min_unit_count": _MIN_UNIT_COUNT,
+        "other_row_share": {},
     }
     try:
         df = df.copy()
+        collapsed = 0
         for col in _SPARSE_COLUMNS:
             if col in df.columns:
+                counts = df[col].value_counts()
+                collapsed += int((counts < _MIN_UNIT_COUNT).sum())
                 df[col] = _collapse_sparse_levels(df[col], _MIN_UNIT_COUNT)
+                # Share of ROWS, not levels, exactly as fit_vod reports it:
+                # many rare levels folding together is harmless, a large
+                # fraction of the sample losing its fixed effect is not. Without
+                # this the "OTHER bucket stays small" property has to be
+                # re-derived by hand to be checked at all.
+                result["other_row_share"][col] = (
+                    float((df[col] == "OTHER").mean()) if len(df) else 0.0
+                )
+        result["collapsed_units"] = collapsed
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             model = smf.glm(
