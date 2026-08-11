@@ -25,6 +25,12 @@
           <h2 class="text-label-1">Jump to:</h2>
           <ul class="flex flex-col gap-3">
             <li>
+              <a href="#intra-trend" class="deo_scroll text-hyperlink flex">
+                <IconsChevron class="fill-black -rotate-90"/>
+                Does this pattern hold up year by year?
+              </a>
+            </li>
+            <li>
               <a href="#intra-lead" class="deo_scroll text-hyperlink flex">
                 <IconsChevron class="fill-black -rotate-90"/>
                 Who gets stopped, by age and gender, in daylight and after dark?
@@ -68,6 +74,80 @@
             </li>
           </ul>
         </nav>
+
+        <!-- ================= Year-by-year trend (sits above the fixed reproduction) ================= -->
+        <section v-if="intraracialByYear">
+          <h2 id="intra-trend" class="text-heading-3 text-left pt-10 mb-6">Does this pattern hold up year by year?</h2>
+          <AnswerText>
+            <p class="text-body-4">
+              Everything below this chart reproduces a published study over one fixed window, pooling roughly four
+              years of stops into a single estimate. That is the right way to reproduce a paper, but it cannot show
+              whether the finding is steady or whether one unusual year is carrying it. So here the same models are
+              fitted again, one calendar year at a time, from {{ trendYearsLabel }}. Each dot is that year's estimate
+              and each vertical bar is its 95% confidence interval &mdash; the range the true effect plausibly falls
+              in. Where a bar crosses the dashed zero line, that year cannot distinguish the effect from no effect at
+              all. Use the selector to look at any single year, or any combination.
+            </p>
+          </AnswerText>
+
+          <div class="max-w-[320px] mt-6">
+            <SelectYears v-model="selectedYears" :items="trendYearOptions"/>
+          </div>
+
+          <CoefficientGraph
+            :estimates="trendData"
+            :axis-properties="{x: 'Year', y: 'Effect of darkness (log-odds)'}"
+            :group-classes="TREND_CLASSES"
+            :chart-legend="TREND_LEGEND">
+            <h4>Effect of darkness on who gets stopped, fitted one year at a time</h4>
+            <template #footer>
+              <p class="text-caption text-neutral-800 pt-4 px-4 max-w-[630px] mx-auto">
+                Below zero means that group is stopped <em>less</em> once officers can no longer see into the car;
+                above zero, <em>more</em>. Each year is fitted on its own, using the same controls and the same
+                seasonality weighting as the pooled analysis below, and all years share one inter-twilight window so
+                that a year-to-year difference cannot be an artifact of a shifting comparison period. Hover any point
+                for that year's odds and sample size.
+                <template v-if="trendOverlapYear">
+                  These are <strong>full calendar years</strong>, whereas the reproduction below runs
+                  {{ intraracialWindowLabel }} &mdash; so its {{ trendOverlapYear }} covers only part of the year and
+                  the two {{ trendOverlapYear }} figures are not the same quantity.
+                </template>
+                {{ trendYearOptions[0] }} predates Driving Equality, which took effect in March 2022.
+                2026 is left out because the data only runs through June, and a half year would cover only the lighter
+                half of the daylight cycle. A single year holds roughly a quarter of the pooled sample, so these
+                intervals are correspondingly wider than the pooled ones.
+              </p>
+            </template>
+          </CoefficientGraph>
+
+          <AnswerText>
+            <p class="text-body-4">
+              <strong>The two headline findings hold in every year.</strong> In all
+              {{ trendYearOptions.length }} years, young men are stopped significantly less often once it is dark, and
+              older women significantly more often; no year's interval for either group touches zero. Whatever is
+              producing the pattern, it is not a single anomalous year.
+            </p>
+            <p class="text-body-4 mt-6" v-if="trendOlderFemaleEnds">
+              <strong>The older-woman effect does appear to be shrinking.</strong> It falls steadily from
+              {{ trendOlderFemaleEnds.first.coef.toFixed(2) }} in {{ trendOlderFemaleEnds.first.year }} to
+              {{ trendOlderFemaleEnds.last.coef.toFixed(2) }} in {{ trendOlderFemaleEnds.last.year }}. We flag this
+              carefully rather than claim it: the two intervals
+              <template v-if="trendOlderFemaleEnds.intervalsOverlap">still overlap slightly</template>
+              <template v-else>no longer overlap</template>, this is a trend read off five points, and nothing here
+              identifies a cause. It is worth watching in future data, not citing as an established decline.
+            </p>
+            <p class="text-body-4 mt-6" v-if="trendYoungFemaleHits.length">
+              <strong>The year-by-year view also shows why the pooled nulls are the honest reading.</strong> Older men
+              show no detectable effect in any single year, matching the pooled result. Young women are pooled-null
+              too, but reach significance on their own in
+              {{ trendYoungFemaleHits.join(' and ') }}&nbsp;&mdash; and in the remaining years sit essentially at
+              zero. This chart runs {{ trendTestCount }} separate tests, so at the usual threshold roughly one
+              apparent hit is expected by chance alone; an effect that appears in some years and vanishes in others,
+              with no consistent direction, is what noise looks like. It should not be reported as a finding about
+              young women.
+            </p>
+          </AnswerText>
+        </section>
 
         <!-- ================= Intraracial lead: age & gender (Hannon & Biddle 2025) ================= -->
         <section>
@@ -615,8 +695,10 @@
 </template>
 
 <script setup lang="ts">
+import CoefficientGraph from '~/components/CoefficientGraph.vue'
 import Graph from '~/components/Graph.vue'
 import LineGraph from '~/components/LineGraph.vue'
+import SelectYears from '~/components/SelectYears.vue'
 import QuestionHeader from '~/components/QuestionHeader.vue'
 import HorizontalLine from '~/components/ui/HorizontalLine.vue'
 import Tooltip from '~/components/ui/Tooltip.vue'
@@ -690,6 +772,118 @@ const INTRARACIAL_PAPER_N = 76_274
 const intraracial = computed(() => veilBundle.value?.cube?.intraracial ?? null)
 const intraracialSample = computed(() => intraracial.value?.sample ?? null)
 const intraracialModels = computed(() => intraracial.value?.models ?? null)
+
+// =========================================================================
+// Year-by-year trend, sitting ABOVE the reproduction.
+//
+// A SEPARATE sample from `intraracialSample`: full calendar years 2021-2025
+// against the paper's January 2022 - August 2025. 2025 therefore appears in
+// both and is not the same quantity in each -- a full year here, eight
+// months there -- which the caption states outright. Nothing in this block
+// feeds the reproduction's figures.
+// =========================================================================
+const intraracialByYear = computed(() => intraracial.value?.by_year ?? null)
+
+const TREND_LABEL: Record<VeilIntraracialGroup, string> = {
+  young_male: 'Young man (18–29)',
+  young_female: 'Young woman (18–29)',
+  older_male: 'Older man (30+)',
+  older_female: 'Older woman (30+)',
+}
+
+// Four hues from the site palette, checked as a set rather than picked by
+// eye: worst all-pairs separation is ΔE 9.4 under deutan simulation and
+// 25.6 for normal vision, both clear of the floors. Two of them sit under
+// 3:1 against the chart surface, which is why the legend below is not
+// optional -- it is the relief that makes them identifiable.
+const TREND_CLASSES: Record<string, string> = {
+  [TREND_LABEL.young_male]: 'stroke-purple fill-purple bg-purple',
+  [TREND_LABEL.young_female]: 'stroke-red fill-red bg-red',
+  [TREND_LABEL.older_male]: 'stroke-yellowgreen fill-yellowgreen bg-yellowgreen',
+  [TREND_LABEL.older_female]: 'stroke-highlight fill-highlight bg-highlight',
+}
+
+const TREND_LEGEND: Record<string, string> = Object.fromEntries(
+  Object.values(TREND_LABEL).map((label) => [label, label]),
+)
+
+const trendYearOptions = computed<string[]>(() =>
+  (intraracialByYear.value?.years ?? []).map(String),
+)
+
+/**
+ * The cube loads lazily, so the years are unknown at setup and the default
+ * selection has to be filled in once they arrive. Only seeded while the
+ * selection is empty, so a reader's own choice is never overwritten by a
+ * later re-evaluation.
+ */
+const selectedYears = ref<string[]>([])
+watch(trendYearOptions, (years) => {
+  if (years.length && selectedYears.value.length === 0) {
+    selectedYears.value = [...years]
+  }
+}, { immediate: true })
+
+const trendData = computed(() => {
+  const byYear = intraracialByYear.value
+  if (!byYear) return []
+  const chosen = new Set(selectedYears.value)
+  return byYear.estimates
+    .filter((e) => chosen.has(String(e.year)))
+    .map((e) => ({
+      x: String(e.year),
+      group: TREND_LABEL[e.outcome],
+      value: e.coef,
+      ciLo: e.ci_lo,
+      ciHi: e.ci_hi,
+      // The axis is in log-odds, which is the unit the table further down
+      // reports; the tooltip carries the readable form of the same number.
+      hoverText: [
+        `${TREND_LABEL[e.outcome]}, ${e.year}`,
+        e.coef >= 0
+          ? `${pctAboveOne(e.odds_ratio)} higher odds after dark`
+          : `${pctBelowOne(e.odds_ratio)} lower odds after dark`,
+        `95% interval ${e.ci_lo.toFixed(2)} to ${e.ci_hi.toFixed(2)} (p ${fmtP(e.p_value)})`,
+        `${e.n.toLocaleString()} stops`,
+      ],
+    }))
+})
+
+/** "2021–2025", from the trend window rather than asserted in the page's voice. */
+const trendYearsLabel = computed(() => {
+  const years = intraracialByYear.value?.years ?? []
+  return years.length ? `${years[0]}–${years[years.length - 1]}` : ''
+})
+
+/** The paper's window ends mid-2025; the trend's 2025 is a whole year. */
+const trendOverlapYear = computed<number | null>(() => {
+  const end = intraracialSample.value?.window_end
+  return end ? Number(end.slice(0, 4)) : null
+})
+
+/**
+ * Older women, first year against last. Drives the "appears to be
+ * weakening" sentence, which stays hedged because the two intervals still
+ * touch -- derived here so the claim tracks the data on a rebuild instead
+ * of going stale as a hardcoded pair of numbers.
+ */
+const trendOlderFemaleEnds = computed(() => {
+  const series = (intraracialByYear.value?.estimates ?? [])
+    .filter((e) => e.outcome === 'older_female')
+  if (series.length < 2) return null
+  const first = series[0]
+  const last = series[series.length - 1]
+  return { first, last, intervalsOverlap: last.ci_hi >= first.ci_lo }
+})
+
+/** Years in which the young-woman effect reaches significance on its own. */
+const trendYoungFemaleHits = computed(() =>
+  (intraracialByYear.value?.estimates ?? [])
+    .filter((e) => e.outcome === 'young_female' && e.p_value < 0.05)
+    .map((e) => e.year),
+)
+
+const trendTestCount = computed(() => intraracialByYear.value?.estimates.length ?? 0)
 
 interface IntraracialTableRow {
   key: string
