@@ -14,10 +14,13 @@ from veil.seasonality import daylight_proportion, quadratic_weights
 
 
 def _sun(rows):
+    # Column named `stop_date` to match the real table produced by
+    # veil.sun.load_sun_times -- the synthetic fixtures used to say `date`,
+    # which let the code path that only exists for real data go untested.
     return pd.DataFrame(
         [
             {
-                "date": pd.Timestamp(d),
+                "stop_date": pd.Timestamp(d),
                 "sunset_local": pd.Timestamp(f"{d} {sunset}"),
                 "dusk_local": pd.Timestamp(f"{d} {dusk}"),
             }
@@ -81,3 +84,34 @@ def test_uses_p_times_one_minus_p_not_the_four_times_variant():
     w = quadratic_weights(pd.Series([0.5]))
     raw_mean = 0.25
     assert w.iloc[0] == pytest.approx(0.25 + raw_mean)
+
+
+def test_indexes_by_date_against_the_real_sun_table():
+    # The synthetic fixtures above use a `stop_date` column too (renamed to
+    # match reality), but this test goes straight at the real table produced
+    # by veil.sun.load_sun_times to make sure nothing about the real dtypes
+    # (object-dtype datetime.date, not Timestamp) breaks the indexing. A
+    # positional index here joins to nothing later and silently drops rows.
+    from veil.sun import load_sun_times
+
+    sun = load_sun_times()
+    p = daylight_proportion(sun, dt.time(17, 8), dt.time(20, 35))
+    assert not isinstance(p.index, pd.RangeIndex), "fell back to a positional index"
+    assert len(p) == len(sun)
+    first = p.index[0]
+    assert hasattr(first, "year"), f"index is not date-like: {type(first)}"
+
+
+def test_raises_when_no_date_column_is_present():
+    # No positional-index fallback: a frame missing both known date columns
+    # must raise, naming the column it needed, rather than silently handing
+    # back a RangeIndex that later half-matches (or fails to match at all)
+    # against real stop dates.
+    sun = pd.DataFrame(
+        {
+            "sunset_local": [pd.Timestamp("2025-10-03 18:37")],
+            "dusk_local": [pd.Timestamp("2025-10-03 19:06")],
+        }
+    )
+    with pytest.raises(ValueError, match="stop_date"):
+        daylight_proportion(sun, *WINDOW)

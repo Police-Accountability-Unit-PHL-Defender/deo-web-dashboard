@@ -44,7 +44,26 @@ def daylight_proportion(
 
     total = daylight + dark
     p = (daylight / total).where(total > 0, 0.0)
-    p.index = sun.date if "date" in sun.columns else sun.index
+
+    # The real table from veil.sun.load_sun_times names its date column
+    # `stop_date` (object dtype holding datetime.date, not Timestamp). There
+    # is no `date` column in real data -- a previous version of this
+    # function checked for one and silently fell back to sun.index (a
+    # positional RangeIndex) when it wasn't found, which joins to nothing
+    # downstream. Fail loudly instead of guessing.
+    if "stop_date" not in sun.columns:
+        raise ValueError(
+            "sun frame has no 'stop_date' column to index by "
+            f"(got columns: {list(sun.columns)})"
+        )
+
+    # Normalise to pd.Timestamp (not datetime.date) so a later .map()/join
+    # against other date-keyed series -- which in this codebase are
+    # Timestamps, e.g. sunset_local/dusk_local -- matches exactly. Mixing
+    # date and Timestamp objects as index labels compares unequal even for
+    # the "same" calendar day, which would silently drop or duplicate rows
+    # rather than raise.
+    p.index = pd.to_datetime(sun.stop_date)
     return p
 
 
