@@ -13,20 +13,24 @@
 import type {
   VeilCube,
   VeilIntraracial,
+  VeilIntraracialByYear,
   VeilIntraracialGroup,
   VeilIntraracialLighting,
   VeilIntraracialModel,
   VeilIntraracialProbability,
   VeilIntraracialSample,
+  VeilIntraracialYearEstimate,
 } from '~/utils/veil'
 
 export type {
   VeilIntraracial,
+  VeilIntraracialByYear,
   VeilIntraracialGroup,
   VeilIntraracialLighting,
   VeilIntraracialModel,
   VeilIntraracialProbability,
   VeilIntraracialSample,
+  VeilIntraracialYearEstimate,
 }
 
 export interface VeilCubeBundle {

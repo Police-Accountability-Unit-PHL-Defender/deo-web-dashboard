@@ -83,10 +83,44 @@ export interface VeilIntraracialSample {
   districts: string[]
 }
 
+/**
+ * One outcome fitted on one calendar year, for the trend chart.
+ *
+ * `ci_lo`/`ci_hi` are the 95% Wald bounds the pipeline computes; the chart
+ * draws them rather than recomputing from `se`, so the whiskers and any
+ * table of these numbers can never disagree.
+ */
+export interface VeilIntraracialYearEstimate {
+  year: number
+  outcome: VeilIntraracialGroup
+  coef: number
+  se: number
+  ci_lo: number
+  ci_hi: number
+  odds_ratio: number
+  p_value: number
+  n: number
+  converged: boolean
+}
+
+/**
+ * Year-by-year fits, a SEPARATE sample from the reproduction above.
+ *
+ * These are full calendar years, where `VeilIntraracialSample` covers
+ * January 2022 - August 2025. 2025 therefore appears in both and means
+ * something different in each; anything rendering both must say so.
+ */
+export interface VeilIntraracialByYear {
+  window: { start: string; end: string }
+  years: number[]
+  estimates: VeilIntraracialYearEstimate[]
+}
+
 export interface VeilIntraracial {
   sample: VeilIntraracialSample
   models: Record<string, VeilIntraracialModel>
   probabilities: VeilIntraracialProbability[]
+  by_year: VeilIntraracialByYear
 }
 
 export interface VeilCube extends Cube {
