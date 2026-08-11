@@ -141,3 +141,118 @@ def fit_vod(df: pd.DataFrame, outcome: str, full_controls: bool) -> dict:
     except Exception as exc:  # separation, singular design matrix, empty cells
         result["error"] = f"{type(exc).__name__}: {exc}"
     return result
+
+
+# Hannon & Biddle (2025), Table 1, "Dark Out" column. Two of the six are
+# deliberately not significant in the paper: the profiling effect shows up
+# for young men, and inversely for older women, and nowhere else.
+INTRARACIAL_TARGETS = {
+    "is_young": -0.17,
+    "is_male": -0.21,
+    "young_male": -0.23,
+    "young_female": 0.05,  # not significant
+    "older_male": -0.01,  # not significant
+    "older_female": 0.25,
+}
+
+# The control set the 2025 paper uses is identical to the 2026 paper's full
+# model (_FULL above): obscured_view, the clock-minutes spline, day of week,
+# year, police area, assigned unit, and summer. Reused rather than
+# duplicated so the two specs cannot silently drift apart.
+
+
+def fit_intraracial(df: pd.DataFrame, outcome: str) -> dict:
+    """Fit one weighted intraracial model and return its obscured-view estimate.
+
+    Weighting: the paper fits R's ``glm(..., family = quasibinomial, weights
+    = w)``. R's ``weights=`` on a GLM are *prior weights* -- they rescale
+    each observation's contribution to the variance function (effectively,
+    how many "trials" a single row's Bernoulli draw represents) without
+    pretending the row is actually several duplicated observations. The
+    seasonality weight here (``quadratic_weights``: p*(1-p) plus a floor) is
+    a fractional per-row multiplier, not an integer count of repeated
+    observations, so statsmodels' ``freq_weights`` -- which literally
+    inflates ``nobs`` and the degrees of freedom as if each row were
+    replicated ``weight`` times -- is the wrong analogue and drives the
+    quasi-binomial dispersion/SE calculation to the wrong scale.
+    ``var_weights`` is statsmodels' variance-weight argument, the direct
+    analogue of R's prior weights for a GLM, and is what is used here.
+    """
+    formula = f"{outcome} ~ {_FULL}"
+    result = {
+        "coef": float("nan"), "se": float("nan"), "odds_ratio": float("nan"),
+        "p_value": float("nan"), "n": int(len(df)), "converged": False,
+    }
+    try:
+        df = df.copy()
+        for col in _SPARSE_COLUMNS:
+            if col in df.columns:
+                df[col] = _collapse_sparse_levels(df[col], _MIN_UNIT_COUNT)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            model = smf.glm(
+                formula, data=df, family=sm.families.Binomial(), var_weights=df["weight"]
+            )
+            # scale="X2" gives quasi-binomial standard errors, mirroring
+            # fit_vod and the paper's quasibinomial family.
+            fit = model.fit(scale="X2")
+        result.update(
+            coef=float(fit.params["obscured_view"]),
+            se=float(fit.bse["obscured_view"]),
+            p_value=float(fit.pvalues["obscured_view"]),
+            odds_ratio=float(np.exp(fit.params["obscured_view"])),
+            n=int(fit.nobs),
+            converged=bool(fit.converged),
+        )
+        if abs(result["coef"]) > _DEGENERATE_BOUND or result["se"] > _DEGENERATE_BOUND:
+            result["converged"] = False
+            result["degenerate"] = True
+            result["error"] = (
+                f"Degenerate fit: |coef|={abs(result['coef']):.3g}, se={result['se']:.3g} "
+                f"exceeds the plausible log-odds bound ({_DEGENERATE_BOUND:g})."
+            )
+    except Exception as exc:  # separation, singular design matrix, empty cells
+        result["error"] = f"{type(exc).__name__}: {exc}"
+    return result
+
+
+# Factor controls in _FULL whose reference (modal) level predicted_probabilities
+# holds fixed. clock_minutes is the one numeric control and is held at its mean.
+_INTRARACIAL_FACTOR_CONTROLS = ("dow", "year", "police_area", "assigned_unit", "is_summer")
+
+
+def predicted_probabilities(df: pd.DataFrame, outcome: str) -> dict:
+    """Average predicted probability of ``outcome`` at daylight vs. dark.
+
+    Numeric controls (clock_minutes) are held at their sample mean; factor
+    controls are held at their modal (most common) level. obscured_view is
+    then set to 0 (daylight) and 1 (dark) and the fitted model's predicted
+    probabilities are reported as percentages.
+    """
+    formula = f"{outcome} ~ {_FULL}"
+    df = df.copy()
+    for col in _SPARSE_COLUMNS:
+        if col in df.columns:
+            df[col] = _collapse_sparse_levels(df[col], _MIN_UNIT_COUNT)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        model = smf.glm(
+            formula, data=df, family=sm.families.Binomial(), var_weights=df["weight"]
+        )
+        fit = model.fit(scale="X2")
+
+    row = {"clock_minutes": float(df["clock_minutes"].mean())}
+    for col in _INTRARACIAL_FACTOR_CONTROLS:
+        row[col] = df[col].mode().iloc[0]
+
+    frame = pd.DataFrame([row, row]).reset_index(drop=True)
+    frame["obscured_view"] = [0, 1]
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        preds = fit.predict(frame)
+
+    return {
+        "daylight": round(float(preds.iloc[0]) * 100, 1),
+        "dark": round(float(preds.iloc[1]) * 100, 1),
+    }

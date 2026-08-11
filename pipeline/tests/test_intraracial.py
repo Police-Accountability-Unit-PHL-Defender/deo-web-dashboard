@@ -185,3 +185,62 @@ def test_real_table_read_plainly_still_builds_the_sample():
 
     assert abs(len(out) - PAPER_N) / PAPER_N < 0.05
     assert out.weight.notna().all()
+
+
+# --- models -------------------------------------------------------------
+#
+# These run against the real veil table. If it is missing, build it:
+#   uv run python -m veil.build --zip data/car_ped_stops_2026-07-20T03_45_06.zip \
+#       --db data/open_data_philly_2026_07_20.db
+
+from veil.models import INTRARACIAL_TARGETS, fit_intraracial, predicted_probabilities
+
+
+@pytest.fixture(scope="module")
+def sample():
+    if not DB.exists():
+        pytest.skip(f"{DB} not built")
+    with sqlite3.connect(DB) as conn:
+        stops = pd.read_sql("SELECT * FROM car_ped_stops_veil_intraracial", conn)
+    return build_sample(stops, load_sun_times())
+
+
+def test_sample_size_lands_near_the_published_76274(sample):
+    # The paper reports n = 76,274. Our backup vintage and PPD's later
+    # corrections move this a little; more than 10% apart means the sample
+    # construction is wrong, not that the data moved.
+    assert len(sample) == pytest.approx(76_274, rel=0.10)
+
+
+@pytest.mark.parametrize("outcome", list(INTRARACIAL_TARGETS))
+def test_coefficients_land_near_table_1(sample, outcome):
+    got = fit_intraracial(sample, outcome)
+    assert got["converged"], f"{outcome} did not converge"
+    assert got["coef"] == pytest.approx(INTRARACIAL_TARGETS[outcome], abs=0.08)
+
+
+def test_the_two_null_results_stay_null(sample):
+    # These nulls are part of the finding: profiling shows up for young men
+    # and inversely for older women, and nowhere else. A reproduction that
+    # makes either significant is wrong.
+    for outcome in ("young_female", "older_male"):
+        assert fit_intraracial(sample, outcome)["p_value"] > 0.05, outcome
+
+
+def test_the_four_significant_results_stay_significant(sample):
+    for outcome in ("is_young", "is_male", "young_male", "older_female"):
+        assert fit_intraracial(sample, outcome)["p_value"] < 0.001, outcome
+
+
+def test_young_male_probability_drops_from_about_26_to_about_22(sample):
+    # The one pair the paper states numerically in prose (p.1086).
+    probs = predicted_probabilities(sample, "young_male")
+    assert probs["daylight"] == pytest.approx(26, abs=2.5)
+    assert probs["dark"] == pytest.approx(22, abs=2.5)
+    assert probs["daylight"] > probs["dark"]
+
+
+def test_older_female_probability_rises_after_dark(sample):
+    # Figure 1's inverse panel: roughly 15% to 18%.
+    probs = predicted_probabilities(sample, "older_female")
+    assert probs["dark"] > probs["daylight"]
