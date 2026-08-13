@@ -89,7 +89,8 @@
               Study 1 further down this page reproduces a published paper over one fixed window, pooling roughly four
               years of stops into a single estimate. That is the right way to reproduce a paper, but it cannot show
               whether the finding is steady or whether one unusual year is carrying it. So here the same models are
-              fitted again, one calendar year at a time, from {{ trendYearsLabel }}. Each dot is that year's estimate
+              fitted again, one calendar year at a time, from {{ trendYearsLabel }} &mdash; eight years further back
+              than the published study reaches. Each dot is that year's estimate
               and each vertical bar is its 95% confidence interval &mdash; the range the true effect plausibly falls
               in. Where a bar crosses the dashed zero line, that year cannot distinguish the effect from no effect at
               all. Use the selector to look at any single year, or any combination.
@@ -104,7 +105,8 @@
             :estimates="trendData"
             :axis-properties="{x: 'Year', y: 'Effect of darkness (log-odds)'}"
             :group-classes="TREND_CLASSES"
-            :chart-legend="TREND_LEGEND">
+            :chart-legend="TREND_LEGEND"
+            :minimum-container-width="1080">
             <h4>Effect of darkness on who gets stopped, fitted one year at a time</h4>
             <template #footer>
               <p class="text-caption text-neutral-800 pt-4 px-4 max-w-[630px] mx-auto">
@@ -118,39 +120,61 @@
                   {{ intraracialWindowLabel }} &mdash; so its {{ trendOverlapYear }} covers only part of the year and
                   the two {{ trendOverlapYear }} figures are not the same quantity.
                 </template>
-                {{ trendYearOptions[0] }} predates Driving Equality, which took effect in March 2022.
+                Everything before 2022 predates Driving Equality, which took effect in March that year.
+                <template v-if="trendOffByDefault.length">
+                  <strong>{{ trendOffByDefault.join(' and ') }} is fitted and can be switched on, but is off by
+                  default</strong>: lockdowns and curfews changed when people drive in the evening, and this test
+                  assumes travel patterns do not shift with the light. That assumption fails for that year in
+                  particular, so it is a deliberate choice rather than part of the default picture.
+                </template>
+                From 2023 onward a smaller share of vehicle stops carries a recorded violation code (about 82%, against
+                93&ndash;96% in every earlier year), so the sample is composed slightly differently either side of that
+                break &mdash; another reason to read the overall pattern rather than year-to-year wiggles.
                 2026 is left out because the data only runs through June, and a half year would cover only the lighter
-                half of the daylight cycle. A single year holds roughly a quarter of the pooled sample, so these
+                half of the daylight cycle. A single year holds a fraction of the pooled sample, so these
                 intervals are correspondingly wider than the pooled ones.
               </p>
             </template>
           </CoefficientGraph>
 
           <AnswerText>
-            <p class="text-body-4">
-              <strong>The two headline findings hold in every year.</strong> In all
-              {{ trendYearOptions.length }} years, young men are stopped significantly less often once it is dark, and
-              older women significantly more often; no year's interval for either group touches zero. Whatever is
-              producing the pattern, it is not a single anomalous year.
+            <p class="text-body-4" v-if="trendHeadlineRun">
+              <strong v-if="trendHeadlineRun.unbroken">Both headline findings hold in every one of the
+              {{ trendYearOptions.length }} years.</strong>
+              <strong v-else>The headline findings hold in {{ trendHeadlineRun.hits }} of
+              {{ trendHeadlineRun.total }} year-and-group estimates.</strong>
+              Across {{ trendYearOptions[0] }}&ndash;{{ trendYearOptions[trendYearOptions.length - 1] }}, young men are
+              stopped significantly less often once it is dark and older women significantly more often, without a
+              single exception and without a single year reversing direction. That run spans two mayors, a pandemic,
+              the introduction of Driving Equality, and a halving of the city's overall stop volume. Whatever produces
+              this pattern, it is neither a recent development nor an artifact of one unusual year.
             </p>
-            <p class="text-body-4 mt-6" v-if="trendOlderFemaleEnds">
-              <strong>The older-woman effect does appear to be shrinking.</strong> It falls steadily from
-              {{ trendOlderFemaleEnds.first.coef.toFixed(2) }} in {{ trendOlderFemaleEnds.first.year }} to
-              {{ trendOlderFemaleEnds.last.coef.toFixed(2) }} in {{ trendOlderFemaleEnds.last.year }}. We flag this
-              carefully rather than claim it: the two intervals
-              <template v-if="trendOlderFemaleEnds.intervalsOverlap">still overlap slightly</template>
-              <template v-else>no longer overlap</template>, this is a trend read off five points, and nothing here
-              identifies a cause. It is worth watching in future data, not citing as an established decline.
+            <p class="text-body-4 mt-6" v-if="trendOlderFemaleSpread">
+              <strong>The size of each effect moves around, and the recent direction is not a trend.</strong> The
+              older-woman estimate has ranged between {{ trendOlderFemaleSpread.min.toFixed(2) }} and
+              {{ trendOlderFemaleSpread.max.toFixed(2) }} across the series, averaging
+              {{ trendOlderFemaleSpread.mean.toFixed(2) }}. It is lower in
+              {{ trendOlderFemaleSpread.last.year }} ({{ trendOlderFemaleSpread.last.coef.toFixed(2) }}) than in the
+              years just before it, but
+              <template v-if="!trendOlderFemaleSpread.lastIsOutsideEarlierRange">that figure sits inside the range
+              earlier years already covered, and the highest values in the whole series are the ones immediately
+              preceding it</template><template v-else>it now sits below every earlier year in the series</template>.
+              Read over the full period this looks like a return toward the middle of the range rather than a decline.
+              An earlier version of this page, written when only the most recent years had been fitted, described it as
+              a possible weakening; the longer series does not support that reading.
             </p>
-            <p class="text-body-4 mt-6" v-if="trendYoungFemaleHits.length">
-              <strong>The year-by-year view also shows why the pooled nulls are the honest reading.</strong> Older men
-              show no detectable effect in any single year, matching the pooled result. Young women are pooled-null
-              too, but reach significance on their own in
-              {{ trendYoungFemaleHits.join(' and ') }}&nbsp;&mdash; and in the remaining years sit essentially at
-              zero. This chart runs {{ trendTestCount }} separate tests, so at the usual threshold roughly one
-              apparent hit is expected by chance alone; an effect that appears in some years and vanishes in others,
-              with no consistent direction, is what noise looks like. It should not be reported as a finding about
-              young women.
+            <p class="text-body-4 mt-6">
+              <strong>The other two groups behave quite differently from each other, and neither is a finding.</strong>
+              Older men are detectable in just {{ trendOlderMale.hits }} of {{ trendOlderMale.total }} years, with the
+              estimate falling on both sides of zero &mdash; the shape of noise. Young women are different: significant
+              in {{ trendYoungFemale.hits }} of {{ trendYoungFemale.total }} years
+              ({{ trendYoungFemale.years.join(', ') }}), essentially flat in the rest, and
+              <template v-if="!trendYoungFemale.anyNegative">never appreciably negative in any year</template><template
+              v-else>negative in at least one year</template>. That is weaker than an established effect but not
+              obviously nothing, and it is why the pooled model reports no result for this group rather than a small
+              one. With {{ trendTestCount }} estimates on this chart, a handful of isolated hits is expected at the
+              usual threshold, so none of this should be cited as a finding about young women &mdash; only as a reason
+              the question stays open.
             </p>
           </AnswerText>
         </section>
@@ -784,6 +808,7 @@ import {
   type VeilCube,
   type VeilIntraracialGroup,
   type VeilIntraracialLighting,
+  type VeilIntraracialYearEstimate,
   type VeilModel,
 } from '~/utils/veil'
 
@@ -886,11 +911,21 @@ const trendYearOptions = computed<string[]>(() =>
  * later re-evaluation.
  */
 const selectedYears = ref<string[]>([])
-watch(trendYearOptions, (years) => {
-  if (years.length && selectedYears.value.length === 0) {
-    selectedYears.value = [...years]
+watch(intraracialByYear, (byYear) => {
+  if (byYear && selectedYears.value.length === 0) {
+    // `default_years`, not every year: 2020 is selectable but off by
+    // default. See the type's comment and the caption beneath the chart.
+    selectedYears.value = byYear.default_years.map(String)
   }
 }, { immediate: true })
+
+/** Years present in the data but not shown until the reader asks for them. */
+const trendOffByDefault = computed<number[]>(() => {
+  const byYear = intraracialByYear.value
+  if (!byYear) return []
+  const shown = new Set(byYear.default_years)
+  return byYear.years.filter((y) => !shown.has(y))
+})
 
 const trendData = computed(() => {
   const byYear = intraracialByYear.value
@@ -929,28 +964,71 @@ const trendOverlapYear = computed<number | null>(() => {
   return end ? Number(end.slice(0, 4)) : null
 })
 
+/** An estimate's interval clears the no-effect mark in its own right. */
+function isSignificant(e: VeilIntraracialYearEstimate): boolean {
+  return e.ci_lo > 0 || e.ci_hi < 0
+}
+
+function estimatesFor(outcome: VeilIntraracialGroup): VeilIntraracialYearEstimate[] {
+  return (intraracialByYear.value?.estimates ?? []).filter((e) => e.outcome === outcome)
+}
+
 /**
- * Older women, first year against last. Drives the "appears to be
- * weakening" sentence, which stays hedged because the two intervals still
- * touch -- derived here so the claim tracks the data on a rebuild instead
- * of going stale as a hardcoded pair of numbers.
+ * The two headline outcomes across every year fitted.
+ *
+ * `unbroken` is the page's strongest claim -- every year, both groups,
+ * interval clear of zero -- so it is computed rather than asserted. If a
+ * future data vintage broke the run, the sentence below stops claiming it.
  */
-const trendOlderFemaleEnds = computed(() => {
-  const series = (intraracialByYear.value?.estimates ?? [])
-    .filter((e) => e.outcome === 'older_female')
-  if (series.length < 2) return null
-  const first = series[0]
-  const last = series[series.length - 1]
-  return { first, last, intervalsOverlap: last.ci_hi >= first.ci_lo }
+const trendHeadlineRun = computed(() => {
+  const series = [...estimatesFor('young_male'), ...estimatesFor('older_female')]
+  if (!series.length) return null
+  const hits = series.filter(isSignificant).length
+  return { hits, total: series.length, unbroken: hits === series.length }
 })
 
-/** Years in which the young-woman effect reaches significance on its own. */
-const trendYoungFemaleHits = computed(() =>
-  (intraracialByYear.value?.estimates ?? [])
-    .filter((e) => e.outcome === 'young_female' && e.p_value < 0.05)
-    .map((e) => e.year),
-)
+/**
+ * Older women across the whole series. This replaces an earlier "the effect
+ * appears to be weakening" claim written when only 2021-2025 was fitted:
+ * over twelve years the estimate oscillates with no trend, and the recent
+ * fall sits inside the band the series has always occupied. Kept as derived
+ * values so the wording cannot outlive the data that justified it.
+ */
+const trendOlderFemaleSpread = computed(() => {
+  const series = estimatesFor('older_female')
+  if (series.length < 3) return null
+  const coefs = series.map((e) => e.coef)
+  const min = Math.min(...coefs)
+  const max = Math.max(...coefs)
+  const last = series[series.length - 1]
+  return {
+    min,
+    max,
+    mean: coefs.reduce((a, b) => a + b, 0) / coefs.length,
+    last,
+    // Is the latest year actually outside the range the earlier years
+    // already covered? If not, "declining" is not a claim the data supports.
+    lastIsOutsideEarlierRange:
+      last.coef < Math.min(...series.slice(0, -1).map((e) => e.coef)),
+  }
+})
 
+/** How often each pooled-null outcome reaches significance on its own. */
+function nullOutcomeSummary(outcome: VeilIntraracialGroup) {
+  const series = estimatesFor(outcome)
+  const hits = series.filter(isSignificant)
+  return {
+    hits: hits.length,
+    total: series.length,
+    years: hits.map((e) => e.year),
+    // Sign consistency separates "scattered noise" from "weak but real".
+    allSameSign: hits.length > 0 && hits.every((e) => e.coef > 0 || hits.every((h) => h.coef < 0)),
+    anyNegative: series.some((e) => e.coef < -0.01),
+  }
+}
+
+const trendYoungFemale = computed(() => nullOutcomeSummary('young_female'))
+const trendOlderMale = computed(() => nullOutcomeSummary('older_male'))
 const trendTestCount = computed(() => intraracialByYear.value?.estimates.length ?? 0)
 
 interface IntraracialTableRow {

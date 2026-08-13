@@ -113,6 +113,13 @@ export interface VeilIntraracialYearEstimate {
 export interface VeilIntraracialByYear {
   window: { start: string; end: string }
   years: number[]
+  /**
+   * The years shown before the reader changes anything. A subset of `years`:
+   * 2020 is fitted and selectable but omitted here, because lockdowns moved
+   * evening travel and the veil-of-darkness design assumes travel patterns
+   * do not shift with the light.
+   */
+  default_years: number[]
   estimates: VeilIntraracialYearEstimate[]
 }
 

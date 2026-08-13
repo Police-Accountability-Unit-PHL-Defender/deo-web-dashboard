@@ -47,8 +47,15 @@ WINDOW = ("2022-01-01", "2025-08-31")
 #
 # Consequence worth stating plainly: 2025 appears in both windows and is NOT
 # the same quantity in each -- Jan-Aug here versus a full year there.
-TREND_WINDOW = ("2021-01-01", "2025-12-31")
-TREND_YEARS = (2021, 2022, 2023, 2024, 2025)
+TREND_WINDOW = ("2014-01-01", "2025-12-31")
+TREND_YEARS = (2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025)
+
+# 2020 is fitted and offered, but left OUT of the chart's default selection.
+# Lockdowns and curfews changed *when people drive in the evening*, and the
+# veil-of-darkness design assumes travel patterns do not shift with the
+# light. That assumption fails for 2020 specifically, so the year is a
+# reader's deliberate choice rather than part of the default picture.
+TREND_DEFAULT_EXCLUDED_YEARS = (2020,)
 
 # The four mutually exclusive group outcomes. The two aggregate outcomes
 # (`is_young`, `is_male`) are deliberately excluded: they overlap these four,

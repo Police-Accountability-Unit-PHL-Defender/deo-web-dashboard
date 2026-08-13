@@ -307,8 +307,8 @@ def test_existing_cube_keys_are_untouched(cube_outputs):
 def test_by_year_covers_every_year_and_charted_outcome(cube_outputs):
     cube, _ = cube_outputs
     by_year = cube["intraracial"]["by_year"]
-    assert by_year["years"] == [2021, 2022, 2023, 2024, 2025]
-    assert by_year["window"] == {"start": "2021-01-01", "end": "2025-12-31"}
+    assert by_year["years"] == list(range(2014, 2026))
+    assert by_year["window"] == {"start": "2014-01-01", "end": "2025-12-31"}
 
     seen = {(e["year"], e["outcome"]) for e in by_year["estimates"]}
     assert seen == {
@@ -330,8 +330,10 @@ def test_by_year_estimates_carry_a_bracketing_interval(cube_outputs):
 def test_by_year_reproduces_the_headline_effects_in_every_year(cube_outputs):
     """The point of the chart: neither headline finding rests on one year.
 
-    Young men are stopped LESS once officers cannot see in; older women MORE.
-    If a year ever flipped sign, the trend section's prose would be wrong.
+    Young men are stopped LESS once officers cannot see in; older women MORE,
+    in every one of the twelve years 2014-2025. That unbroken run is the
+    page's strongest claim, so it is pinned here: if any year's interval ever
+    reached zero, the trend section's prose would be overstating the record.
     """
     cube, _ = cube_outputs
     by_outcome = {}
@@ -355,3 +357,17 @@ def test_by_year_does_not_disturb_the_paper_window_block(cube_outputs):
     assert intraracial["sample"]["window_start"] == "2022-01-01"
     assert intraracial["sample"]["window_end"] == "2025-08-31"
     assert set(intraracial["models"]) == set(INTRARACIAL_TARGETS)
+
+
+def test_by_year_default_selection_omits_the_pandemic_year(cube_outputs):
+    """2020 is offered but not shown by default.
+
+    Lockdowns and curfews changed when people drive in the evening, and the
+    veil-of-darkness design assumes travel patterns do not shift with the
+    light. That assumption fails for 2020 in particular, so it must not sit
+    in the default view as though comparable to its neighbours.
+    """
+    by_year = cube_outputs[0]["intraracial"]["by_year"]
+    assert 2020 in by_year["years"], "2020 must remain selectable"
+    assert 2020 not in by_year["default_years"]
+    assert by_year["default_years"] == [y for y in by_year["years"] if y != 2020]

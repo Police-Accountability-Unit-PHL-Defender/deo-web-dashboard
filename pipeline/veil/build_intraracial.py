@@ -40,7 +40,16 @@ OUT_COLS = [
     "assigned_unit", "lighting", "race", "age", "gender", "is_mvc",
 ]
 
-YEARS = list(range(2021, 2027))
+# The full span the archive carries. Every field this table needs -- age,
+# gender, race, assigned_unit, psa -- is present from 2014 at 99.7%+ coverage.
+#
+# `mvc_code` looks like an exception (47% present in 2014 against ~85% by
+# 2022) but is not: pedestrian stops fall from 49% of records to 5% over the
+# period and carry no MVC code. Within VEHICLE stops, coverage holds at
+# 92-96% from 2014 to 2022. It then drops to ~82% from 2023 on -- a recording
+# change, not a mix shift -- which is a real discontinuity inside the series
+# and the reason the page does not read year-to-year wiggles as signal.
+YEARS = list(range(2014, 2027))
 
 
 def _roll_up_sole_occupants(df: pd.DataFrame) -> pd.DataFrame:

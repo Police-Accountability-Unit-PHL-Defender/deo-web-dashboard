@@ -17,6 +17,7 @@ import pandas as pd
 from veil.intraracial import (
     DISTRICTS,
     OUTCOMES,
+    TREND_DEFAULT_EXCLUDED_YEARS,
     TREND_OUTCOMES,
     TREND_WINDOW,
     TREND_YEARS,
@@ -173,6 +174,12 @@ def _by_year(stops: pd.DataFrame, sun: pd.DataFrame) -> dict:
     return {
         "window": {"start": TREND_WINDOW[0], "end": TREND_WINDOW[1]},
         "years": [int(y) for y in TREND_YEARS],
+        # Which years the chart shows before the reader touches anything.
+        # Emitted rather than hardcoded in the page so the exclusion and its
+        # reason live in one place, next to the sample that produced it.
+        "default_years": [
+            int(y) for y in TREND_YEARS if y not in TREND_DEFAULT_EXCLUDED_YEARS
+        ],
         "estimates": estimates,
     }
 
