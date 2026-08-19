@@ -191,6 +191,112 @@ function rowPasses(row: Array<string | number | null>, f: CompiledFilter): boole
   return true
 }
 
+/**
+ * Rows bucketed by district code, built once per cube and cached.
+ *
+ * Every user interaction re-runs several cube queries, and each one used to
+ * scan all ~139k rows of the stops cube. That blocked the main thread for
+ * well over a second per click, which is why map clicks, the demographic
+ * toggle and even the Source link felt frozen.
+ *
+ * The bucket for a district is a SUPERSET of the rows any location filter
+ * targeting that district can match — `rowPasses` still does the real
+ * filtering — so narrowing to it cannot change a result.
+ */
+const districtIndexCache = new WeakMap<Cube, Map<string, Array<Array<string | number | null>>>>()
+
+function districtIndex(cube: Cube): Map<string, Array<Array<string | number | null>>> {
+  const cached = districtIndexCache.get(cube)
+  if (cached) return cached
+  const index = new Map<string, Array<Array<string | number | null>>>()
+  const locIdx = cube.dimensions.indexOf('location')
+  if (locIdx !== -1) {
+    for (const row of cube.rows) {
+      const loc = row[locIdx]
+      if (typeof loc !== 'string') continue
+      const d = loc.split('-', 1)[0]
+      let bucket = index.get(d)
+      if (!bucket) {
+        bucket = []
+        index.set(d, bucket)
+      }
+      bucket.push(row)
+    }
+  }
+  districtIndexCache.set(cube, index)
+  return index
+}
+
+/**
+ * The district codes a filter can possibly match, or null when it could match
+ * any district (in which case the caller scans every row).
+ */
+function targetDistricts(cube: Cube, opts: CubeFilterOpts): string[] | null {
+  if (cube.dimensions.indexOf('location') === -1) return null
+
+  const fromDistrictIn =
+    opts.districtIn === undefined
+      ? null
+      : Array.from(opts.districtIn instanceof Set ? opts.districtIn : opts.districtIn)
+
+  const location = opts.location
+  let fromLocation: string[] | null = null
+  if (location && location !== '*') {
+    if (location in DIVISION_MAP) {
+      fromLocation = DIVISION_MAP[location]
+    } else {
+      const districtMatch = /^(\d{1,2})\*?$/.exec(location)
+      if (districtMatch) {
+        fromLocation = [padDistrict(districtMatch[1])]
+      } else {
+        const psaMatch = /^(\d{1,2})-/.exec(location)
+        if (psaMatch) fromLocation = [padDistrict(psaMatch[1])]
+      }
+    }
+  }
+
+  if (fromLocation && fromDistrictIn) {
+    const allowed = new Set(fromDistrictIn.map(padDistrict))
+    return fromLocation.filter((d) => allowed.has(d))
+  }
+  if (fromLocation) return fromLocation
+  if (fromDistrictIn) return fromDistrictIn.map(padDistrict)
+  return null
+}
+
+/**
+ * The rows a query needs to examine: the whole cube, or just the buckets for
+ * the districts the filter can reach.
+ */
+const candidateCache = new WeakMap<Cube, Map<string, Array<Array<string | number | null>>>>()
+
+function candidateRows(cube: Cube, opts: CubeFilterOpts): Array<Array<string | number | null>> {
+  const districts = targetDistricts(cube, opts)
+  if (districts === null) return cube.rows
+  const index = districtIndex(cube)
+  if (districts.length === 1) return index.get(districts[0]) ?? []
+
+  // Multi-district selections (divisions, districtIn) need the buckets
+  // joined. Memoise the joined array per district set: the pages issue the
+  // same selection from several computeds on every interaction, and rebuilding
+  // it each time cost more than the full scan it replaced.
+  const key = districts.slice().sort().join(',')
+  let perCube = candidateCache.get(cube)
+  if (!perCube) {
+    perCube = new Map()
+    candidateCache.set(cube, perCube)
+  }
+  const cached = perCube.get(key)
+  if (cached) return cached
+  const out: Array<Array<string | number | null>> = []
+  for (const d of districts) {
+    const bucket = index.get(d)
+    if (bucket) for (const row of bucket) out.push(row)
+  }
+  perCube.set(key, out)
+  return out
+}
+
 /** Sum a measure across all rows that pass the optional filter. */
 export function sumMeasure(
   cube: Cube,
@@ -203,7 +309,7 @@ export function sumMeasure(
   }
   const f = compileFilter(cube, opts)
   let total = 0
-  for (const row of cube.rows) {
+  for (const row of candidateRows(cube, opts)) {
     if (!rowPasses(row, f)) continue
     const v = row[measureIdx]
     if (typeof v === 'number') total += v
@@ -229,7 +335,7 @@ export function groupSum(
   }
   const f = compileFilter(cube, opts)
   const acc = new Map<string, number>()
-  for (const row of cube.rows) {
+  for (const row of candidateRows(cube, opts)) {
     if (!rowPasses(row, f)) continue
     const key = String(row[groupIdx] ?? '')
     const v = row[measureIdx]
@@ -262,7 +368,7 @@ export function groupTupleSum(
   }
   const f = compileFilter(cube, opts)
   const acc = new Map<string, { keys: string[]; value: number }>()
-  for (const row of cube.rows) {
+  for (const row of candidateRows(cube, opts)) {
     if (!rowPasses(row, f)) continue
     const keys = groupIdxs.map((i) => String(row[i] ?? ''))
     const k = keys.join('')
@@ -369,7 +475,7 @@ export function groupSumByDistrict(
   }
   const f = compileFilter(cube, opts)
   const acc = new Map<string, number>()
-  for (const row of cube.rows) {
+  for (const row of candidateRows(cube, opts)) {
     if (!rowPasses(row, f)) continue
     const loc = row[locIdx]
     if (typeof loc !== 'string') continue
@@ -398,7 +504,7 @@ export function groupAllMeasuresByDistrict(
   const dimsLen = cube.dimensions.length
   const f = compileFilter(cube, opts)
   const acc = new Map<string, Record<string, number>>()
-  for (const row of cube.rows) {
+  for (const row of candidateRows(cube, opts)) {
     if (!rowPasses(row, f)) continue
     const loc = row[locIdx]
     if (typeof loc !== 'string') continue
