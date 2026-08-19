@@ -153,10 +153,8 @@
               <h4>{{ q3A.figures.barplot3.properties.title }}</h4>
             </Graph>
           </Answer>
-          <p v-if="disparity" class="text-body-2 max-w-3xl mt-8">
-            In majority white districts, Black drivers were stopped by Philadelphia police
-            <span class="whitespace-nowrap">{{ disparity.ratio }}x</span> more often than white drivers in {{ disparity.year }}.
-          </p>
+          <HorizontalLine class="my-4 md:my-12"/>
+          <div v-if="disparitySentence" class="result-text max-w-3xl" v-html="disparitySentence"></div>
         </section>
         <HorizontalLine class="my-4 md:my-12"/>
         <section>
@@ -236,7 +234,24 @@ const { data: districtsDemo } = await useDistrictsDemographics()
 const disparity = computed(() => {
   const bundle = stopsBundle.value
   if (!bundle || !districtsDemo.value) return null
-  return majorityWhiteDisparity(bundle.cube, districtsDemo.value, mostRecentQuarter.toParamString())
+  // Driven by the same quarter selectors as the charts in this section, so the
+  // sentence and the graphs above it always describe the same period.
+  return majorityWhiteDisparity(
+    bundle.cube,
+    districtsDemo.value,
+    q2AQuarterStart.value.toParamString(),
+    q2AQuarterEnd.value.toParamString(),
+  )
+})
+
+// Built as an HTML string with the ratio in a <span>, which is how every other
+// sentence on this page gets its highlighted box (see .result-text).
+const disparitySentence = computed(() => {
+  const d = disparity.value
+  if (!d) return null
+  const from = quarterStartStr(q2AQuarterStart.value.toParamString())
+  const to = quarterEndStr(q2AQuarterEnd.value.toParamString())
+  return `In majority white districts, Philadelphia police stopped Black drivers <span>${d.ratio}x</span> more often than white drivers from the start of ${from} through the end of ${to}.`
 })
 
 // --- Location helpers -----------------------------------------------------

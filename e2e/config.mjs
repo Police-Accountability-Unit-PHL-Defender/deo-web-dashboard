@@ -102,6 +102,32 @@ export const CHECKS = [
       || 'stops total is missing or not thousands-separated',
   },
   {
+    name: 'operational trend chart is framed and spelled as published',
+    // The legend keys double as the chart's data keys, so a rename that misses
+    // one silently drops a series' colour rather than erroring.
+    pages: ['reasons'],
+    assert: ({ text }) => {
+      if (!text.includes('When Philadelphia police gave a reason, how often did police stop drivers for operational'))
+        return 'operational trend heading is missing or reworded'
+      if (!text.includes('Nonoperational violations')) return 'legend is missing "Nonoperational violations"'
+      if (/Non-operational/.test(text)) return 'found hyphenated "Non-operational"; the published spelling is "Nonoperational"'
+      return true
+    },
+  },
+  {
+    name: 'operational trend chart covers 2022 onward, complete years only',
+    pages: ['reasons'],
+    assert: ({ text }) => {
+      // Axis ticks appear as bare years in the rendered text.
+      const block = /how often did police stop drivers for operational[\s\S]{0,3000}/.exec(text)
+      if (!block) return 'could not locate the trend chart'
+      const years = [...block[0].matchAll(/\b(20\d\d)\b/g)].map((m) => Number(m[1]))
+      if (!years.includes(2022)) return 'trend chart does not start at 2022'
+      if (years.includes(2021) || years.includes(2014)) return 'trend chart still shows years before 2022'
+      return true
+    },
+  },
+  {
     name: 'no empty chart bodies',
     // A chart whose data key stopped matching its axis label renders an empty
     // plot rather than throwing. Axis titles with no tick labels near them is
@@ -117,7 +143,7 @@ export const CHECKS = [
     // than erroring, so assert on the rendered legend.
     pages: ['reasons'],
     assert: ({ text }) => {
-      const missing = ['Operational violations', 'Non-operational violations']
+      const missing = ['Operational violations', 'Nonoperational violations']
         .filter((s) => !text.includes(s))
       return missing.length === 0 || `operational trend chart missing legend text: ${missing.join(', ')}`
     },
@@ -129,7 +155,7 @@ export const CHECKS = [
     // silently rather than erroring.
     pages: ['neighborhoods'],
     assert: ({ text }) => {
-      const m = text.match(/In majority white districts, Black drivers were stopped by Philadelphia police ([\d.]+)x more often/)
+      const m = text.match(/In majority white districts, Philadelphia police stopped Black drivers ([\d.]+)x more often than white drivers from the start of .+ through the end of /)
       if (!m) return 'disparity sentence missing from the neighborhoods page'
       const ratio = Number(m[1])
       if (!Number.isFinite(ratio)) return `disparity ratio is not a number: ${m[1]}`
@@ -190,5 +216,78 @@ export const CHECKS = [
         .filter((s) => !text.includes(s))
       return missing.length === 0 || `intraracial panels missing: ${missing.join(', ')}`
     },
+  },
+]
+
+/**
+ * Responsiveness budgets.
+ *
+ * Each entry drives one real interaction and asserts how long the main thread
+ * was blocked. Elapsed time is not the measure that matters: a page can finish
+ * in 300ms having been frozen for 250 of them, and freezing is what users
+ * notice — during a long task nothing responds, not the hover cursor, not a
+ * click, not scrolling. The Source link on this site looked broken for exactly
+ * that reason; it was fine, the thread was busy.
+ *
+ * `script` is evaluated in the page and must resolve once the interaction has
+ * settled. Both interactions currently block for 0ms, so a 100ms budget leaves
+ * generous headroom for machine variance while still catching a real
+ * regression: removing `markRaw` from the stops cube alone takes the map click
+ * to 145ms, and a 250ms budget let that pass unnoticed.
+ */
+export const INTERACTIONS = [
+  {
+    name: 'neighborhoods demographic toggle',
+    page: 'neighborhoods',
+    maxBlockingMs: 100,
+    script: `
+      (async () => {
+        const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+        const buttons = () => Array.from(document.querySelectorAll('button'))
+        const trigger = buttons().find((b) => /^(race|age range|gender)$/i.test(b.textContent.trim()))
+        if (!trigger) return 'no demographic control found'
+        const want = /race/i.test(trigger.textContent) ? 'age range' : 'race'
+        trigger.click()
+        await sleep(600)
+        const option = Array.from(document.querySelectorAll('[role="option"],li,button'))
+          .find((e) => e.textContent.trim().toLowerCase() === want)
+        if (!option) return 'no option ' + want
+        option.click()
+        await sleep(2500)
+        return 'toggled to ' + want
+      })()
+    `,
+  },
+  {
+    name: 'stops district map click',
+    page: 'stops',
+    maxBlockingMs: 100,
+    script: `
+      (async () => {
+        const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+        const buttons = () => Array.from(document.querySelectorAll('button'))
+        const loc = buttons().find((b) => b.textContent.trim() === 'Philadelphia')
+        if (!loc) return 'no location control'
+        loc.click()
+        await sleep(2500)
+        const gran = buttons().find((b) => b.textContent.trim() === 'city')
+        if (!gran) return 'no granularity control'
+        gran.click()
+        await sleep(800)
+        const district = Array.from(document.querySelectorAll('[role="option"],li,button'))
+          .find((e) => e.textContent.trim().toLowerCase() === 'district')
+        if (!district) return 'no district option'
+        district.click()
+        await sleep(3500)
+        // data-region is set by LeafletMap.vue so a specific district can be
+        // addressed; the polygons carry no other identifying attribute.
+        const target = document.querySelector('path[data-region="District 14"]')
+          || document.querySelectorAll('path.leaflet-interactive')[4]
+        if (!target) return 'no district polygon'
+        target.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }))
+        await sleep(2500)
+        return 'clicked district'
+      })()
+    `,
   },
 ]

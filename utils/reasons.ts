@@ -1,5 +1,8 @@
 import { completeYears, groupSum, groupTupleSum, VIOLATION_CATEGORIES_OPERATIONAL, type Cube } from './cube'
 
+/** Driving Equality took effect 2022-03-03; the trend series starts there. */
+const FIRST_TREND_YEAR = 2022
+
 const RACE_ORDER = ['Asian', 'Black', 'Latino', 'White', 'All Other Races'] as const
 
 export interface OperationalShare {
@@ -60,31 +63,44 @@ export interface YearShare {
  */
 export function operationalShareByYear(cube: Cube, mostRecentQuarter: string): YearShare[] {
   const operational = new Set(VIOLATION_CATEGORIES_OPERATIONAL)
-  const totals = new Map<number, { op: number; all: number }>()
+  const totals = new Map<number, { op: number; withReason: number }>()
 
   for (const { keys, value } of groupTupleSum(cube, ['quarter', 'violation_category'], 'n_stopped')) {
     const [quarter, violationCategory] = keys
+    // This chart is framed "when Philadelphia police gave a reason", so the
+    // denominator is stops carrying a recorded category. `None` means no MVC
+    // code was recorded, so it is excluded here — unlike
+    // `operationalShareByRace`, which is framed "out of all traffic stops" and
+    // keeps it in. `Other` IS a recorded reason and stays in the denominator.
+    if (violationCategory === 'None') continue
     const year = Number(quarter.slice(0, 4))
-    const bucket = totals.get(year) ?? { op: 0, all: 0 }
-    bucket.all += value
+    const bucket = totals.get(year) ?? { op: 0, withReason: 0 }
+    bucket.withReason += value
     if (operational.has(violationCategory)) bucket.op += value
     totals.set(year, bucket)
   }
 
+  // Driving Equality took effect in March 2022, so the series starts there.
+  // The upper bound is the last year the cube holds all four quarters for, and
+  // moves on its own as data arrives — completeness is a fact about the cube,
+  // never about the clock (see completeYears).
   const complete = completeYears(cube)
   const trailingYear = Number(mostRecentQuarter.slice(0, 4))
   const capYear = mostRecentQuarter.endsWith('Q4') ? trailingYear : trailingYear - 1
 
   return [...totals.keys()]
+    .filter((year) => year >= FIRST_TREND_YEAR && year <= capYear && complete.has(year))
     .sort((a, b) => a - b)
     .map((year) => {
-      const { op, all } = totals.get(year)!
-      const pct = all ? Math.round((1000 * op) / all) / 10 : 0
+      const { op, withReason } = totals.get(year)!
+      const pct = withReason ? Math.round((1000 * op) / withReason) / 10 : 0
       return {
         year,
         operational: pct,
         nonOperational: Math.round((100 - pct) * 10) / 10,
-        incomplete: !complete.has(year) || year > capYear,
+        // Every year in this series is complete by construction; the field
+        // stays because LineGraph reads it to dash a provisional segment.
+        incomplete: false,
       }
     })
 }

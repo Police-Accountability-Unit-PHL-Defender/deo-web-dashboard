@@ -1,3 +1,4 @@
+import { markRaw } from 'vue'
 /**
  * Fetch the stops cube and the shared scalars table in parallel.
  *
@@ -20,7 +21,7 @@ export function useStopsCube() {
         $fetch<Cube>('/cubes/stops.json'),
         $fetch<Scalars>('/cubes/scalars.json'),
       ])
-      return { cube, scalars }
+      return markRaw({ cube, scalars })
     },
     // Client-only: skip prerender/SSR fetch so cube data does NOT land in
     // __NUXT_DATA__ (avoids multi-MB page HTML). Page renders an empty

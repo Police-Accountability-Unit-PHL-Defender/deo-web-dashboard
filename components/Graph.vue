@@ -348,6 +348,24 @@ const tickValues = averageTickLength > 4 && props.quarterlyXAxisTicks
       })
       .attr("class", "text-caption")
       .text((d) => d[props.barAnnotationProperty]);
+
+    // Shrink any label wider than its own bar. Labels are centred on the bar
+    // and were drawn at a fixed size, so a long one ("2.1x of Baseline") spilled
+    // past a narrow bar and got cut off at the plot edge.
+    const MIN_LABEL_PX = 8;
+    const available = x.bandwidth() - 4;
+    group.selectAll("text").each(function () {
+      if (available <= 0 || typeof this.getComputedTextLength !== "function") return;
+      let size = parseFloat(window.getComputedStyle(this).fontSize) || 12;
+      // Must be an inline style, not a font-size attribute: the label carries
+      // the .text-caption class, and a CSS rule outranks an SVG presentation
+      // attribute, so setting the attribute changes nothing and this loop
+      // would spin down to the minimum with no visible effect.
+      while (this.getComputedTextLength() > available && size > MIN_LABEL_PX) {
+        size -= 0.5;
+        d3.select(this).style("font-size", size + "px");
+      }
+    });
   }
 
   // trendline

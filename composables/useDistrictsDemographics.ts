@@ -1,3 +1,4 @@
+import { markRaw } from 'vue'
 /**
  * Per-district demographic totals derived from
  * `data/demographics/police_service_area.csv`.
@@ -25,7 +26,7 @@ export type DistrictsDemographics = Record<string, DistrictDemographics>
 export function useDistrictsDemographics() {
   return useAsyncData<DistrictsDemographics>(
     'districts-demographics',
-    () => $fetch<DistrictsDemographics>('/cubes/districts.json'),
+    async () => markRaw(await $fetch<DistrictsDemographics>('/cubes/districts.json')),
     { server: false, lazy: true },
   )
 }
