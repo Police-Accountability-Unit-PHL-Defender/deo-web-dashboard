@@ -132,7 +132,7 @@ import {
   sumMeasure,
   VIOLATION_CATEGORIES_DEO_IMPACTED,
 } from '~/utils/cube';
-import { operationalShareByRace, operationalShareByYear } from '~/utils/reasons';
+import { CATEGORIES_WITHOUT_A_REASON, operationalShareByRace, operationalShareByYear } from '~/utils/reasons';
 import { useReasonsCube } from '~/composables/useReasonsCube';
 import { useDistrictsDemographics } from '~/composables/useDistrictsDemographics';
 
@@ -189,7 +189,7 @@ const q1 = computed(() => {
   // groupBy [race, violation_category] then drop Other/None.
   const groups = groupTupleSum(cube, ['race', 'violation_category'], 'n_stopped', filterOpts)
     .filter(({ keys }) => (keys[0] === 'Black' || keys[0] === 'White')
-      && keys[1] !== 'Other' && keys[1] !== 'None')
+      && !CATEGORIES_WITHOUT_A_REASON.has(keys[1]))
 
   // Totals per race (over filtered groups).
   const totalsByRace = { Black: 0, White: 0 }
@@ -264,11 +264,11 @@ const q2 = computed(() => {
   const whiteGroups = groupSum(cube, 'violation_category', 'n_stopped', {
     ...baseOpts,
     districtIn: whiteDistricts,
-  }).filter(g => g.key !== 'Other' && g.key !== 'None')
+  }).filter(g => !CATEGORIES_WITHOUT_A_REASON.has(g.key))
   const nonwhiteGroups = groupSum(cube, 'violation_category', 'n_stopped', {
     ...baseOpts,
     districtIn: nonwhiteDistricts,
-  }).filter(g => g.key !== 'Other' && g.key !== 'None')
+  }).filter(g => !CATEGORIES_WITHOUT_A_REASON.has(g.key))
 
   const labels = {
     white: 'Majority white districts',

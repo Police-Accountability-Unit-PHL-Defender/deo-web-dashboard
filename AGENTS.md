@@ -176,34 +176,30 @@ The Neighborhoods disparity sentence used to share this hazard, choosing a
 from the page's selectors instead, so there is no year for it to get wrong — if
 you ever give it back a self-chosen period, the clock trap returns with it.
 
-**`None` is not missing data, and every Reasons chart now excludes it.** In
-`reasons.json`, `violation_category` of `None` means no MVC code was recorded.
-It is not absent data: PPD stopped coding tint stops in 2023, so `Tint` falls to
-zero while `None` absorbs almost the same volume, growing from 7,691 stops in
-2022 to 28,518 in 2025.
+**Every Reasons chart divides by stops that name a reason.** Two categories
+name none. `None` means no MVC code was recorded at all. `Other` means a code
+was recorded that says nothing in particular. Every question on the page is
+framed "when Philadelphia police gave a reason", so both are out of every
+denominator — `CATEGORIES_WITHOUT_A_REASON` in `utils/reasons.ts` is the single
+definition, and all four charts go through it.
 
-Every question on the page is framed "when Philadelphia police gave a reason",
-and every chart divides by stops carrying a recorded category:
+Neither is missing data, and that is the point. PPD stopped coding tint stops in
+2023, so `Tint` falls to zero while `None` absorbs almost the same volume,
+growing from 7,691 stops in 2022 to 28,518 in 2025; `Other` grew from 3,838 to
+18,967 over the same period. Those are real nonoperational stops, and Black
+drivers carry the largest share of them, so excluding them lifts every race and
+narrows every gap. Know the size of it before touching either rule:
 
-- **`operationalShareByYear`** (the trend line) and **`operationalShareByRace`**
-  (the by-race bars) both exclude `None` and keep `Other` — `Other` is a
-  recorded reason, non-operational, in the denominator but not the numerator.
-- **The two reason-comparison charts** at the top drop `Other` as well. That is
-  not a third rule so much as a plotting one: each category is its own bar there
-  and `Other` is not a meaningful bar.
+- **`operationalShareByRace`** (2025): Black 44.8% → 63.6%, White 63.8% → 76.9%,
+  and the White-Black gap 19.0 → 13.3 points.
+- **`operationalShareByYear`**: the series went 50.8/65.0/64.5/59.0 with both in
+  to 52.9/70.0/70.9/67.6 with both out, steepening the 2022→2025 rise from +2.5
+  points (original all-stops denominator) to +14.7.
 
-`operationalShareByRace` was the last to change, in 2026-08. Know what it cost,
-because the cost falls unevenly and it is the reason this is a published claim
-rather than a tidy-up: those `None` stops are real nonoperational stops and
-Black drivers carry the largest share of them, so excluding them lifts every
-race and narrows the gap. 2025 Black went 44.8% to 54.5%, White 63.8% to 71.2%,
-and the White-Black gap 19.0 to 16.7 points. On the trend chart the same change
-moved 2025 from 49.5% to 59.0% and steepened the 2022→2025 rise from +2.5 to
-+8.2 points, a good part of which is tint stops leaving the denominator rather
-than enforcement shifting.
-
-Putting `None` back into either denominator is a change to a published claim,
-not a cleanup. `utils/reasons.test.ts` pins both the rules and the figures.
+A good part of that steepening is tint stops leaving the denominator rather than
+enforcement shifting. Putting either category back is a change to a published
+claim, not a cleanup. `utils/reasons.test.ts` pins the rules and the figures;
+the e2e check guards the headings, which state the denominator in words.
 
 ---
 

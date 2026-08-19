@@ -108,14 +108,13 @@ export const CHECKS = [
     },
   },
   {
-    // The by-race bars joined the trend line's denominator in 2026-08, so every
-    // question on this page now promises "when Philadelphia police gave a
-    // reason". This guards the wording half of that only: the bar values never
+    // Every question on this page promises "when Philadelphia police gave a
+    // reason", and as of 2026-08 every chart divides by stops that name one. This guards the wording half of that only: the bar values never
     // reach the DOM as text -- they are bar heights and hover labels, and this
     // assert only ever sees rendered text -- so the figures themselves are
-    // pinned in utils/reasons.test.ts (Black 2025 at 54.5%, which is 44.8% if
-    // `None` returns to the denominator). Between them the claim and the number
-    // cannot drift apart unnoticed.
+    // pinned in utils/reasons.test.ts (Black 2025 at 63.6%, which is 44.8% if
+    // `None` and `Other` return to the denominator). Between them the claim and
+    // the number cannot drift apart unnoticed.
     name: 'by-race operational question keeps the recorded-reason framing',
     pages: ['reasons'],
     assert: ({ text }) => {
