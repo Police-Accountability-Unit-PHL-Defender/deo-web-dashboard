@@ -108,6 +108,16 @@ export const CHECKS = [
     },
   },
   {
+    // The published spelling is "Nonoperational", everywhere -- not just on the
+    // Reasons page. The glossary carried "non-operational" in its own
+    // definition of the term for as long as the guard was scoped to one page.
+    name: 'the published spelling "Nonoperational" holds site-wide',
+    assert: ({ text }) => {
+      if (/non-operational/i.test(text)) return 'found hyphenated "Non-operational"; the published spelling is "Nonoperational"'
+      return true
+    },
+  },
+  {
     // Every question on this page promises "when Philadelphia police gave a
     // reason", and as of 2026-08 every chart divides by stops that name one. This guards the wording half of that only: the bar values never
     // reach the DOM as text -- they are bar heights and hover labels, and this

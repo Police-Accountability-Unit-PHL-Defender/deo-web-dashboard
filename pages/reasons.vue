@@ -437,7 +437,7 @@ const q3b = computed(() => {
         properties: {
           xAxis,
           yAxis,
-          title: 'Share of PPD Traffic Stops for Operational vs. Nonoperational Violations',
+          title: 'Share of PPD Traffic Stops With a Stated Reason: Operational vs. Nonoperational Violations',
         },
         dashedFromX: incomplete ? incomplete.year : null,
         data,
@@ -462,7 +462,7 @@ const q4 = computed(() => {
     [xAxis]: race,
     [yAxis]: pctVal,
     annotation: null,
-    hover_text: [race, `${pctVal}% of stops with a recorded reason were for operational violations`, ''],
+    hover_text: [race, `${pctVal}% of stops with a stated reason were for operational violations`, ''],
   }))
 
   return {
@@ -472,7 +472,7 @@ const q4 = computed(() => {
         properties: {
           xAxis,
           yAxis,
-          title: `Percentage of Operational Stops by Race in ${year}`,
+          title: `Percentage of Stops With a Stated Reason That Were Operational, by Race, in ${year}`,
         },
         trendlines: [],
         data,
