@@ -25,7 +25,7 @@ import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync, cpSync } fr
 import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-import { CHECKS, INTERACTIONS, LIVE_URL, NORMALIZERS, PAGES } from './config.mjs'
+import { CHECKS, INTERACTIONS, LIVE_URL, LOAD_BUDGETS, NORMALIZERS, PAGES } from './config.mjs'
 
 const ROOT = resolve(fileURLToPath(new URL('.', import.meta.url)), '..')
 const OUT_DIR = join(ROOT, '.output', 'public')
@@ -201,20 +201,29 @@ function parseErrorEntries(json, expectedKeys, onlyType) {
  * scroll. Interactions here once blocked for over a second while still
  * "working", so this measures blocking, not duration.
  */
-function measureInteraction(session, url, script) {
-  const ab = (...a) => {
-    const r = spawnSync('agent-browser', ['--session', session, ...a], {
-      encoding: 'utf8',
-      env: { ...process.env, AGENT_BROWSER_DEFAULT_TIMEOUT: process.env.AGENT_BROWSER_DEFAULT_TIMEOUT || '120000' },
-    })
-    return r.stdout || ''
-  }
+function browser(session) {
+  const env = { ...process.env, AGENT_BROWSER_DEFAULT_TIMEOUT: process.env.AGENT_BROWSER_DEFAULT_TIMEOUT || '120000' }
+  const ab = (...a) =>
+    spawnSync('agent-browser', ['--session', session, ...a], { encoding: 'utf8', env }).stdout || ''
   const evalFile = (body) =>
     spawnSync('agent-browser', ['--session', session, 'eval', '--stdin'], {
       encoding: 'utf8',
       input: body,
-      env: { ...process.env, AGENT_BROWSER_DEFAULT_TIMEOUT: process.env.AGENT_BROWSER_DEFAULT_TIMEOUT || '120000' },
+      env,
     }).stdout || ''
+  return { ab, evalFile }
+}
+
+// agent-browser wraps eval output as a JSON string, so round-tripping
+// structured data through it is fragile. Every snippet returns a bare number
+// as a string and we pull the digits back out here.
+function firstNumber(raw) {
+  const m = raw.match(/(\d+)/)
+  return m ? Number(m[1]) : null
+}
+
+function measureInteraction(session, url, script) {
+  const { ab, evalFile } = browser(session)
 
   ab('open', url)
   ab('wait', '--load', 'networkidle')
@@ -224,13 +233,41 @@ function measureInteraction(session, url, script) {
 
   evalFile(OBSERVER_SNIPPET)
   const out = evalFile(script)
-  // Return a bare number and parse digits: agent-browser wraps eval output as
-  // a JSON string, and round-tripping structured data through that is fragile.
-  const raw = evalFile("String((window.__e2eLongTasks || []).reduce((a, b) => a + b, 0))")
-  const m = raw.match(/(\d+)/)
-  const blockedMs = m ? Number(m[1]) : null
+  const blockedMs = firstNumber(evalFile("String((window.__e2eLongTasks || []).reduce((a, b) => a + b, 0))"))
   return { blockedMs, scriptOutput: out.trim() }
 }
+
+/**
+ * Main-thread blocking during first render, which `measureInteraction` cannot
+ * see: it installs its observer only after the page has settled, precisely so
+ * load work is not charged to the interaction. The cost of a non-`markRaw`
+ * cube lands here rather than on a later click -- proxying the rows is paid
+ * once, by the selectors that scan them on the way to the first paint -- so
+ * without this the regression that AGENTS.md warns about hardest is the one
+ * the harness is blindest to.
+ *
+ * `buffered: true` is what makes it work: it replays long tasks recorded
+ * before the observer existed, so the snippet can be injected after load and
+ * still see the whole of it.
+ */
+function measureLoad(session, url) {
+  const { ab, evalFile } = browser(session)
+  ab('open', url)
+  ab('wait', '--load', 'networkidle')
+  ab('wait', '8000')
+  return firstNumber(evalFile(LOAD_OBSERVER_SNIPPET))
+}
+
+const LOAD_OBSERVER_SNIPPET = `
+new Promise((resolve) => {
+  const seen = []
+  new PerformanceObserver((l) => {
+    for (const e of l.getEntries()) seen.push(Math.round(e.duration))
+  }).observe({ type: 'longtask', buffered: true })
+  // The callback fires on a task of its own; give it one before totalling.
+  setTimeout(() => resolve(String(seen.reduce((a, b) => a + b, 0))), 300)
+})
+`
 
 const OBSERVER_SNIPPET = `
 window.__e2eLongTasks = []
@@ -394,9 +431,48 @@ async function main() {
         console.log(`${it.name.padEnd(46)} blocked ${blockedMs}ms (budget ${it.maxBlockingMs}ms) ${ok ? 'ok' : 'FAIL'}`)
       }
     }
+
+    // Load budgets. Same measure as the interactions -- time the main thread
+    // spent blocked, not elapsed time -- but scoped to first render.
+    const loadBudgets = LOAD_BUDGETS.filter(
+      (lb) => !args.only || args.only.includes(lb.page),
+    )
+    if (loadBudgets.length) {
+      console.log('')
+      for (const lb of loadBudgets) {
+        const blockedMs = measureLoad('e2e-load', `${localBase}/${lb.page}`)
+        if (blockedMs === null) {
+          failures.push({
+            page: lb.page,
+            kind: 'check',
+            name: `${lb.page} load blocking`,
+            detail: ['could not read load blocking time'],
+          })
+          console.log(`${(lb.page + ' load').padEnd(46)} could not measure`)
+          continue
+        }
+        const ok = blockedMs <= lb.maxBlockingMs
+        if (!ok) {
+          failures.push({
+            page: lb.page,
+            kind: 'check',
+            name: `${lb.page} load blocking`,
+            detail: [
+              `main thread blocked ${blockedMs}ms during first render, budget ${lb.maxBlockingMs}ms.`,
+              'The page is frozen for that long before it is usable.',
+              'First suspect is a cube composable that lost its markRaw: the',
+              'selectors that scan rows on the way to first paint then pay for a',
+              'reactive proxy on every row. That is what this budget was added to',
+              'catch, and it costs 128ms on the veil page alone.',
+            ],
+          })
+        }
+        console.log(`${(lb.page + ' load').padEnd(46)} blocked ${blockedMs}ms (budget ${lb.maxBlockingMs}ms) ${ok ? 'ok' : 'FAIL'}`)
+      }
+    }
   } finally {
     server.kill()
-    for (const s of ['e2e-local', 'e2e-live']) spawnSync('agent-browser', ['--session', s, 'close'])
+    for (const s of ['e2e-local', 'e2e-live', 'e2e-interaction', 'e2e-load']) spawnSync('agent-browser', ['--session', s, 'close'])
   }
 
   console.log('\n')

@@ -267,6 +267,24 @@ main thread was blocked, not how long the interaction took. A page can finish in
 the Source link on this site looked broken for months for exactly that reason;
 it was fine, the thread was busy. Budgets sit at 100ms against a measured 0ms.
 
+`LOAD_BUDGETS` covers the other half, and the two are not interchangeable. The
+interaction observer is installed only after the page has settled, deliberately,
+so that load work is not charged to a click — which leaves first render
+unmeasured, and first render is where a cube that lost its `markRaw` actually
+costs you. Removing it from `useStopsCube` alone takes the stops page from 91ms
+of blocking on load to 761ms. The map-click budget does catch that one too, at
+251ms — but snapshot goes from 93ms to 694ms and has no interaction to drive at
+all, so on that page the load budget is the only thing standing there. The load
+signal is also the louder of the two by a factor of three, which matters when
+the question is whether anyone believes the number.
+
+Those budgets are the one set of numbers here that are not measured against
+zero: fetching, decoding and aggregating a cube before first paint genuinely
+costs 90-190ms on the bigger pages. They were set from three runs of a release
+build with about half again as headroom. If a page gets legitimately slower,
+move its budget in the commit that slows it and say why. Raising one quietly to
+turn a run green is worse than deleting it, because it still reads as coverage.
+
 ---
 
 ## Four traps in the raw stop export
