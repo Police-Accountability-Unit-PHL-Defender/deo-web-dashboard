@@ -45,6 +45,7 @@ const dictionary = {
   "Intrusion rate": "How often police frisk and/or search people or vehicles during traffic stops.",
   "MVC": "Pennsylvania Motor Vehicle Code. See Title 75 Pa.C.S.A.",
   "Operational": "An MVC violation stemming from a person driving the vehicle, such as speeding.",
+  "Nonoperational": "An MVC violation not the result of the manner of operating the vehicle, such as window tint.",
   "PPD": "Philadelphia Police Department",
   "PSA": "Police Service Area: The smallest geographical subdivision of a police district to which police personnel are assigned.",
   "Search": "An examination by police of a person and/or their property or premises that a person would reasonably consider private with the intent of discovering evidence of the commission of a crime.",
