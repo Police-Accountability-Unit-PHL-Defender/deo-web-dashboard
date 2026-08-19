@@ -106,7 +106,7 @@
         <HorizontalLine class="my-4 md:my-12"/>
         <section>
           <QuestionHeader>
-            <h3>How often do Philadelphia police stop drivers for operational<Tooltip term="Operational"/> violations? Are there racial disparities<Tooltip term="Disparity"/> in these traffic stops? Out of all traffic stops, how often did police stop people of different races for operational violations in <span class="whitespace-nowrap"><SelectYear v-model="q1Year"/>?</span></h3>
+            <h3>Are there racial disparities<Tooltip term="Disparity"/> in Philadelphia police traffic stops for operational<Tooltip term="Operational"/> violations? Out of all traffic stops, how often did police stop people of different races for operational violations in <span class="whitespace-nowrap"><SelectYear v-model="q1Year"/>?</span></h3>
           </QuestionHeader>
           <Answer v-if="q4" :arrow="true">
             <Graph :graph-data="q4.figures.barplot.data" :axis-properties="{x: q4.figures.barplot.properties.xAxis, y: q4.figures.barplot.properties.yAxis}" :y-scale-domain-max="100">
@@ -427,7 +427,7 @@ const q3b = computed(() => {
       group: 'Nonoperational',
       [xAxis]: row.year,
       [yAxis]: row.nonOperational,
-      hover_text: [`${row.year}${suffix}`, `${row.nonOperational}% non-operational`],
+      hover_text: [`${row.year}${suffix}`, `${row.nonOperational}% nonoperational`],
     })
   }
 
@@ -437,7 +437,7 @@ const q3b = computed(() => {
         properties: {
           xAxis,
           yAxis,
-          title: 'Share of PPD Traffic Stops for Operational vs. Non-Operational Violations',
+          title: 'Share of PPD Traffic Stops for Operational vs. Nonoperational Violations',
         },
         dashedFromX: incomplete ? incomplete.year : null,
         data,
