@@ -1,3 +1,4 @@
+import { markRaw } from 'vue'
 /**
  * Fetch the reasons cube (static JSON, shipped from `public/cubes`).
  *
@@ -15,7 +16,7 @@ export function useReasonsCube() {
     'reasons-cube',
     async () => {
       const cube = await $fetch<Cube>('/cubes/reasons.json')
-      return { cube }
+      return markRaw({ cube })
     },
     { server: false, lazy: true },
   )

@@ -25,7 +25,7 @@ import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync, cpSync } fr
 import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-import { CHECKS, LIVE_URL, NORMALIZERS, PAGES } from './config.mjs'
+import { CHECKS, INTERACTIONS, LIVE_URL, NORMALIZERS, PAGES } from './config.mjs'
 
 const ROOT = resolve(fileURLToPath(new URL('.', import.meta.url)), '..')
 const OUT_DIR = join(ROOT, '.output', 'public')
@@ -129,6 +129,56 @@ function renderText(session, url, { tries = 12, settleMs = 1200 } = {}) {
   }
   return previous ?? ''
 }
+
+
+/**
+ * Drive an interaction in the page and report how long the main thread was
+ * blocked while it ran.
+ *
+ * Elapsed time alone hides the thing users actually feel. A cube query that
+ * scans every row, or a framework proxying a 138k-row structure, shows up as a
+ * single long task during which nothing responds — no hover, no click, no
+ * scroll. Interactions here once blocked for over a second while still
+ * "working", so this measures blocking, not duration.
+ */
+function measureInteraction(session, url, script) {
+  const ab = (...a) => {
+    const r = spawnSync('agent-browser', ['--session', session, ...a], {
+      encoding: 'utf8',
+      env: { ...process.env, AGENT_BROWSER_DEFAULT_TIMEOUT: process.env.AGENT_BROWSER_DEFAULT_TIMEOUT || '120000' },
+    })
+    return r.stdout || ''
+  }
+  const evalFile = (body) =>
+    spawnSync('agent-browser', ['--session', session, 'eval', '--stdin'], {
+      encoding: 'utf8',
+      input: body,
+      env: { ...process.env, AGENT_BROWSER_DEFAULT_TIMEOUT: process.env.AGENT_BROWSER_DEFAULT_TIMEOUT || '120000' },
+    }).stdout || ''
+
+  ab('open', url)
+  ab('wait', '--load', 'networkidle')
+  // The cubes are fetched client-side; give the first render time to settle so
+  // load-time work is not counted against the interaction.
+  ab('wait', '8000')
+
+  evalFile(OBSERVER_SNIPPET)
+  const out = evalFile(script)
+  // Return a bare number and parse digits: agent-browser wraps eval output as
+  // a JSON string, and round-tripping structured data through that is fragile.
+  const raw = evalFile("String((window.__e2eLongTasks || []).reduce((a, b) => a + b, 0))")
+  const m = raw.match(/(\d+)/)
+  const blockedMs = m ? Number(m[1]) : null
+  return { blockedMs, scriptOutput: out.trim() }
+}
+
+const OBSERVER_SNIPPET = `
+window.__e2eLongTasks = []
+new PerformanceObserver((l) => {
+  for (const e of l.getEntries()) window.__e2eLongTasks.push(Math.round(e.duration))
+}).observe({ entryTypes: ['longtask'] })
+'installed'
+`
 
 // ------------------------------------------------------------------- diffing
 
@@ -237,6 +287,49 @@ async function main() {
         }
       }
       console.log(`${page.name.padEnd(18)} ${notes.join('; ') || 'ok'}`)
+    }
+
+    // Responsiveness budgets. Run after the page comparisons so a failure here
+    // is clearly separate from a content difference.
+    const interactions = INTERACTIONS.filter(
+      (it) => !args.only || args.only.includes(it.page),
+    )
+    if (interactions.length) {
+      console.log('')
+      for (const it of interactions) {
+        const { blockedMs, scriptOutput } = measureInteraction(
+          'e2e-interaction',
+          `${localBase}/${it.page}`,
+          it.script,
+        )
+        if (blockedMs === null) {
+          failures.push({
+            page: it.page,
+            kind: 'check',
+            name: it.name,
+            detail: [`could not read blocking time; script returned: ${scriptOutput.slice(0, 200)}`],
+          })
+          console.log(`${it.name.padEnd(46)} could not measure`)
+          continue
+        }
+        const ok = blockedMs <= it.maxBlockingMs
+        if (!ok) {
+          failures.push({
+            page: it.page,
+            kind: 'check',
+            name: it.name,
+            detail: [
+              `main thread blocked ${blockedMs}ms, budget ${it.maxBlockingMs}ms.`,
+              'Blocking means the page is frozen: no hover, no click, no scroll.',
+              'Suspects, in the order they have actually bitten here: a cube that',
+              'is reactive (see markRaw in the composables), a query that scans',
+              'every row instead of a district slice, or a chart redraw that forces',
+              'layout in a loop.',
+            ],
+          })
+        }
+        console.log(`${it.name.padEnd(46)} blocked ${blockedMs}ms (budget ${it.maxBlockingMs}ms) ${ok ? 'ok' : 'FAIL'}`)
+      }
     }
   } finally {
     server.kill()

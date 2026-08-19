@@ -128,3 +128,76 @@ export const CHECKS = [
     },
   },
 ]
+
+/**
+ * Responsiveness budgets.
+ *
+ * Each entry drives one real interaction and asserts how long the main thread
+ * was blocked. Elapsed time is not the measure that matters: a page can finish
+ * in 300ms having been frozen for 250 of them, and freezing is what users
+ * notice — during a long task nothing responds, not the hover cursor, not a
+ * click, not scrolling. The Source link on this site looked broken for exactly
+ * that reason; it was fine, the thread was busy.
+ *
+ * `script` is evaluated in the page and must resolve once the interaction has
+ * settled. Both interactions currently block for 0ms, so a 100ms budget leaves
+ * generous headroom for machine variance while still catching a real
+ * regression: removing `markRaw` from the stops cube alone takes the map click
+ * to 145ms, and a 250ms budget let that pass unnoticed.
+ */
+export const INTERACTIONS = [
+  {
+    name: 'neighborhoods demographic toggle',
+    page: 'neighborhoods',
+    maxBlockingMs: 100,
+    script: `
+      (async () => {
+        const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+        const buttons = () => Array.from(document.querySelectorAll('button'))
+        const trigger = buttons().find((b) => /^(race|age range|gender)$/i.test(b.textContent.trim()))
+        if (!trigger) return 'no demographic control found'
+        const want = /race/i.test(trigger.textContent) ? 'age range' : 'race'
+        trigger.click()
+        await sleep(600)
+        const option = Array.from(document.querySelectorAll('[role="option"],li,button'))
+          .find((e) => e.textContent.trim().toLowerCase() === want)
+        if (!option) return 'no option ' + want
+        option.click()
+        await sleep(2500)
+        return 'toggled to ' + want
+      })()
+    `,
+  },
+  {
+    name: 'stops district map click',
+    page: 'stops',
+    maxBlockingMs: 100,
+    script: `
+      (async () => {
+        const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+        const buttons = () => Array.from(document.querySelectorAll('button'))
+        const loc = buttons().find((b) => b.textContent.trim() === 'Philadelphia')
+        if (!loc) return 'no location control'
+        loc.click()
+        await sleep(2500)
+        const gran = buttons().find((b) => b.textContent.trim() === 'city')
+        if (!gran) return 'no granularity control'
+        gran.click()
+        await sleep(800)
+        const district = Array.from(document.querySelectorAll('[role="option"],li,button'))
+          .find((e) => e.textContent.trim().toLowerCase() === 'district')
+        if (!district) return 'no district option'
+        district.click()
+        await sleep(3500)
+        // data-region is set by LeafletMap.vue so a specific district can be
+        // addressed; the polygons carry no other identifying attribute.
+        const target = document.querySelector('path[data-region="District 14"]')
+          || document.querySelectorAll('path.leaflet-interactive')[4]
+        if (!target) return 'no district polygon'
+        target.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }))
+        await sleep(2500)
+        return 'clicked district'
+      })()
+    `,
+  },
+]

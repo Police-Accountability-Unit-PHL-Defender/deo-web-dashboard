@@ -305,7 +305,10 @@ const q2 = computed(() => {
   const data = rows.map(({ majority, vc, n }) => {
     const tot = totals[majority] || 0
     const pctVal = tot ? Math.round((1000 * n) / tot) / 10 : 0
-    const groupName = `${labels[majority]} districts`
+    // labels already ends in "districts"; appending it again produced
+    // "Majority white districts districts", which matched no group-classes
+    // key, so every bar fell back to the default fill.
+    const groupName = labels[majority]
     return {
       group: groupName,
       [xAxis]: vc,

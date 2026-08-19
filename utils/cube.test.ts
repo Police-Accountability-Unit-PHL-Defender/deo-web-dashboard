@@ -10,6 +10,7 @@ import {
   groupAllMeasuresByDistrict,
   pct,
   olsTrendline,
+  scalarsKey,
 } from './cube'
 
 // Tiny fixture cube. Dimensions match the real stops cube.
@@ -174,5 +175,66 @@ describe('olsTrendline', () => {
         { x: 1, y: 2 },
       ]),
     ).toBeNull()
+  })
+})
+
+describe('scalarsKey', () => {
+  // getLocationParam appends "*" to district codes ("District 14" -> "14*").
+  // locationPredicate tolerates it, but the scalars tables are keyed on the
+  // bare code, so a district lookup silently missed and the Stops page's
+  // three comparison bullets rendered empty.
+  it('strips the district asterisk', () => {
+    expect(scalarsKey('14*')).toBe('14')
+    expect(scalarsKey('01*')).toBe('01')
+  })
+
+  it('leaves every other location form alone', () => {
+    expect(scalarsKey('*')).toBe('*')
+    expect(scalarsKey('SPD')).toBe('SPD')
+    expect(scalarsKey('01-1')).toBe('01-1')
+    expect(scalarsKey('77-0')).toBe('77-0')
+  })
+})
+
+describe('district index (performance, must not change results)', () => {
+  // Queries are narrowed to the buckets a location filter can reach, instead
+  // of scanning all ~139k rows of the real stops cube. The index must only
+  // ever narrow to a superset of matching rows, so these assert concrete
+  // totals for each way a location can be expressed.
+  it('narrows correctly for every location form', () => {
+    expect(sumMeasure(fixture, 'n_stopped', {})).toBe(27)
+    expect(sumMeasure(fixture, 'n_stopped', { location: '*' })).toBe(27)
+    expect(sumMeasure(fixture, 'n_stopped', { location: '22' })).toBe(18)
+    expect(sumMeasure(fixture, 'n_stopped', { location: '22*' })).toBe(18)
+    expect(sumMeasure(fixture, 'n_stopped', { location: '1' })).toBe(7)
+    expect(sumMeasure(fixture, 'n_stopped', { location: 'SPD' })).toBe(9)
+    expect(sumMeasure(fixture, 'n_stopped', { location: '22-1' })).toBe(15)
+    expect(sumMeasure(fixture, 'n_stopped', { districtIn: ['22', '01'] })).toBe(25)
+    expect(sumMeasure(fixture, 'n_stopped', { location: '99' })).toBe(0)
+  })
+
+  it('still applies the non-location filters after narrowing', () => {
+    expect(sumMeasure(fixture, 'n_stopped', { location: '22', race: 'Black' })).toBe(15)
+    expect(
+      sumMeasure(fixture, 'n_stopped', { location: '22', startQuarter: '2019-Q2' }),
+    ).toBe(5)
+  })
+
+  it('groups correctly within a narrowed selection', () => {
+    expect(groupSum(fixture, 'race', 'n_stopped', { location: '22' })).toEqual([
+      { key: 'Black', value: 15 },
+      { key: 'White', value: 3 },
+    ])
+  })
+
+  it('handles a cube with no location dimension', () => {
+    const noLoc: Cube = {
+      version: 1,
+      dimensions: ['quarter', 'year'],
+      measures: ['n'],
+      rows: [['2019-Q1', 2019, 4], ['2019-Q2', 2019, 6]],
+    }
+    expect(sumMeasure(noLoc, 'n', {})).toBe(10)
+    expect(sumMeasure(noLoc, 'n', { startQuarter: '2019-Q2' })).toBe(6)
   })
 })

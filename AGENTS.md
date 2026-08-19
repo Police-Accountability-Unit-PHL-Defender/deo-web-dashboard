@@ -178,3 +178,72 @@ and `Other` are non-operational stops and belong in the denominator, out of the
 numerator. Filtering either one out inflates the operational share, most of all
 for Black drivers, who carry the largest share of them. This has been
 "corrected" by mistake before; `utils/reasons.test.ts` guards it.
+
+---
+
+## Working on this repo without fooling yourself
+
+Three traps have each cost real time here. All three produce *plausible wrong
+answers* rather than errors, which is what makes them expensive.
+
+**A stale `.output/` will lie to you.** `npm run generate` writes into
+`.output/public`, and `e2e/parity.mjs --skip-build` reads whatever is there. If
+a build failed, or you served the directory while a build was still writing it,
+the harness tests a half-written bundle and reports missing charts and missing
+sentences. This has twice looked exactly like a code regression — once
+convincingly enough that a good commit was reverted on the strength of a
+"bisect" that had really only proven a rebuild happened.
+
+So: **never believe a surprising e2e result without a clean rebuild first.**
+
+```bash
+rm -rf .output && npm run generate && node e2e/parity.mjs --checks-only --skip-build
+```
+
+Two contributing causes worth knowing. A stray `nuxt dev` left running by
+another session shares `.nuxt` and races `nuxt generate`, which makes builds
+fail intermittently — check `pgrep -fl "nuxt dev"` when exit codes start
+alternating. And starting a static server on `.output/public` before the build
+finishes serves a partial bundle; build first, serve second.
+
+**Commit before you instrument.** Debug counters get removed with
+`git checkout -- <file>`, which also discards every other uncommitted change in
+that file. Two batches of finished work were lost this way. Commit the real
+change, then add instrumentation on top.
+
+**Unit tests do not cover the built site.** Every published-number bug found
+here was invisible to `vitest` and visible on the rendered page: a chart whose
+data key stopped matching its axis label renders empty rather than throwing, and
+`v-if` on a computed that returns `null` removes a section silently. Run the e2e
+checks against a build after any change to `utils/cube.ts`, `Graph.vue`, or a
+page computed.
+
+## Load-bearing details that look removable
+
+Each of these reads like tidy-up bait. All three are the reason an interaction
+is fast instead of freezing the page for a second.
+
+**The cubes are deliberately not reactive.** Each cube composable wraps its
+fetched payload in `markRaw`. Without it Vue installs reactive proxies over the
+whole structure — 138,773 rows of five dimensions and seven measures for the
+stops cube — and every dependency-tracking pass over that costs more than the
+aggregation it guards. Restoring reactivity took a Neighborhoods map click from
+53ms to 985ms, 950ms of it blocking the main thread. Nothing mutates a cube;
+pages only read from them, so there is nothing for Vue to track. This looks like
+a stray import to tidy up. It is load-bearing.
+
+**`utils/cube.ts` keeps each cube twice.** The rows as shipped, plus a columnar
+form built once and cached on a `WeakMap`: every dimension dictionary-encoded to
+integer codes, measures as `Float64Array`s, rows bucketed by district. A filter
+compiles to one allow-list per dimension, so "is this location in the selection"
+is answered once per distinct value rather than once per row. That is why the
+aggregations look indirect — the indirection is the point, and the old row-scan
+version blocked for 1.7s on a single toggle. `utils/cube.test.ts` pins the
+results; if you rewrite the internals, those tests are the contract.
+
+**Interaction budgets fail the e2e run.** `e2e/config.mjs` has an `INTERACTIONS`
+list that drives a real toggle and a real map click and asserts how long the
+main thread was blocked, not how long the interaction took. A page can finish in
+300ms having been frozen for 250 of them, and freezing is what users report —
+the Source link on this site looked broken for months for exactly that reason;
+it was fine, the thread was busy. Budgets sit at 100ms against a measured 0ms.

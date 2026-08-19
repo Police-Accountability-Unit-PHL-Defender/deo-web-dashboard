@@ -8,7 +8,7 @@
       <div class="absolute inset-0 z-[1] bg-black opacity-50"></div>
     </template>
     <template #quote>
-      <Quote author="Elder Melanie DuBouse" source="https://soundcloud.com/speakingfreelyaclupa/a-state-of-perpetual-alert-living-while-black-in-philadelphia" backgroundClass="bg-[#CCF1FF]" quoteMarkClass="fill-highlight" bold-color-class="text-[#00B8FF]">
+      <Quote author="Elder Melanie DuBouse" source="https://podcast.app/a-state-of-perpetual-alert-living-while-black-in-philadelphia-e69712864" backgroundClass="bg-[#CCF1FF]" quoteMarkClass="fill-highlight" bold-color-class="text-[#00B8FF]">
         <template #quoteText>
           <p>
             We, as Black and brown people, are witnesses to the racism every day in the Philadelphia Police Department and the city and the country.
