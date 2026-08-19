@@ -307,13 +307,15 @@ export const INTERACTIONS = [
  *
  *     snapshot        90-98ms      neighborhoods   155-187ms
  *     stops           88-93ms      safety          0ms
- *     reasons         0-58ms
+ *     reasons         0-58ms       veil            0ms
  *
  * The budgets below are those maxima with roughly half again as headroom, so
  * an ordinary slow run does not cry wolf. That is loose enough to be quiet and
  * still tight enough for the regression it exists to catch: dropping markRaw
  * from one cube composable costs 128ms on the veil page, which puts every one
- * of these pages over its budget.
+ * of these pages over its budget. Veil is the page that prompted all of this and
+ * it measures 0ms, because it is the one that has its markRaw -- take it away
+ * and the same page blocks for 128ms, well past the 60ms it is held to here.
  *
  * Set these from measurement, never from a round number that looks tidy. If a
  * page legitimately gets slower, move its budget in the same commit that makes
@@ -326,4 +328,5 @@ export const LOAD_BUDGETS = [
   { page: 'reasons', maxBlockingMs: 120 },
   { page: 'neighborhoods', maxBlockingMs: 280 },
   { page: 'safety', maxBlockingMs: 60 },
+  { page: 'veil', maxBlockingMs: 60 },
 ]
