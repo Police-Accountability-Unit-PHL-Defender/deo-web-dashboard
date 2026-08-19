@@ -106,7 +106,7 @@
         <HorizontalLine class="my-4 md:my-12"/>
         <section>
           <QuestionHeader>
-            <h3>Are there racial disparities<Tooltip term="Disparity"/> in Philadelphia police traffic stops for operational<Tooltip term="Operational"/> violations? Out of all traffic stops, how often did police stop people of different races for operational violations in <span class="whitespace-nowrap"><SelectYear v-model="q1Year"/>?</span></h3>
+            <h3>Are there racial disparities<Tooltip term="Disparity"/> in Philadelphia police traffic stops for operational<Tooltip term="Operational"/> violations? When Philadelphia police gave a reason, how often did police stop people of different races for operational violations in <span class="whitespace-nowrap"><SelectYear v-model="q1Year"/>?</span></h3>
           </QuestionHeader>
           <Answer v-if="q4" :arrow="true">
             <Graph :graph-data="q4.figures.barplot.data" :axis-properties="{x: q4.figures.barplot.properties.xAxis, y: q4.figures.barplot.properties.yAxis}" :y-scale-domain-max="100">
@@ -132,7 +132,7 @@ import {
   sumMeasure,
   VIOLATION_CATEGORIES_DEO_IMPACTED,
 } from '~/utils/cube';
-import { operationalShareByRace, operationalShareByYear } from '~/utils/reasons';
+import { CATEGORIES_WITHOUT_A_REASON, operationalShareByRace, operationalShareByYear } from '~/utils/reasons';
 import { useReasonsCube } from '~/composables/useReasonsCube';
 import { useDistrictsDemographics } from '~/composables/useDistrictsDemographics';
 
@@ -189,7 +189,7 @@ const q1 = computed(() => {
   // groupBy [race, violation_category] then drop Other/None.
   const groups = groupTupleSum(cube, ['race', 'violation_category'], 'n_stopped', filterOpts)
     .filter(({ keys }) => (keys[0] === 'Black' || keys[0] === 'White')
-      && keys[1] !== 'Other' && keys[1] !== 'None')
+      && !CATEGORIES_WITHOUT_A_REASON.has(keys[1]))
 
   // Totals per race (over filtered groups).
   const totalsByRace = { Black: 0, White: 0 }
@@ -264,11 +264,11 @@ const q2 = computed(() => {
   const whiteGroups = groupSum(cube, 'violation_category', 'n_stopped', {
     ...baseOpts,
     districtIn: whiteDistricts,
-  }).filter(g => g.key !== 'Other' && g.key !== 'None')
+  }).filter(g => !CATEGORIES_WITHOUT_A_REASON.has(g.key))
   const nonwhiteGroups = groupSum(cube, 'violation_category', 'n_stopped', {
     ...baseOpts,
     districtIn: nonwhiteDistricts,
-  }).filter(g => g.key !== 'Other' && g.key !== 'None')
+  }).filter(g => !CATEGORIES_WITHOUT_A_REASON.has(g.key))
 
   const labels = {
     white: 'Majority white districts',
@@ -437,7 +437,7 @@ const q3b = computed(() => {
         properties: {
           xAxis,
           yAxis,
-          title: 'Share of PPD Traffic Stops for Operational vs. Nonoperational Violations',
+          title: 'Share of PPD Traffic Stops With a Stated Reason: Operational vs. Nonoperational Violations',
         },
         dashedFromX: incomplete ? incomplete.year : null,
         data,
@@ -462,7 +462,7 @@ const q4 = computed(() => {
     [xAxis]: race,
     [yAxis]: pctVal,
     annotation: null,
-    hover_text: [race, `${pctVal}% of traffic stops for operational violations`, ''],
+    hover_text: [race, `${pctVal}% of stops with a stated reason were for operational violations`, ''],
   }))
 
   return {
@@ -472,7 +472,7 @@ const q4 = computed(() => {
         properties: {
           xAxis,
           yAxis,
-          title: `Percentage of Operational Stops by Race in ${year}`,
+          title: `Percentage of Stops With a Stated Reason That Were Operational, by Race, in ${year}`,
         },
         trendlines: [],
         data,

@@ -108,15 +108,48 @@ export const CHECKS = [
     },
   },
   {
-    name: 'operational trend chart covers 2022 onward, complete years only',
+    // The published spelling is "Nonoperational", everywhere -- not just on the
+    // Reasons page. The glossary carried "non-operational" in its own
+    // definition of the term for as long as the guard was scoped to one page.
+    name: 'the published spelling "Nonoperational" holds site-wide',
+    assert: ({ text }) => {
+      if (/non-operational/i.test(text)) return 'found hyphenated "Non-operational"; the published spelling is "Nonoperational"'
+      return true
+    },
+  },
+  {
+    // Every question on this page promises "when Philadelphia police gave a
+    // reason", and as of 2026-08 every chart divides by stops that name one. This guards the wording half of that only: the bar values never
+    // reach the DOM as text -- they are bar heights and hover labels, and this
+    // assert only ever sees rendered text -- so the figures themselves are
+    // pinned in utils/reasons.test.ts (Black 2025 at 63.6%, which is 44.8% if
+    // `None` and `Other` return to the denominator). Between them the claim and
+    // the number cannot drift apart unnoticed.
+    name: 'by-race operational question keeps the recorded-reason framing',
     pages: ['reasons'],
     assert: ({ text }) => {
+      if (!text.includes('When Philadelphia police gave a reason, how often did police stop people of different races'))
+        return 'by-race question is missing or reworded away from the recorded-reason framing'
+      if (/Out of all traffic stops/.test(text))
+        return 'by-race question still claims the all-stops denominator'
+      return true
+    },
+  },
+  {
+    name: 'operational trend chart covers 2022 through the partial year',
+    pages: ['reasons'],
+    assert: ({ text, quarter }) => {
       // Axis ticks appear as bare years in the rendered text.
       const block = /how often did police stop drivers for operational[\s\S]{0,3000}/.exec(text)
       if (!block) return 'could not locate the trend chart'
       const years = [...block[0].matchAll(/\b(20\d\d)\b/g)].map((m) => Number(m[1]))
       if (!years.includes(2022)) return 'trend chart does not start at 2022'
       if (years.includes(2021) || years.includes(2014)) return 'trend chart still shows years before 2022'
+      // The series runs to the pinned quarter's year, including it when it is
+      // only part-published — that trailing point is the dashed segment. If it
+      // stops short, the partial year has been dropped rather than dashed.
+      const pinnedYear = Number(String(quarter).slice(0, 4))
+      if (!years.includes(pinnedYear)) return `trend chart stops before ${pinnedYear}; the partial year is missing its dashed point`
       return true
     },
   },
