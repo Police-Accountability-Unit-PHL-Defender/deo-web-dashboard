@@ -163,21 +163,40 @@ above), so it cannot tell you whether the data for a year actually arrived. Use
 `completeYears()` in `utils/cube.ts`: a year is complete only when all four of
 its quarters are present in the cube. `mostRecentQuarter` still *caps* which
 year may be published, which is what keeps `--quarter` pinning meaningful — the
-two are a floor and a ceiling, not alternatives. Trusting the clock alone means
-that one missed quarterly refresh across a year boundary silently publishes a
-half-year as a settled one: the partial-year dash disappears from the trend
-chart and the Neighborhoods sentence recomputes on six months of stops, with
-every test and e2e check still green. Both `operationalShareByYear` and
-`majorityWhiteDisparity` have tests pinning this exact scenario; don't
-"simplify" them back.
+two are a floor and a ceiling, not alternatives.
 
-**`None` is not missing data.** In `reasons.json`, `violation_category` of
-`None` means no MVC code was recorded — but PPD stopped coding tint stops in
-2023, so `Tint` falls to zero while `None` absorbs the same volume. Both `None`
-and `Other` are non-operational stops and belong in the denominator, out of the
-numerator. Filtering either one out inflates the operational share, most of all
-for Black drivers, who carry the largest share of them. This has been
-"corrected" by mistake before; `utils/reasons.test.ts` guards it.
+`operationalShareByYear` is the live consumer: it publishes 2022 through the
+last year the cube completes, so one missed quarterly refresh across a year
+boundary would otherwise put a half-year on the chart as a settled point, with
+every test and e2e check still green. Its tests pin that, including a case where
+the clock is pinned past a half-populated year; don't "simplify" them back.
+
+The Neighborhoods disparity sentence used to share this hazard, choosing a
+"most recent complete year" itself. Since 2026-08 it takes the quarter range
+from the page's selectors instead, so there is no year for it to get wrong — if
+you ever give it back a self-chosen period, the clock trap returns with it.
+
+**`None` is not missing data, and the two Reasons charts divide by different
+things on purpose.** In `reasons.json`, `violation_category` of `None` means no
+MVC code was recorded. It is not absent data: PPD stopped coding tint stops in
+2023, so `Tint` falls to zero while `None` absorbs almost the same volume,
+growing from 7,691 stops in 2022 to 28,518 in 2025.
+
+- **`operationalShareByRace`** (the by-race bars) is framed "out of all traffic
+  stops" and keeps `None` in the denominator. Those are real nonoperational
+  stops; dropping them inflates the operational share, most for Black drivers,
+  who carry the largest share of them.
+- **`operationalShareByYear`** (the trend line) is framed "when Philadelphia
+  police gave a reason", so it divides by stops carrying a recorded category and
+  excludes `None`. `Other` is a recorded reason and stays in.
+
+That difference was chosen deliberately in 2026-08, with the wording of each
+heading stating its own denominator. Know the cost before touching either: on
+the trend chart, excluding `None` moves 2025 from 49.5% to 59.0% and steepens
+the 2022→2025 rise from +2.5 to +8.2 points, and a good part of that steepening
+is tint stops leaving the denominator rather than enforcement shifting. Do not
+"make the two charts consistent" by changing one — that is a change to a
+published claim, not a cleanup. `utils/reasons.test.ts` pins both rules.
 
 ---
 

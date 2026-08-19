@@ -88,15 +88,15 @@
         <HorizontalLine class="my-4 md:my-12"/>
         <section>
           <QuestionHeader>
-            <h3>Out of all traffic stops, how has the share made for operational<Tooltip term="Operational"/> violations changed over time?</h3>
+            <h3>When Philadelphia police gave a reason, how often did police stop drivers for operational<Tooltip term="Operational"/> violations compared to nonoperational<Tooltip term="Nonoperational"/> violations?</h3>
           </QuestionHeader>
           <Answer v-if="q3b" :arrow="true">
             <LineGraph
               :graph-data="q3b.figures.lineplot.data"
               :axis-properties="{x: q3b.figures.lineplot.properties.xAxis, y: q3b.figures.lineplot.properties.yAxis}"
               group-name="group"
-              :group-classes="{'Operational': 'stroke-purple fill-purple bg-purple', 'Non-operational': 'stroke-mint fill-mint bg-mint'}"
-              :chart-legend="{'Operational': 'Operational violations', 'Non-operational': 'Non-operational violations'}"
+              :group-classes="{'Operational': 'stroke-purple fill-purple bg-purple', 'Nonoperational': 'stroke-mint fill-mint bg-mint'}"
+              :chart-legend="{'Operational': 'Operational violations', 'Nonoperational': 'Nonoperational violations'}"
               :dashed-from-x="q3b.figures.lineplot.dashedFromX"
               :y-scale-domain-max="100">
               <h4>{{ q3b.figures.lineplot.properties.title }}</h4>
@@ -424,7 +424,7 @@ const q3b = computed(() => {
       hover_text: [`${row.year}${suffix}`, `${row.operational}% operational`],
     })
     data.push({
-      group: 'Non-operational',
+      group: 'Nonoperational',
       [xAxis]: row.year,
       [yAxis]: row.nonOperational,
       hover_text: [`${row.year}${suffix}`, `${row.nonOperational}% non-operational`],

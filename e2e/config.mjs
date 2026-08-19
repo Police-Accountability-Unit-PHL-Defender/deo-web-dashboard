@@ -91,6 +91,32 @@ export const CHECKS = [
       || 'stops total is missing or not thousands-separated',
   },
   {
+    name: 'operational trend chart is framed and spelled as published',
+    // The legend keys double as the chart's data keys, so a rename that misses
+    // one silently drops a series' colour rather than erroring.
+    pages: ['reasons'],
+    assert: ({ text }) => {
+      if (!text.includes('When Philadelphia police gave a reason, how often did police stop drivers for operational'))
+        return 'operational trend heading is missing or reworded'
+      if (!text.includes('Nonoperational violations')) return 'legend is missing "Nonoperational violations"'
+      if (/Non-operational/.test(text)) return 'found hyphenated "Non-operational"; the published spelling is "Nonoperational"'
+      return true
+    },
+  },
+  {
+    name: 'operational trend chart covers 2022 onward, complete years only',
+    pages: ['reasons'],
+    assert: ({ text }) => {
+      // Axis ticks appear as bare years in the rendered text.
+      const block = /how often did police stop drivers for operational[\s\S]{0,3000}/.exec(text)
+      if (!block) return 'could not locate the trend chart'
+      const years = [...block[0].matchAll(/\b(20\d\d)\b/g)].map((m) => Number(m[1]))
+      if (!years.includes(2022)) return 'trend chart does not start at 2022'
+      if (years.includes(2021) || years.includes(2014)) return 'trend chart still shows years before 2022'
+      return true
+    },
+  },
+  {
     name: 'no empty chart bodies',
     // A chart whose data key stopped matching its axis label renders an empty
     // plot rather than throwing. Axis titles with no tick labels near them is
@@ -106,7 +132,7 @@ export const CHECKS = [
     // than erroring, so assert on the rendered legend.
     pages: ['reasons'],
     assert: ({ text }) => {
-      const missing = ['Operational violations', 'Non-operational violations']
+      const missing = ['Operational violations', 'Nonoperational violations']
         .filter((s) => !text.includes(s))
       return missing.length === 0 || `operational trend chart missing legend text: ${missing.join(', ')}`
     },
@@ -118,7 +144,7 @@ export const CHECKS = [
     // silently rather than erroring.
     pages: ['neighborhoods'],
     assert: ({ text }) => {
-      const m = text.match(/In majority white districts, Black drivers were stopped by Philadelphia police ([\d.]+)x more often/)
+      const m = text.match(/In majority white districts, Philadelphia police stopped Black drivers ([\d.]+)x more often than white drivers from the start of .+ through the end of /)
       if (!m) return 'disparity sentence missing from the neighborhoods page'
       const ratio = Number(m[1])
       if (!Number.isFinite(ratio)) return `disparity ratio is not a number: ${m[1]}`

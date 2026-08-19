@@ -86,61 +86,65 @@ describe('operationalShareByYear', () => {
   const series = operationalShareByYear(cube, '2026-Q2')
   const yearOf = (y: number) => series.find((r) => r.year === y)
 
-  it('covers every year present in the cube, in ascending order', () => {
+  // This chart answers "when police gave a reason, how often was it
+  // operational", so its denominator is stops WITH a recorded category —
+  // `None` is excluded. That differs deliberately from
+  // `operationalShareByRace` below it, which is framed "out of all traffic
+  // stops" and keeps `None` in. Each chart's heading states its own
+  // denominator; do not make them agree by changing one silently.
+  it('starts at 2022 and covers only complete years, ascending', () => {
     const years = series.map((r) => r.year)
-    expect(years[0]).toBe(2014)
+    expect(years[0]).toBe(2022)
     expect(years).toEqual([...years].sort((a, b) => a - b))
     expect(new Set(years).size).toBe(years.length)
+    // 2026 has only Q1 and Q2 in the cube, so it must not appear.
+    expect(years).not.toContain(2026)
+    expect(years[years.length - 1]).toBe(2025)
   })
 
-  it('reproduces the published all-stops denominator', () => {
-    expect(yearOf(2019)?.operational).toBe(26.7)
-    expect(yearOf(2022)?.operational).toBe(47.0)
-    expect(yearOf(2023)?.operational).toBe(53.7)
-    expect(yearOf(2025)?.operational).toBe(49.5)
+  it('divides by stops with a recorded reason, not by all stops', () => {
+    // Same shape as the all-stops figures, recomputed without `None`.
+    expect(yearOf(2022)?.operational).toBe(50.8)
+    expect(yearOf(2023)?.operational).toBe(65.0)
+    expect(yearOf(2024)?.operational).toBe(64.5)
+    expect(yearOf(2025)?.operational).toBe(59.0)
   })
 
-  it('puts the crossover in 2023', () => {
-    expect(yearOf(2022)!.operational).toBeLessThan(50)
-    expect(yearOf(2024)!.operational).toBeGreaterThan(50)
+  it('excludes None from the denominator entirely', () => {
+    const c = syntheticCube([
+      ['2022-Q1', '01', 'Black', 'Red Light/Stop Sign/Yield', 1],
+      ['2022-Q2', '01', 'Black', 'Red Light/Stop Sign/Yield', 1],
+      ['2022-Q3', '01', 'Black', 'Red Light/Stop Sign/Yield', 1],
+      ['2022-Q4', '01', 'Black', 'None', 99],
+    ])
+    // 3 operational, 99 with no reason: the 99 are not counted at all.
+    expect(operationalShareByYear(c, '2022-Q4').find((r) => r.year === 2022)?.operational).toBe(100)
   })
 
-  it('flags only the trailing partial year as incomplete', () => {
-    expect(yearOf(2026)?.incomplete).toBe(true)
-    expect(yearOf(2025)?.incomplete).toBe(false)
-    expect(series.filter((r) => r.incomplete)).toHaveLength(1)
+  it('keeps Other in the denominator — it is a recorded reason', () => {
+    const c = syntheticCube([
+      ['2022-Q1', '01', 'Black', 'Red Light/Stop Sign/Yield', 1],
+      ['2022-Q2', '01', 'Black', 'Other', 1],
+      ['2022-Q3', '01', 'Black', 'Red Light/Stop Sign/Yield', 1],
+      ['2022-Q4', '01', 'Black', 'Other', 1],
+    ])
+    expect(operationalShareByYear(c, '2022-Q4').find((r) => r.year === 2022)?.operational).toBe(50)
   })
 
-  it('flags a year as incomplete only when the cube lacks all four of its quarters, regardless of the clock', () => {
-    // The real cube's trailing year (2026) has just two quarters (Q1, Q2) of
-    // actual data. Completeness is a fact about the cube, not about what
-    // `mostRecentQuarter` (clock-derived) claims. Pinning to '2025-Q4' must
-    // not make a half-populated 2026 look complete.
-    const withQ4Pin = operationalShareByYear(cube, '2025-Q4')
-    expect(withQ4Pin.find((r) => r.year === 2026)?.incomplete).toBe(true)
-    expect(withQ4Pin.find((r) => r.year === 2025)?.incomplete).toBe(false)
-  })
-
-  it('still flags 2026 as incomplete even when the clock is pinned past it (2026-Q4)', () => {
-    // Regression for the bug where completeness was read off the clock: with
-    // the cube unchanged (2026 still only has Q1 and Q2), pinning
-    // `mostRecentQuarter` to '2026-Q4' must not flip 2026 to complete.
-    const series2026Pin = operationalShareByYear(cube, '2026-Q4')
-    expect(series2026Pin.find((r) => r.year === 2026)?.incomplete).toBe(true)
-  })
-
-  it('counts no-code and Other stops as non-operational, never dropping them', () => {
-    const c: Cube = {
-      version: 2,
-      dimensions: ['quarter', 'location', 'race', 'violation_category'],
-      measures: ['n_stopped'],
-      rows: [
-        ['2025-Q1', '01', 'Black', 'Red Light/Stop Sign/Yield', 1],
-        ['2025-Q1', '01', 'Black', 'None', 1],
-        ['2025-Q1', '01', 'Black', 'Other', 1],
-        ['2025-Q1', '01', 'Black', 'Lights', 1],
-      ],
+  it('nonOperational is the remainder of the same denominator', () => {
+    for (const row of series) {
+      expect(Math.round((row.operational + row.nonOperational) * 10) / 10).toBe(100)
     }
-    expect(operationalShareByYear(c, '2025-Q4')[0].operational).toBe(25)
+  })
+
+  it('reports no partial years, since only complete ones are included', () => {
+    expect(series.every((r) => r.incomplete === false)).toBe(true)
+  })
+
+  it('does not let the clock add an incomplete year', () => {
+    // 2026 has two quarters in the cube. Pinning the clock past it must not
+    // pull it into the series.
+    const pinnedPast = operationalShareByYear(cube, '2026-Q4')
+    expect(pinnedPast.map((r) => r.year)).not.toContain(2026)
   })
 })
