@@ -209,7 +209,7 @@ import SelectTimeGranularity from '~/components/SelectTimeGranularity.vue';
 import Button from '~/components/ui/Button.vue';
 import HorizontalLine from '~/components/ui/HorizontalLine.vue';
 import Tooltip from '~/components/ui/Tooltip.vue';
-import { groupSum, sumMeasure, groupTupleSum } from '~/utils/cube';
+import { groupSum, sumMeasure, groupTupleSum, scalarsKey } from '~/utils/cube';
 import { useStopsCube } from '~/composables/useStopsCube';
 
 useHead({
@@ -269,9 +269,11 @@ const q1A = computed(() => {
   const sorted = Array.from(rolled, ([key, value]) => ({ key, value })).sort((a, b) => a.key.localeCompare(b.key))
 
   const total = sumMeasure(cube, 'n_stopped', { location: loc })
-  const baseline = scalars['stops_monthly_avg_2014_2018']?.[loc] ?? null
-  const surge    = scalars['stops_monthly_avg_2019']?.[loc] ?? null
-  const covid    = scalars['stops_monthly_avg_2020Q2_2021Q1']?.[loc] ?? null
+  // Districts arrive as "14*"; the scalars tables are keyed "14".
+  const sk = scalarsKey(loc)
+  const baseline = scalars['stops_monthly_avg_2014_2018']?.[sk] ?? null
+  const surge    = scalars['stops_monthly_avg_2019']?.[sk] ?? null
+  const covid    = scalars['stops_monthly_avg_2020Q2_2021Q1']?.[sk] ?? null
 
   const startStr = firstQuarter.getStartString()
   const endStr   = mostRecentQuarter.getEndString()

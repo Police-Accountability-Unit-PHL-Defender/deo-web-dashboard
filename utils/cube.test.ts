@@ -10,6 +10,7 @@ import {
   groupAllMeasuresByDistrict,
   pct,
   olsTrendline,
+  scalarsKey,
 } from './cube'
 
 // Tiny fixture cube. Dimensions match the real stops cube.
@@ -174,5 +175,23 @@ describe('olsTrendline', () => {
         { x: 1, y: 2 },
       ]),
     ).toBeNull()
+  })
+})
+
+describe('scalarsKey', () => {
+  // getLocationParam appends "*" to district codes ("District 14" -> "14*").
+  // locationPredicate tolerates it, but the scalars tables are keyed on the
+  // bare code, so a district lookup silently missed and the Stops page's
+  // three comparison bullets rendered empty.
+  it('strips the district asterisk', () => {
+    expect(scalarsKey('14*')).toBe('14')
+    expect(scalarsKey('01*')).toBe('01')
+  })
+
+  it('leaves every other location form alone', () => {
+    expect(scalarsKey('*')).toBe('*')
+    expect(scalarsKey('SPD')).toBe('SPD')
+    expect(scalarsKey('01-1')).toBe('01-1')
+    expect(scalarsKey('77-0')).toBe('77-0')
   })
 })

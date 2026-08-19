@@ -462,3 +462,16 @@ export function olsTrendline(
   const intercept = my - slope * mx
   return { slope, intercept, predict: (x: number) => slope * x + intercept }
 }
+
+/**
+ * Map a location param to the key used by the scalars tables.
+ *
+ * `getLocationParam` renders a district as `"14*"`, and `locationPredicate`
+ * accepts the asterisk when filtering cube rows. The scalars tables, built by
+ * the pipeline, are keyed on the bare code — so a district lookup has to drop
+ * it or it silently returns undefined.
+ */
+export function scalarsKey(location: string): string {
+  const districtMatch = /^(\d{1,2})\*$/.exec(location)
+  return districtMatch ? districtMatch[1] : location
+}
