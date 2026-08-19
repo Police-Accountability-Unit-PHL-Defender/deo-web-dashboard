@@ -196,13 +196,15 @@ Known and deliberately deferred:
   site-wide and needs its own parity run.
 - **No automated test covers chart 4's thin-bin suppression.** The logic is correct
   and was verified by reading the rendered page; a regression would reach the page.
-- **10 stale `driver_is_black` references** remain in
+- **Stale `driver_is_black` references** remain in
   `docs/superpowers/plans/2026-08-09-veil-of-darkness.md`, several inside code
   blocks. The code is fully renamed to `party_is_black`.
 - **One sentence says "one clearly marked exception"** where there are two (the
   cross-race model row and the placebo), both labelled.
-- **`docs/superpowers/specs/2026-08-09-veil-of-darkness-design.md:373`** cites "59
-  passed" in a warning block; the suite is now 66.
+- **The design doc's warning block quotes a pass count from the day it was
+  written.** Read any test count in the spec or the plan as a timestamp, not as a
+  target -- the suite has grown several times over since, and this note has
+  already been wrong twice by trying to track it.
 - **The cube's `era` and `district` dimensions have no consumer** — they exist for
   the Phase 2 pre/post Driving Equality extension.
 
