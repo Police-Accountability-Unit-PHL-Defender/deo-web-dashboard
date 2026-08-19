@@ -578,23 +578,40 @@ export function groupTupleSum(
     if (i === -1) throw new Error(`Unknown dimension: ${g}`)
     return i
   })
-  const measureIdx = cube.dimensions.length + cube.measures.indexOf(measure)
-  if (cube.measures.indexOf(measure) === -1) {
+  const mi = cube.measures.indexOf(measure)
+  if (mi === -1) {
     throw new Error(`Unknown measure: ${measure}`)
   }
-  const f = compileFilter(cube, opts)
-  const acc = new Map<string, { keys: string[]; value: number }>()
-  for (const row of candidateRows(cube, opts)) {
-    if (!rowPasses(row, f)) continue
-    const keys = groupIdxs.map((i) => String(row[i] ?? ''))
-    const k = keys.join('')
-    const v = row[measureIdx]
-    if (typeof v !== 'number') continue
-    const cur = acc.get(k)
-    if (cur) cur.value += v
-    else acc.set(k, { keys, value: v })
+  const col = columnar(cube)
+  const f = compileCodeFilter(cube, opts)
+  const vals = col.values[mi]
+  const present = col.present[mi]
+  const codeCols = groupIdxs.map((i) => col.codes[i])
+  const sizes = groupIdxs.map((i) => col.names[i].length)
+  // Combine the group codes into one integer instead of building an array and
+  // joining a delimited string per row; that allocation dominated this scan.
+  const acc = new Map<number, number>()
+  const rows = f.rows
+  for (let k = 0; k < rows.length; k += 1) {
+    const i = rows[k]
+    if (!passes(col, f, i)) continue
+    if (present !== null && !present[i]) continue
+    let composite = 0
+    for (let g = 0; g < codeCols.length; g += 1) composite = composite * sizes[g] + codeCols[g][i]
+    acc.set(composite, (acc.get(composite) ?? 0) + vals[i])
   }
-  return Array.from(acc.values()).sort((a, b) => b.value - a.value)
+  const out: Array<{ keys: string[]; value: number }> = []
+  for (const [composite, value] of acc) {
+    const keys = new Array<string>(groupIdxs.length)
+    let rest = composite
+    for (let g = groupIdxs.length - 1; g >= 0; g -= 1) {
+      const size = sizes[g]
+      keys[g] = String(col.names[groupIdxs[g]][rest % size] ?? '')
+      rest = Math.floor(rest / size)
+    }
+    out.push({ keys, value })
+  }
+  return out.sort((a, b) => b.value - a.value)
 }
 
 // -----------------------------------------------------------------
@@ -689,17 +706,20 @@ export function groupSumByDistrict(
   if (cube.measures.indexOf(measure) === -1) {
     throw new Error(`Unknown measure: ${measure}`)
   }
-  const f = compileFilter(cube, opts)
+  const col = columnar(cube)
+  const f = compileCodeFilter(cube, opts)
+  const mi = cube.measures.indexOf(measure)
+  const vals = col.values[mi]
+  const present = col.present[mi]
   const acc = new Map<string, number>()
-  for (const row of candidateRows(cube, opts)) {
-    if (!rowPasses(row, f)) continue
-    const loc = row[locIdx]
-    if (typeof loc !== 'string') continue
-    const d = locationDistrict(loc)
+  const rows = f.rows
+  for (let k = 0; k < rows.length; k += 1) {
+    const i = rows[k]
+    if (!passes(col, f, i)) continue
+    if (present !== null && !present[i]) continue
+    const d = col.districtName[i]
     if (!d) continue
-    const v = row[measureIdx]
-    if (typeof v !== 'number') continue
-    acc.set(d, (acc.get(d) ?? 0) + v)
+    acc.set(d, (acc.get(d) ?? 0) + vals[i])
   }
   return Array.from(acc, ([district, value]) => ({ district, value })).sort(
     (a, b) => (a.district < b.district ? -1 : a.district > b.district ? 1 : 0),
@@ -718,24 +738,40 @@ export function groupAllMeasuresByDistrict(
   const locIdx = cube.dimensions.indexOf('location')
   if (locIdx === -1) throw new Error('cube missing location dimension')
   const dimsLen = cube.dimensions.length
-  const f = compileFilter(cube, opts)
-  const acc = new Map<string, Record<string, number>>()
-  for (const row of candidateRows(cube, opts)) {
-    if (!rowPasses(row, f)) continue
-    const loc = row[locIdx]
-    if (typeof loc !== 'string') continue
-    const d = locationDistrict(loc)
+  const col = columnar(cube)
+  const f = compileCodeFilter(cube, opts)
+  const nm = cube.measures.length
+  // Accumulate into a flat numeric buffer indexed by (district, measure). The
+  // previous version wrote a string-keyed object property per measure per row
+  // — around a million property writes on the stops cube — which dominated
+  // every location change on the neighborhoods page.
+  const districtIndexOf = new Map<string, number>()
+  const districtOrder: string[] = []
+  const totals: number[] = []
+  const rows = f.rows
+  for (let k = 0; k < rows.length; k += 1) {
+    const i = rows[k]
+    if (!passes(col, f, i)) continue
+    const d = col.districtName[i]
     if (!d) continue
-    let bucket = acc.get(d)
-    if (!bucket) {
-      bucket = {}
-      for (const m of cube.measures) bucket[m] = 0
-      acc.set(d, bucket)
+    let di = districtIndexOf.get(d)
+    if (di === undefined) {
+      di = districtOrder.push(d) - 1
+      districtIndexOf.set(d, di)
+      for (let m = 0; m < nm; m += 1) totals.push(0)
     }
-    for (let i = 0; i < cube.measures.length; i++) {
-      const v = row[dimsLen + i]
-      if (typeof v === 'number') bucket[cube.measures[i]] += v
+    const base = di * nm
+    for (let m = 0; m < nm; m += 1) {
+      const mask = col.present[m]
+      if (mask !== null && !mask[i]) continue
+      totals[base + m] += col.values[m][i]
     }
+  }
+  const acc = new Map<string, Record<string, number>>()
+  for (let di = 0; di < districtOrder.length; di += 1) {
+    const bucket: Record<string, number> = {}
+    for (let m = 0; m < nm; m += 1) bucket[cube.measures[m]] = totals[di * nm + m]
+    acc.set(districtOrder[di], bucket)
   }
   return Array.from(acc, ([district, measures]) => ({ district, measures })).sort(
     (a, b) => (a.district < b.district ? -1 : a.district > b.district ? 1 : 0),
