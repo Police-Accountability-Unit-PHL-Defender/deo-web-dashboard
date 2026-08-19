@@ -15,6 +15,7 @@
 // name in the auto-import registry twice and Nuxt warns on every one of
 // them ("Duplicated imports ... has been ignored"). Nothing imported them
 // from this module anyway -- import them from `~/utils/veil` directly.
+import { markRaw } from 'vue'
 import type { VeilCube } from '~/utils/veil'
 
 export interface VeilCubeBundle {
@@ -26,7 +27,7 @@ export function useVeilCube() {
     'veil-cube',
     async () => {
       const cube = await $fetch<VeilCube>('/cubes/veil.json')
-      return { cube }
+      return markRaw({ cube })
     },
     { server: false, lazy: true },
   )
