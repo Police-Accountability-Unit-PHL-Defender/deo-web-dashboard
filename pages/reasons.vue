@@ -88,7 +88,25 @@
         <HorizontalLine class="my-4 md:my-12"/>
         <section>
           <QuestionHeader>
-            <h3>How often do Philadelphia police stop drivers for operational<Tooltip term="Operational"/> violations? Are there racial disparities<Tooltip term="Disparity"/> in these traffic stops? When Philadelphia police gave a reason, how often did police stop people of different races for operational violations in <span class="whitespace-nowrap"><SelectYear v-model="q1Year"/>?</span></h3>
+            <h3>Out of all traffic stops, how has the share made for operational<Tooltip term="Operational"/> violations changed over time?</h3>
+          </QuestionHeader>
+          <Answer v-if="q3b" :arrow="true">
+            <LineGraph
+              :graph-data="q3b.figures.lineplot.data"
+              :axis-properties="{x: q3b.figures.lineplot.properties.xAxis, y: q3b.figures.lineplot.properties.yAxis}"
+              group-name="group"
+              :group-classes="{'Operational': 'stroke-purple fill-purple bg-purple', 'Non-operational': 'stroke-mint fill-mint bg-mint'}"
+              :chart-legend="{'Operational': 'Operational violations', 'Non-operational': 'Non-operational violations'}"
+              :dashed-from-x="q3b.figures.lineplot.dashedFromX"
+              :y-scale-domain-max="100">
+              <h4>{{ q3b.figures.lineplot.properties.title }}</h4>
+            </LineGraph>
+          </Answer>
+        </section>
+        <HorizontalLine class="my-4 md:my-12"/>
+        <section>
+          <QuestionHeader>
+            <h3>How often do Philadelphia police stop drivers for operational<Tooltip term="Operational"/> violations? Are there racial disparities<Tooltip term="Disparity"/> in these traffic stops? Out of all traffic stops, how often did police stop people of different races for operational violations in <span class="whitespace-nowrap"><SelectYear v-model="q1Year"/>?</span></h3>
           </QuestionHeader>
           <Answer v-if="q4" :arrow="true">
             <Graph :graph-data="q4.figures.barplot.data" :axis-properties="{x: q4.figures.barplot.properties.xAxis, y: q4.figures.barplot.properties.yAxis}" :y-scale-domain-max="100">
@@ -103,6 +121,7 @@
 
 <script setup>
 import Graph from '~/components/Graph.vue';
+import LineGraph from '~/components/LineGraph.vue';
 import QuestionHeader from '~/components/QuestionHeader.vue';
 import SelectTimeGranularity from '~/components/SelectTimeGranularity.vue';
 import HorizontalLine from '~/components/ui/HorizontalLine.vue';
@@ -111,9 +130,9 @@ import {
   groupSum,
   groupTupleSum,
   sumMeasure,
-  VIOLATION_CATEGORIES_OPERATIONAL,
   VIOLATION_CATEGORIES_DEO_IMPACTED,
 } from '~/utils/cube';
+import { operationalShareByRace, operationalShareByYear } from '~/utils/reasons';
 import { useReasonsCube } from '~/composables/useReasonsCube';
 import { useDistrictsDemographics } from '~/composables/useDistrictsDemographics';
 
@@ -122,6 +141,7 @@ useHead({
 })
 
 const deoYears = useState('deoYears')
+const mostRecentQuarter = useState('mostRecentQuarter')
 
 const selectedNeighborhoodMajority = ref('Non-white')
 const selectedTimeGranularity = ref('quarter')
@@ -131,9 +151,6 @@ const q1Race = ref('Black')
 // Shared cube + districts demographics.
 const { data: reasonsBundle } = await useReasonsCube()
 const { data: districtsDemo } = await useDistrictsDemographics()
-
-// Race order for q1.
-const RACE_ORDER = ['Asian', 'Black', 'Latino', 'White', 'All Other Races']
 
 // SEASON mapping mirrors deo_backend/models.py SEASON_QUARTER_MAPPING.
 const SEASON_LABEL = { Q1: 'Jan-Mar', Q2: 'Apr-Jun', Q3: 'July-Sep', Q4: 'Oct-Dec' }
@@ -383,6 +400,50 @@ const q3 = computed(() => {
 })
 
 // =========================================================================
+// q3b: reasons-operational-trend
+// =========================================================================
+const q3b = computed(() => {
+  const bundle = reasonsBundle.value
+  if (!bundle) return null
+
+  const series = operationalShareByYear(bundle.cube, mostRecentQuarter.value)
+  const xAxis = 'Year'
+  const yAxis = 'Percentage (%)'
+  const incomplete = series.find(r => r.incomplete)
+
+  const data = []
+  for (const row of series) {
+    const suffix = row.incomplete ? ' (partial year)' : ''
+    data.push({
+      group: 'Operational',
+      [xAxis]: row.year,
+      [yAxis]: row.operational,
+      hover_text: [`${row.year}${suffix}`, `${row.operational}% operational`],
+    })
+    data.push({
+      group: 'Non-operational',
+      [xAxis]: row.year,
+      [yAxis]: row.nonOperational,
+      hover_text: [`${row.year}${suffix}`, `${row.nonOperational}% non-operational`],
+    })
+  }
+
+  return {
+    figures: {
+      lineplot: {
+        properties: {
+          xAxis,
+          yAxis,
+          title: 'Share of PPD Traffic Stops for Operational vs. Non-Operational Violations',
+        },
+        dashedFromX: incomplete ? incomplete.year : null,
+        data,
+      },
+    },
+  }
+})
+
+// =========================================================================
 // q4: reasons-operational
 // =========================================================================
 const q4 = computed(() => {
@@ -390,35 +451,16 @@ const q4 = computed(() => {
   if (!bundle) return null
   const { cube } = bundle
   const year = String(q1Year.value)
-  const filterOpts = {
-    startQuarter: `${year}-Q1`,
-    endQuarter: `${year}-Q4`,
-  }
-
-  const stopsByRace = new Map(
-    groupSum(cube, 'race', 'n_stopped', filterOpts).map(g => [g.key, g.value]),
-  )
-  const opStopsByRace = new Map(
-    groupSum(cube, 'race', 'n_stopped', {
-      ...filterOpts,
-      violationCategory: VIOLATION_CATEGORIES_OPERATIONAL,
-    }).map(g => [g.key, g.value]),
-  )
 
   const xAxis = 'Race'
   const yAxis = 'Percentage (%)'
-  const data = RACE_ORDER.filter(r => stopsByRace.has(r)).map(r => {
-    const total = stopsByRace.get(r) ?? 0
-    const op = opStopsByRace.get(r) ?? 0
-    const pctVal = total ? Math.round((1000 * op) / total) / 10 : 0
-    return {
-      group: null,
-      [xAxis]: r,
-      [yAxis]: pctVal,
-      annotation: null,
-      hover_text: [r, `${pctVal}% of traffic stops for operational violations`, ''],
-    }
-  })
+  const data = operationalShareByRace(cube, q1Year.value).map(({ race, pct: pctVal }) => ({
+    group: null,
+    [xAxis]: race,
+    [yAxis]: pctVal,
+    annotation: null,
+    hover_text: [race, `${pctVal}% of traffic stops for operational violations`, ''],
+  }))
 
   return {
     text: [],

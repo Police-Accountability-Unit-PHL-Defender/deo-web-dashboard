@@ -320,6 +320,36 @@ export function locationDistrict(loc: string): string {
 }
 
 /**
+ * Which calendar years are fully populated in this cube, i.e. have all
+ * four quarters present as distinct `quarter` dimension values.
+ *
+ * This is a property of the data, not of the wall clock: a year with
+ * fewer than four quarters in the cube is incomplete regardless of what
+ * `mostRecentQuarter` (which is derived from `new Date()`, see
+ * plugins/mostRecentQuarter.js) claims. Callers that also need to cap
+ * "most recent" by a pinned quarter (for the e2e parity harness) should
+ * combine this with that separately.
+ */
+export function completeYears(cube: Cube): Set<number> {
+  const quarterIdx = cube.dimensions.indexOf('quarter')
+  if (quarterIdx === -1) throw new Error('cube missing quarter dimension')
+  const quartersByYear = new Map<number, Set<string>>()
+  for (const row of cube.rows) {
+    const quarter = String(row[quarterIdx] ?? '')
+    if (!quarter) continue
+    const year = Number(quarter.slice(0, 4))
+    const set = quartersByYear.get(year) ?? new Set<string>()
+    set.add(quarter)
+    quartersByYear.set(year, set)
+  }
+  const complete = new Set<number>()
+  for (const [year, quarters] of quartersByYear) {
+    if (quarters.size === 4) complete.add(year)
+  }
+  return complete
+}
+
+/**
  * Group rows by district and sum a measure. Identical semantics to
  * `groupSum(cube, 'districtoccur', ...)` from the old FastAPI code,
  * but driven by the cube's `location` dimension.
