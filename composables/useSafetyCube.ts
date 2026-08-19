@@ -1,3 +1,4 @@
+import { markRaw } from 'vue'
 /**
  * Fetch the safety cube (static JSON, shipped from `public/cubes`).
  *
@@ -50,7 +51,7 @@ export function useSafetyCube() {
     'safety-cube',
     async () => {
       const cube = await $fetch<SafetyCube>('/cubes/safety.json')
-      return { cube }
+      return markRaw({ cube })
     },
     { server: false, lazy: true },
   )
