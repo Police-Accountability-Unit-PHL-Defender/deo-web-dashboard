@@ -99,7 +99,11 @@ export const CHECKS = [
       if (!text.includes('When Philadelphia police gave a reason, how often did police stop drivers for operational'))
         return 'operational trend heading is missing or reworded'
       if (!text.includes('Nonoperational violations')) return 'legend is missing "Nonoperational violations"'
-      if (/Non-operational/.test(text)) return 'found hyphenated "Non-operational"; the published spelling is "Nonoperational"'
+      // Case-insensitive: this check was written against "Non-operational" and
+      // sat green while the chart title said "Non-Operational" and a hover
+      // label said "non-operational". A spelling guard that only catches one
+      // capitalisation of the misspelling is not a guard.
+      if (/non-operational/i.test(text)) return 'found hyphenated "Non-operational"; the published spelling is "Nonoperational"'
       return true
     },
   },

@@ -154,7 +154,13 @@
             </Graph>
           </Answer>
           <HorizontalLine class="my-4 md:my-12"/>
-          <div v-if="disparitySentence" class="result-text max-w-3xl" v-html="disparitySentence"></div>
+          <AnswerText v-if="disparitySentence">
+            <!-- AnswerText, not a bare div: it carries the width and leading every
+                 other sentence on this page gets. The max-w-3xl this used to set
+                 is 768px against AnswerText's 951px, which wrapped the first line
+                 early and made the sentence look indented. -->
+            <div class="result-text" v-html="disparitySentence"></div>
+          </AnswerText>
         </section>
         <HorizontalLine class="my-4 md:my-12"/>
         <section>
