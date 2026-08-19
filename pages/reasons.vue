@@ -106,7 +106,7 @@
         <HorizontalLine class="my-4 md:my-12"/>
         <section>
           <QuestionHeader>
-            <h3>Are there racial disparities<Tooltip term="Disparity"/> in Philadelphia police traffic stops for operational<Tooltip term="Operational"/> violations? Out of all traffic stops, how often did police stop people of different races for operational violations in <span class="whitespace-nowrap"><SelectYear v-model="q1Year"/>?</span></h3>
+            <h3>Are there racial disparities<Tooltip term="Disparity"/> in Philadelphia police traffic stops for operational<Tooltip term="Operational"/> violations? When Philadelphia police gave a reason, how often did police stop people of different races for operational violations in <span class="whitespace-nowrap"><SelectYear v-model="q1Year"/>?</span></h3>
           </QuestionHeader>
           <Answer v-if="q4" :arrow="true">
             <Graph :graph-data="q4.figures.barplot.data" :axis-properties="{x: q4.figures.barplot.properties.xAxis, y: q4.figures.barplot.properties.yAxis}" :y-scale-domain-max="100">
@@ -462,7 +462,7 @@ const q4 = computed(() => {
     [xAxis]: race,
     [yAxis]: pctVal,
     annotation: null,
-    hover_text: [race, `${pctVal}% of traffic stops for operational violations`, ''],
+    hover_text: [race, `${pctVal}% of stops with a recorded reason were for operational violations`, ''],
   }))
 
   return {

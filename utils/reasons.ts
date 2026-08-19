@@ -1,4 +1,4 @@
-import { completeYears, groupSum, groupTupleSum, VIOLATION_CATEGORIES_OPERATIONAL, type Cube } from './cube'
+import { completeYears, groupTupleSum, VIOLATION_CATEGORIES_OPERATIONAL, type Cube } from './cube'
 
 /** Driving Equality took effect 2022-03-03; the trend series starts there. */
 const FIRST_TREND_YEAR = 2022
@@ -16,28 +16,44 @@ export function operationalShareByRace(cube: Cube, year: number): OperationalSha
     endQuarter: `${year}-Q4`,
   }
 
-  // Denominator: every stop, including those whose violation_category is
-  // `None` or `Other`. Both are non-operational and so belong in the
-  // denominator but not the numerator. `None` in particular is not missing
-  // data — see the note in reasons.test.ts. Do not "align" this with the
-  // reason-comparison charts, which drop both categories because they plot
-  // one bar per category; here the categories are being aggregated, and
-  // dropping them would inflate the operational share.
-  const stopsByRace = new Map(
-    groupSum(cube, 'race', 'n_stopped', filterOpts).map((g) => [g.key, g.value]),
-  )
+  // Denominator: stops carrying a recorded violation_category. `None` means no
+  // MVC code was recorded, so it is excluded — this chart is framed "when
+  // Philadelphia police gave a reason", the same rule as operationalShareByYear
+  // below. `Other` IS a recorded reason and stays in: non-operational, in the
+  // denominator but not the numerator.
+  //
+  // This is not free, and the cost falls unevenly. `None` is not missing data:
+  // PPD stopped coding tint stops in 2023, so those real nonoperational stops
+  // moved into `None`, and Black drivers carry the largest share of them.
+  // Excluding them lifts every race and narrows the gap — 2025 Black 44.8% ->
+  // 54.5%, White-Black 19.0pt -> 16.7pt. Putting `None` back is a change to a
+  // published claim, not a cleanup; reasons.test.ts pins both the rule and the
+  // figures.
+  //
+  // Note the two reason-comparison charts at the top of the page drop `Other`
+  // as well, because there each category is its own bar and `Other` is not a
+  // meaningful one. Here the categories are aggregated, so it stays.
+  //
+  // One pass, not three. Selecting "every category except None" is not
+  // expressible in the cube filter, and doing it as total-minus-None cost a
+  // second full scan — enough to put this page's first render over its load
+  // budget on its own. Grouping by the pair and bucketing here reads the rows
+  // once, the same shape operationalShareByYear uses.
+  const operational = new Set(VIOLATION_CATEGORIES_OPERATIONAL)
+  const totals = new Map<string, { op: number; withReason: number }>()
 
-  const opStopsByRace = new Map(
-    groupSum(cube, 'race', 'n_stopped', {
-      ...filterOpts,
-      violationCategory: VIOLATION_CATEGORIES_OPERATIONAL,
-    }).map((g) => [g.key, g.value]),
-  )
+  for (const { keys, value } of groupTupleSum(cube, ['race', 'violation_category'], 'n_stopped', filterOpts)) {
+    const [race, violationCategory] = keys
+    if (violationCategory === 'None') continue
+    const bucket = totals.get(race) ?? { op: 0, withReason: 0 }
+    bucket.withReason += value
+    if (operational.has(violationCategory)) bucket.op += value
+    totals.set(race, bucket)
+  }
 
-  return RACE_ORDER.filter((r) => stopsByRace.has(r)).map((race) => {
-    const total = stopsByRace.get(race) ?? 0
-    const op = opStopsByRace.get(race) ?? 0
-    return { race, pct: total ? Math.round((1000 * op) / total) / 10 : 0 }
+  return RACE_ORDER.filter((r) => totals.has(r)).map((race) => {
+    const { op, withReason } = totals.get(race)!
+    return { race, pct: withReason ? Math.round((1000 * op) / withReason) / 10 : 0 }
   })
 }
 

@@ -108,6 +108,25 @@ export const CHECKS = [
     },
   },
   {
+    // The by-race bars joined the trend line's denominator in 2026-08, so every
+    // question on this page now promises "when Philadelphia police gave a
+    // reason". This guards the wording half of that only: the bar values never
+    // reach the DOM as text -- they are bar heights and hover labels, and this
+    // assert only ever sees rendered text -- so the figures themselves are
+    // pinned in utils/reasons.test.ts (Black 2025 at 54.5%, which is 44.8% if
+    // `None` returns to the denominator). Between them the claim and the number
+    // cannot drift apart unnoticed.
+    name: 'by-race operational question keeps the recorded-reason framing',
+    pages: ['reasons'],
+    assert: ({ text }) => {
+      if (!text.includes('When Philadelphia police gave a reason, how often did police stop people of different races'))
+        return 'by-race question is missing or reworded away from the recorded-reason framing'
+      if (/Out of all traffic stops/.test(text))
+        return 'by-race question still claims the all-stops denominator'
+      return true
+    },
+  },
+  {
     name: 'operational trend chart covers 2022 onward, complete years only',
     pages: ['reasons'],
     assert: ({ text }) => {

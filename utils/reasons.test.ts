@@ -19,24 +19,31 @@ const syntheticCube = (rows: Array<[string, string, string, string, number]>): C
 })
 
 describe('operationalShareByRace', () => {
-  // `None` means the stop carries no MVC violation code. It is NOT missing
-  // data: PPD has miscoded tint stops since 2023 by omitting the code, so the
-  // Tint category collapses (4,589 stops in 2022-Q4 to 0 by 2025-Q4) while
-  // `None` absorbs almost exactly the same volume. Tint is a non-operational
-  // violation, so these stops belong in the denominator and out of the
-  // numerator — which is precisely how a non-operational stop is counted.
-  // Dropping them instead would inflate the operational share, most of all for
-  // Black drivers, who carry the largest share of them. See reasons.vue:51 and
-  // the Defender's Bailey analysis.
-  it('counts stops with no violation code as non-operational, not as missing', () => {
+  // `None` means the stop carries no MVC violation code, so this chart drops
+  // it: since 2026-08 the heading reads "when Philadelphia police gave a
+  // reason", the same framing and the same rule as the trend chart above it.
+  //
+  // Know what that costs before touching it. `None` is not missing data — PPD
+  // has miscoded tint stops since 2023 by omitting the code, so Tint collapses
+  // (4,589 stops in 2022-Q4 to 0 by 2025-Q4) while `None` absorbs almost the
+  // same volume. Those are real nonoperational stops, and Black drivers carry
+  // the largest share of them, so excluding them raises every race's
+  // operational share and narrows the disparity: 2025 Black goes 44.8% -> 54.5%
+  // and the White-Black gap 19.0pt -> 16.7pt. That was a deliberate call, not a
+  // cleanup. Putting `None` back is a change to a published claim.
+  it('excludes stops with no violation code from the denominator', () => {
     const c = syntheticCube([
       ['2025-Q1', '01', 'Black', 'Red Light/Stop Sign/Yield', 1],
       ['2025-Q1', '01', 'Black', 'None', 1],
     ])
-    expect(pctForCube(c, 2025, 'Black')).toBe(50)
+    // One operational stop out of one stop carrying a reason.
+    expect(pctForCube(c, 2025, 'Black')).toBe(100)
   })
 
-  it('counts Other as non-operational too', () => {
+  // `Other` IS a recorded reason, so unlike `None` it stays in the denominator
+  // — matching the trend chart, and unlike the two reason-comparison charts at
+  // the top of the page, which drop it only because it is not a meaningful bar.
+  it('counts Other as non-operational, keeping it in the denominator', () => {
     const c = syntheticCube([
       ['2025-Q1', '01', 'Black', 'Red Light/Stop Sign/Yield', 1],
       ['2025-Q1', '01', 'Black', 'Other', 1],
@@ -54,17 +61,17 @@ describe('operationalShareByRace', () => {
   })
 
   it('reproduces the published figures for 2025', () => {
-    expect(pctFor(2025, 'Black')).toBe(44.8)
-    expect(pctFor(2025, 'White')).toBe(63.8)
-    expect(pctFor(2025, 'Latino')).toBe(46.2)
-    expect(pctFor(2025, 'Asian')).toBe(70.5)
+    expect(pctFor(2025, 'Black')).toBe(54.5)
+    expect(pctFor(2025, 'White')).toBe(71.2)
+    expect(pctFor(2025, 'Latino')).toBe(56.2)
+    expect(pctFor(2025, 'Asian')).toBe(75.7)
   })
 
   it('reproduces the published figures for earlier years', () => {
-    expect(pctFor(2022, 'Black')).toBe(42.7)
-    expect(pctFor(2022, 'White')).toBe(63.8)
-    expect(pctFor(2023, 'Black')).toBe(48.8)
-    expect(pctFor(2024, 'Black')).toBe(49.5)
+    expect(pctFor(2022, 'Black')).toBe(45.9)
+    expect(pctFor(2022, 'White')).toBe(70.1)
+    expect(pctFor(2023, 'Black')).toBe(60.5)
+    expect(pctFor(2024, 'Black')).toBe(60.3)
   })
 
   it('confines each year to its own four quarters', () => {
