@@ -165,11 +165,28 @@ its quarters are present in the cube. `mostRecentQuarter` still *caps* which
 year may be published, which is what keeps `--quarter` pinning meaningful — the
 two are a floor and a ceiling, not alternatives.
 
-`operationalShareByYear` is the live consumer: it publishes 2022 through the
-last year the cube completes, so one missed quarterly refresh across a year
-boundary would otherwise put a half-year on the chart as a settled point, with
-every test and e2e check still green. Its tests pin that, including a case where
-the clock is pinned past a half-populated year; don't "simplify" them back.
+`operationalShareByYear` is the live consumer, and it does not drop short years
+— it draws them. The series runs 2022 through the pinned quarter's year, and any
+year the cube is missing quarters for is flagged `incomplete`, which makes
+LineGraph dash the segment into it and the hover read "(partial year)". The
+current trailing point is 2026, on Q1 and Q2 only.
+
+The hazard is unchanged and the flag is now the whole of the protection: one
+missed quarterly refresh across a year boundary would otherwise put a half-year
+on the chart as a settled point, with every test and e2e check still green. So
+`incomplete` must keep coming from `completeYears()`, never from the clock — if
+the clock runs ahead of the data, the year is still short and must still dash.
+The tests pin exactly that, including a case where the clock is pinned past a
+half-populated year and the point must appear dashed rather than solid. Do not
+"simplify" them back, and do not restore the old behaviour of hiding partial
+years: the dashed point is the requested design, the flag is what makes it
+honest.
+
+`mostRecentQuarter` remains the ceiling. Pinning back with `--quarter` drops
+later years outright rather than dashing them, and quarters past the pin are not
+counted inside the trailing year either — otherwise a pinned build's last point
+would drift as new data landed, and the e2e parity comparison would be
+meaningless.
 
 The Neighborhoods disparity sentence used to share this hazard, choosing a
 "most recent complete year" itself. Since 2026-08 it takes the quarter range

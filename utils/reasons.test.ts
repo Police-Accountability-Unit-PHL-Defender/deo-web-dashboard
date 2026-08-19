@@ -101,14 +101,13 @@ describe('operationalShareByYear', () => {
   // particular) are excluded. `operationalShareByRace` below it uses the same
   // rule, as do the two reason-comparison charts at the top — one denominator
   // across the page.
-  it('starts at 2022 and covers only complete years, ascending', () => {
+  it('starts at 2022, runs to the trailing partial year, ascending', () => {
     const years = series.map((r) => r.year)
     expect(years[0]).toBe(2022)
     expect(years).toEqual([...years].sort((a, b) => a - b))
     expect(new Set(years).size).toBe(years.length)
-    // 2026 has only Q1 and Q2 in the cube, so it must not appear.
-    expect(years).not.toContain(2026)
-    expect(years[years.length - 1]).toBe(2025)
+    // 2026 holds only Q1 and Q2, and it appears — dashed, as a partial year.
+    expect(years[years.length - 1]).toBe(2026)
   })
 
   it('divides by stops that name a reason, not by all stops', () => {
@@ -147,14 +146,50 @@ describe('operationalShareByYear', () => {
     }
   })
 
-  it('reports no partial years, since only complete ones are included', () => {
-    expect(series.every((r) => r.incomplete === false)).toBe(true)
+  // The hazard these four guard is one the old series avoided by dropping
+  // partial years outright: a half-year drawn as a settled point, with every
+  // test still green. Showing it is now allowed; showing it *unmarked* is not.
+  // `incomplete` is what makes the line dash and the hover say "(partial
+  // year)", so it is the whole of the protection.
+  it('flags exactly the years the cube has fewer than four quarters for', () => {
+    expect(series.filter((r) => r.incomplete).map((r) => r.year)).toEqual([2026])
+    for (const row of series.filter((r) => r.year <= 2025)) {
+      expect(row.incomplete).toBe(false)
+    }
   })
 
-  it('does not let the clock add an incomplete year', () => {
-    // 2026 has two quarters in the cube. Pinning the clock past it must not
-    // pull it into the series.
+  it('publishes the partial year from the quarters it actually has', () => {
+    // 2026-Q1 and Q2 only; 66.1% is that half-year, not a projection of it.
+    expect(yearOf(2026)?.operational).toBe(66.1)
+    expect(yearOf(2026)?.incomplete).toBe(true)
+  })
+
+  it('never lets the clock turn a partial year into a settled one', () => {
+    // The clock says 2026 is over; the cube still holds two quarters. The year
+    // may appear, but only ever dashed. This is the trap that let a missed
+    // quarterly refresh publish six months as a full year.
     const pinnedPast = operationalShareByYear(cube, '2026-Q4')
-    expect(pinnedPast.map((r) => r.year)).not.toContain(2026)
+    expect(pinnedPast.find((r) => r.year === 2026)?.incomplete).toBe(true)
+  })
+
+  it('drops years after the pinned quarter entirely', () => {
+    // Pinning back to 2025-Q4 must not show 2026 at all, dashed or otherwise —
+    // this is what makes `--quarter` pinning meaningful for the e2e harness.
+    const pinnedBack = operationalShareByYear(cube, '2025-Q4')
+    expect(pinnedBack.map((r) => r.year)).not.toContain(2026)
+    expect(pinnedBack[pinnedBack.length - 1].year).toBe(2025)
+    expect(pinnedBack.every((r) => r.incomplete === false)).toBe(true)
+  })
+
+  it('counts only quarters up to the pinned one within the partial year', () => {
+    const c = syntheticCube([
+      ['2026-Q1', '01', 'Black', 'Red Light/Stop Sign/Yield', 1],
+      ['2026-Q2', '01', 'Black', 'Lights', 99],
+    ])
+    // Pinned at Q1: the 99 nonoperational stops in Q2 are past the pin and
+    // must not drag the point down.
+    const atQ1 = operationalShareByYear(c, '2026-Q1').find((r) => r.year === 2026)
+    expect(atQ1?.operational).toBe(100)
+    expect(atQ1?.incomplete).toBe(true)
   })
 })

@@ -136,15 +136,20 @@ export const CHECKS = [
     },
   },
   {
-    name: 'operational trend chart covers 2022 onward, complete years only',
+    name: 'operational trend chart covers 2022 through the partial year',
     pages: ['reasons'],
-    assert: ({ text }) => {
+    assert: ({ text, quarter }) => {
       // Axis ticks appear as bare years in the rendered text.
       const block = /how often did police stop drivers for operational[\s\S]{0,3000}/.exec(text)
       if (!block) return 'could not locate the trend chart'
       const years = [...block[0].matchAll(/\b(20\d\d)\b/g)].map((m) => Number(m[1]))
       if (!years.includes(2022)) return 'trend chart does not start at 2022'
       if (years.includes(2021) || years.includes(2014)) return 'trend chart still shows years before 2022'
+      // The series runs to the pinned quarter's year, including it when it is
+      // only part-published — that trailing point is the dashed segment. If it
+      // stops short, the partial year has been dropped rather than dashed.
+      const pinnedYear = Number(String(quarter).slice(0, 4))
+      if (!years.includes(pinnedYear)) return `trend chart stops before ${pinnedYear}; the partial year is missing its dashed point`
       return true
     },
   },

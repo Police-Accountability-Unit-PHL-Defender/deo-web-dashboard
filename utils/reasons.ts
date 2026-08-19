@@ -73,8 +73,8 @@ export interface YearShare {
 /**
  * Share of traffic stops made for operational violations, by calendar year.
  *
- * Denominator is every stop. See the note in reasons.test.ts for why `None`
- * and `Other` stay in: they are non-operational stops, not missing data.
+ * Denominator is stops that name a reason — see CATEGORIES_WITHOUT_A_REASON.
+ * `None` and `Other` are both excluded.
  *
  * A year is `incomplete` when the cube does not yet contain all four of its
  * quarters — a fact about the data, not the wall clock. `mostRecentQuarter`
@@ -95,6 +95,10 @@ export function operationalShareByYear(cube: Cube, mostRecentQuarter: string): Y
     // 52.9/70.0/70.9/67.6 and steepened the 2022->2025 rise from +8.2 to
     // +14.7 points.
     if (CATEGORIES_WITHOUT_A_REASON.has(violationCategory)) continue
+    // Nothing past the pinned quarter counts. Without this the trailing
+    // partial point would move as new data landed even when `--quarter` was
+    // pinned, which is exactly what pinning exists to prevent.
+    if (quarter > mostRecentQuarter) continue
     const year = Number(quarter.slice(0, 4))
     const bucket = totals.get(year) ?? { op: 0, withReason: 0 }
     bucket.withReason += value
@@ -103,15 +107,24 @@ export function operationalShareByYear(cube: Cube, mostRecentQuarter: string): Y
   }
 
   // Driving Equality took effect in March 2022, so the series starts there.
-  // The upper bound is the last year the cube holds all four quarters for, and
-  // moves on its own as data arrives — completeness is a fact about the cube,
-  // never about the clock (see completeYears).
+  //
+  // The series runs to the pinned quarter's year and no further: pinning back
+  // with `--quarter` must drop later years outright, or the e2e parity harness
+  // cannot compare a local build against production.
+  //
+  // Within that range a year is published whether or not the cube holds all
+  // four of its quarters, but a year the cube is missing quarters for is
+  // flagged `incomplete`, which is what makes LineGraph dash the segment into
+  // it and the hover read "(partial year)". Completeness is read from the cube
+  // via completeYears, never inferred from the clock — if the clock runs a
+  // quarter ahead of the data, the year is still short and still dashes. The
+  // failure being guarded is a half-year drawn as a settled point; drawing it
+  // as visibly provisional is the whole point of the dashed segment.
   const complete = completeYears(cube)
   const trailingYear = Number(mostRecentQuarter.slice(0, 4))
-  const capYear = mostRecentQuarter.endsWith('Q4') ? trailingYear : trailingYear - 1
 
   return [...totals.keys()]
-    .filter((year) => year >= FIRST_TREND_YEAR && year <= capYear && complete.has(year))
+    .filter((year) => year >= FIRST_TREND_YEAR && year <= trailingYear)
     .sort((a, b) => a - b)
     .map((year) => {
       const { op, withReason } = totals.get(year)!
@@ -120,9 +133,7 @@ export function operationalShareByYear(cube: Cube, mostRecentQuarter: string): Y
         year,
         operational: pct,
         nonOperational: Math.round((100 - pct) * 10) / 10,
-        // Every year in this series is complete by construction; the field
-        // stays because LineGraph reads it to dash a provisional segment.
-        incomplete: false,
+        incomplete: !complete.has(year),
       }
     })
 }
