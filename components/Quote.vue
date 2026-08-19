@@ -12,7 +12,7 @@
             </div>
             <div class="text-center font-medium mt-2">—{{ props.author }}</div>
             <div class="flex justify-center md:justify-end mt-1">
-              <a class="text-primary-600 flex items-center" :href="props.source" target="_blank">
+              <a class="text-primary-600 flex items-center cursor-pointer" :href="props.source" target="_blank" rel="noopener noreferrer">
                 <IconsLinkExternal class="inline mr-1 w-[16px] -mt-[2px] md:-mt-[1px]"/>
                 <span class="underline text-cta-1">SOURCE</span>
               </a>

@@ -55,16 +55,22 @@ const geoAggregations = {
   },
 };
 
+/**
+ * The selection label for a map feature, e.g. "District 14".
+ *
+ * Shared by the click handler and the DOM annotation below so the two can
+ * never drift apart.
+ */
+function featureNameFor(featureProperties) {
+  if (!featureProperties) return 'Philadelphia';
+  if (featureProperties.DIST_NUM) return `District ${featureProperties.DIST_NUM}`;
+  if (featureProperties.DIV_NAME) return `Division ${featureProperties.DIV_NAME}`;
+  if (featureProperties.PSA_NUM) return `PSA ${featureProperties.PSA_NUM}`;
+  return 'Philadelphia';
+}
+
 function updateSelectedFeature(featureProperties) {
-  let featureName = 'Philadelphia';
-  if (featureProperties.DIST_NUM) {
-    featureName = `District ${featureProperties.DIST_NUM}`
-  } else if (featureProperties.DIV_NAME) {
-    featureName = `Division ${featureProperties.DIV_NAME}`
-  } else if (featureProperties.PSA_NUM) {
-    featureName = `PSA ${featureProperties.PSA_NUM}`
-  }
-  emit("update:modelValue", featureName);
+  emit("update:modelValue", featureNameFor(featureProperties));
 }
 
 let L = {};
@@ -254,6 +260,16 @@ function addGeojsonUrlLayer(geojsonLayerProperties) {
         }
         layer.on({
           click: zoomAndHighlightFeatureFromClick,
+        });
+        // Label the rendered path with the region it selects. The polygons
+        // carried no identifying attributes, so neither a test nor a screen
+        // reader could tell which of the 21 districts a shape was.
+        layer.on('add', () => {
+          const el = typeof layer.getElement === 'function' ? layer.getElement() : null;
+          if (!el) return;
+          const name = featureNameFor(feature.properties);
+          el.setAttribute('data-region', name);
+          el.setAttribute('aria-label', name);
         });
       }
     });
