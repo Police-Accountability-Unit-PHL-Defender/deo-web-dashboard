@@ -165,38 +165,58 @@ its quarters are present in the cube. `mostRecentQuarter` still *caps* which
 year may be published, which is what keeps `--quarter` pinning meaningful — the
 two are a floor and a ceiling, not alternatives.
 
-`operationalShareByYear` is the live consumer: it publishes 2022 through the
-last year the cube completes, so one missed quarterly refresh across a year
-boundary would otherwise put a half-year on the chart as a settled point, with
-every test and e2e check still green. Its tests pin that, including a case where
-the clock is pinned past a half-populated year; don't "simplify" them back.
+`operationalShareByYear` is the live consumer, and it does not drop short years
+— it draws them. The series runs 2022 through the pinned quarter's year, and any
+year the cube is missing quarters for is flagged `incomplete`, which makes
+LineGraph dash the segment into it and the hover read "(partial year)". The
+current trailing point is 2026, on Q1 and Q2 only.
+
+The hazard is unchanged and the flag is now the whole of the protection: one
+missed quarterly refresh across a year boundary would otherwise put a half-year
+on the chart as a settled point, with every test and e2e check still green. So
+`incomplete` must keep coming from `completeYears()`, never from the clock — if
+the clock runs ahead of the data, the year is still short and must still dash.
+The tests pin exactly that, including a case where the clock is pinned past a
+half-populated year and the point must appear dashed rather than solid. Do not
+"simplify" them back, and do not restore the old behaviour of hiding partial
+years: the dashed point is the requested design, the flag is what makes it
+honest.
+
+`mostRecentQuarter` remains the ceiling. Pinning back with `--quarter` drops
+later years outright rather than dashing them, and quarters past the pin are not
+counted inside the trailing year either — otherwise a pinned build's last point
+would drift as new data landed, and the e2e parity comparison would be
+meaningless.
 
 The Neighborhoods disparity sentence used to share this hazard, choosing a
 "most recent complete year" itself. Since 2026-08 it takes the quarter range
 from the page's selectors instead, so there is no year for it to get wrong — if
 you ever give it back a self-chosen period, the clock trap returns with it.
 
-**`None` is not missing data, and the two Reasons charts divide by different
-things on purpose.** In `reasons.json`, `violation_category` of `None` means no
-MVC code was recorded. It is not absent data: PPD stopped coding tint stops in
+**Every Reasons chart divides by stops that name a reason.** Two categories
+name none. `None` means no MVC code was recorded at all. `Other` means a code
+was recorded that says nothing in particular. Every question on the page is
+framed "when Philadelphia police gave a reason", so both are out of every
+denominator — `CATEGORIES_WITHOUT_A_REASON` in `utils/reasons.ts` is the single
+definition, and all four charts go through it.
+
+Neither is missing data, and that is the point. PPD stopped coding tint stops in
 2023, so `Tint` falls to zero while `None` absorbs almost the same volume,
-growing from 7,691 stops in 2022 to 28,518 in 2025.
+growing from 7,691 stops in 2022 to 28,518 in 2025; `Other` grew from 3,838 to
+18,967 over the same period. Those are real nonoperational stops, and Black
+drivers carry the largest share of them, so excluding them lifts every race and
+narrows every gap. Know the size of it before touching either rule:
 
-- **`operationalShareByRace`** (the by-race bars) is framed "out of all traffic
-  stops" and keeps `None` in the denominator. Those are real nonoperational
-  stops; dropping them inflates the operational share, most for Black drivers,
-  who carry the largest share of them.
-- **`operationalShareByYear`** (the trend line) is framed "when Philadelphia
-  police gave a reason", so it divides by stops carrying a recorded category and
-  excludes `None`. `Other` is a recorded reason and stays in.
+- **`operationalShareByRace`** (2025): Black 44.8% → 63.6%, White 63.8% → 76.9%,
+  and the White-Black gap 19.0 → 13.3 points.
+- **`operationalShareByYear`**: the series went 50.8/65.0/64.5/59.0 with both in
+  to 52.9/70.0/70.9/67.6 with both out, steepening the 2022→2025 rise from +2.5
+  points (original all-stops denominator) to +14.7.
 
-That difference was chosen deliberately in 2026-08, with the wording of each
-heading stating its own denominator. Know the cost before touching either: on
-the trend chart, excluding `None` moves 2025 from 49.5% to 59.0% and steepens
-the 2022→2025 rise from +2.5 to +8.2 points, and a good part of that steepening
-is tint stops leaving the denominator rather than enforcement shifting. Do not
-"make the two charts consistent" by changing one — that is a change to a
-published claim, not a cleanup. `utils/reasons.test.ts` pins both rules.
+A good part of that steepening is tint stops leaving the denominator rather than
+enforcement shifting. Putting either category back is a change to a published
+claim, not a cleanup. `utils/reasons.test.ts` pins the rules and the figures;
+the e2e check guards the headings, which state the denominator in words.
 
 ---
 

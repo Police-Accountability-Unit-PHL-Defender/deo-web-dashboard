@@ -140,6 +140,15 @@
               <h4>{{ q3A.figures.barplot.properties.title }}</h4>
             </Graph>
           </Answer>
+          <!-- Reads as the finding drawn from the graph immediately above, so it
+               sits between that graph and the next question rather than at the
+               end of the section. AnswerText carries the width and leading the
+               other sentences on this page get; a bare div here was 768px
+               against its 951px and wrapped the first line early. -->
+          <AnswerText v-if="disparitySentence">
+            <div class="result-text font-medium" v-html="disparitySentence"></div>
+          </AnswerText>
+          <HorizontalLine class="my-4 md:my-12"/>
           <QuestionHeader>
             <h3>
               During this time period, what was the intrusion rate<Tooltip term="Intrusion rate"/> and contraband hit rate<Tooltip term="Contraband hit rate"/> across districts?
@@ -153,8 +162,6 @@
               <h4>{{ q3A.figures.barplot3.properties.title }}</h4>
             </Graph>
           </Answer>
-          <HorizontalLine class="my-4 md:my-12"/>
-          <div v-if="disparitySentence" class="result-text max-w-3xl" v-html="disparitySentence"></div>
         </section>
         <HorizontalLine class="my-4 md:my-12"/>
         <section>

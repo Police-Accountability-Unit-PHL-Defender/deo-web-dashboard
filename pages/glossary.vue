@@ -34,7 +34,7 @@
           <dt>MVC</dt>
           <dd>Pennsylvania Motor Vehicle Code. See Title 75 Pa.C.S.A.</dd>
           <dt>Nonoperational</dt>
-          <dd>This dashboard defines non-operational violations as those MVC violations that are not the result of the manner of operating the vehicle. Examples include window tint, a broken tail light, or expired inspection or registration.</dd>
+          <dd>This dashboard defines nonoperational violations as those MVC violations that are not the result of the manner of operating the vehicle. Examples include window tint, a broken tail light, or expired inspection or registration.</dd>
           <dt>Operational</dt>
           <dd>This dashboard defines operational violations as those MVC violations that occur based on the manner in which a vehicle is operated. Examples include failure to obey a traffic signal, illegal passing of another vehicle, or speeding.</dd>
           <dt>PPD</dt>
