@@ -225,7 +225,7 @@ const q1 = computed(() => {
       hover_text: [
         `${r} drivers`,
         vc,
-        `${pctVal.toFixed(1)}% of traffic stops`,
+        `${pctVal.toFixed(1)}% of traffic stops with a stated reason`,
         `${value.toLocaleString()} traffic stops`,
         '',
       ],
@@ -317,7 +317,7 @@ const q2 = computed(() => {
       hover_text: [
         labels[majority],
         vc,
-        `${pctVal.toFixed(1)}% of traffic stops`,
+        `${pctVal.toFixed(1)}% of traffic stops with a stated reason`,
         `${n.toLocaleString()} traffic stops`,
         '',
       ],
@@ -437,7 +437,7 @@ const q3b = computed(() => {
         properties: {
           xAxis,
           yAxis,
-          title: 'Share of PPD Traffic Stops With a Stated Reason: Operational vs. Nonoperational Violations',
+          title: 'Percent of PPD Traffic Stops With a Stated Reason Since 2022: Operational vs Nonoperational Violations',
         },
         dashedFromX: incomplete ? incomplete.year : null,
         data,
@@ -472,7 +472,7 @@ const q4 = computed(() => {
         properties: {
           xAxis,
           yAxis,
-          title: `Percentage of Stops With a Stated Reason That Were Operational, by Race, in ${year}`,
+          title: `Percent of PPD Traffic Stops With a Stated Reason Classified as Operational, by Race, in ${year}`,
         },
         trendlines: [],
         data,
