@@ -194,13 +194,6 @@ Known and deliberately deferred:
   works around it with commented `<div>`s; `reasons.vue` only avoids it by accident
   (its Tooltip paragraphs sit behind client-only `v-if`s). Fixing the component is
   site-wide and needs its own parity run.
-- **No automated test covers chart 4's thin-bin suppression.** The logic is correct
-  and was verified by reading the rendered page; a regression would reach the page.
-- **Stale `driver_is_black` references** remain in
-  `docs/superpowers/plans/2026-08-09-veil-of-darkness.md`, several inside code
-  blocks. The code is fully renamed to `party_is_black`.
-- **One sentence says "one clearly marked exception"** where there are two (the
-  cross-race model row and the placebo), both labelled.
 - **The design doc's warning block quotes a pass count from the day it was
   written.** Read any test count in the spec or the plan as a timestamp, not as a
   target -- the suite has grown several times over since, and this note has

@@ -991,8 +991,8 @@ import statsmodels.formula.api as smf
 
 # Published coefficients, for reference and for the comparison display.
 MODEL_TARGETS = {
-    "driver_is_black.model_1": -0.116,
-    "driver_is_black.model_2": -0.188,
+    "party_is_black.model_1": -0.116,
+    "party_is_black.model_2": -0.188,
     "has_black_passenger.model_1": -0.242,
     "has_black_passenger.model_2": -0.269,
 }
@@ -1047,9 +1047,9 @@ from pathlib import Path
 z = sorted(Path('data').glob('car_ped_stops_*.zip'))[-1]
 build_veil_table(z, Path('/tmp/veil_check.db'), years=[2021,2022,2023,2024])
 df = pd.read_sql('SELECT * FROM car_ped_stops_veil', sqlite3.connect('/tmp/veil_check.db'))
-df['driver_is_black'] = (df.party_race=='Black - Non-Latino').astype(int)
+df['party_is_black'] = (df.party_race=='Black - Non-Latino').astype(int)
 black = df[df.party_race=='Black - Non-Latino'].rename(columns={'group_travel':'has_black_passenger'})
-for name, data in [('driver_is_black', df), ('has_black_passenger', black)]:
+for name, data in [('party_is_black', df), ('has_black_passenger', black)]:
     for full in (False, True):
         r = fit_vod(data, name, full)
         key = f\"{name}.{r['spec']}\"
@@ -1128,7 +1128,7 @@ def test_has_rows_but_stays_small(cube):
 def test_models_block_is_present_and_complete(cube):
     models = cube["models"]
     for key in [
-        "driver_is_black.model_1", "driver_is_black.model_2",
+        "party_is_black.model_1", "party_is_black.model_2",
         "has_black_passenger.model_1", "has_black_passenger.model_2",
         "placebo_white.model_1",
     ]:
@@ -1138,12 +1138,12 @@ def test_models_block_is_present_and_complete(cube):
 
 def test_main_findings_have_the_expected_sign(cube):
     """Darkness should reduce the odds for both headline models."""
-    for key in ["driver_is_black.model_1", "has_black_passenger.model_1"]:
+    for key in ["party_is_black.model_1", "has_black_passenger.model_1"]:
         assert cube["models"][key]["coef"] < 0, key
 
 
 def test_model_2_is_flagged_as_missing_the_seasonality_weight(cube):
-    assert cube["models"]["driver_is_black.model_2"]["seasonality_weight"] is False
+    assert cube["models"]["party_is_black.model_2"]["seasonality_weight"] is False
 
 
 def test_both_lighting_states_appear(cube):
@@ -1225,7 +1225,7 @@ def _fit_all(df: pd.DataFrame) -> dict:
     models: dict = {}
 
     inter = df.copy()
-    inter["driver_is_black"] = (inter.party_race == BLACK).astype(int)
+    inter["party_is_black"] = (inter.party_race == BLACK).astype(int)
 
     black = df[df.party_race == BLACK].copy()
     black["has_black_passenger"] = black.group_travel
@@ -1234,7 +1234,7 @@ def _fit_all(df: pd.DataFrame) -> dict:
     white["has_white_passenger"] = white.group_travel
 
     jobs = [
-        ("driver_is_black", inter, "driver_is_black"),
+        ("party_is_black", inter, "party_is_black"),
         ("has_black_passenger", black, "has_black_passenger"),
         ("placebo_white", white, "has_white_passenger"),
     ]
@@ -1619,7 +1619,7 @@ Add a section rendering `groupTravelByClockBin(cube, 'Black - Non-Latino')` as t
 
 - [ ] **Step 5: Add chart 5 — model results**
 
-Render `cube.models['has_black_passenger.model_1']` and `['driver_is_black.model_1']` as odds ratios with confidence intervals derived from `coef ± 1.96 * se`, alongside `paper_coef` for comparison. Include `placebo_white.model_1` and state plainly that it is not significant, and that a null placebo is part of the evidence.
+Render `cube.models['has_black_passenger.model_1']` and `['party_is_black.model_1']` as odds ratios with confidence intervals derived from `coef ± 1.96 * se`, alongside `paper_coef` for comparison. Include `placebo_white.model_1` and state plainly that it is not significant, and that a null placebo is part of the evidence.
 
 Where any `model_2` result is shown, render the omission notice: this specification omits the Knode et al. (2024) seasonality weight, whose formula is not published in the paper.
 

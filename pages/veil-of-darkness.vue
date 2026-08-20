@@ -404,7 +404,7 @@
               <p class="text-body-4 mt-6">
                 This chart, like the one before it, is a comparison <em>across</em> races, and so carries the
                 neighborhood-profiling caveat above. Everything from here on compares young Black men with young Black
-                men, with one clearly marked exception in the model table.
+                men, with two clearly marked exceptions in the model table.
               </p>
             </AnswerText>
           </Answer>
@@ -800,11 +800,11 @@ import {
   REPLICATION_YEARS,
   frisksAndTickets,
   groupTravelByClockBin,
+  selectClockBinPairs,
   motoristsByRace,
   pctMotoristsInGroups,
   pctStopsInMajorityWhiteDistricts,
   restrictToYears,
-  type ClockBinPoint,
   type VeilCube,
   type VeilIntraracialGroup,
   type VeilIntraracialLighting,
@@ -1351,9 +1351,6 @@ const LIGHTING_LABEL: Record<string, string> = {
   dark: 'After dark',
 }
 
-/** Both sides of the veil. A bin missing either one is not a comparison. */
-const LIGHTING_STATES = ['daylight', 'dark'] as const
-
 /**
  * Minimum stops in BOTH lighting states for a clock bin to be plotted.
  *
@@ -1375,53 +1372,24 @@ const chart4 = computed(() => {
   const yAxis = 'Percentage (%)'
   const points = groupTravelByClockBin(c, BLACK)
 
-  // Group by clock bin so a bin is kept or dropped as a pair: half a pair
-  // would read as a missing comparison rather than a thin one.
-  const bins = new Map<number, ClockBinPoint[]>()
-  for (const p of points) {
-    const existing = bins.get(p.clockBin)
-    if (existing) existing.push(p)
-    else bins.set(p.clockBin, [p])
-  }
+  // Which bins are comparisons at all, and which are too thin to draw, lives
+  // in selectClockBinPairs so it can be tested — including the case where a
+  // clock time appears in only one lighting state, which a thickness check
+  // alone reads as fine. utils/veil.test.ts pins it.
+  const { kept, suppressed: dropped, daylightHigherBins } = selectClockBinPairs(points, MIN_BIN_STOPS)
 
-  // A bin is only a veil-of-darkness comparison if BOTH lighting states are
-  // present and both are thick enough. Testing thickness alone is not
-  // sufficient: `Array.prototype.every` is vacuously true for a
-  // single-element array, so a clock time observed in only one lighting
-  // state would have been kept, drawn as a lone unpaired bar, counted in
-  // `shownBins` and — having no counterpart to beat — never counted in
-  // `daylightHigherBins`, quietly deflating the "12 of the 13 bins"
-  // sentence. No such bin exists in the current cube; this closes the case
-  // rather than relying on that staying true.
-  const lightWord = (p: ClockBinPoint) => (p.lighting === 'dark' ? 'after dark' : 'in daylight')
+  const lightWord = (lighting: string) => (lighting === 'dark' ? 'after dark' : 'in daylight')
 
-  const kept: ClockBinPoint[][] = []
-  // One entry per DROPPED clock time, carrying the reason it was dropped.
-  // Per-bin rather than per-bar, because a bin dropped for thinness still
-  // has a well-populated half, and describing that half as unpaired would be
-  // wrong.
-  const suppressed: string[] = []
-  for (const [bin, binPoints] of [...bins.entries()].sort((a, b) => a[0] - b[0])) {
-    const missingState = LIGHTING_STATES.some(
-      (state) => !binPoints.some((p) => p.lighting === state),
-    )
-    const thin = binPoints.filter((p) => p.stops < MIN_BIN_STOPS)
-    if (!missingState && thin.length === 0) {
-      kept.push(binPoints)
-      continue
-    }
-    if (missingState) {
-      suppressed.push(
-        `${clockLabel(bin)} appears only ${binPoints.map(lightWord).join(' and ')}, with nothing to compare it against`,
-      )
-    } else {
-      suppressed.push(
-        thin
-          .map((p) => `${clockLabel(bin)} ${lightWord(p)} has only ${p.stops.toLocaleString()} stops`)
+  // One entry per DROPPED clock time. Per-bin rather than per-bar, because a
+  // bin dropped for thinness still has a well-populated half, and describing
+  // that half as unpaired would be wrong.
+  const suppressed = dropped.map((d) =>
+    d.reason === 'unpaired'
+      ? `${clockLabel(d.clockBin)} appears only ${d.present.map(lightWord).join(' and ')}, with nothing to compare it against`
+      : d.thin
+          .map((t) => `${clockLabel(d.clockBin)} ${lightWord(t.lighting)} has only ${t.stops.toLocaleString()} stops`)
           .join(' and '),
-      )
-    }
-  }
+  )
 
   const data = kept.flat().map((p) => {
     const label = LIGHTING_LABEL[p.lighting] ?? p.lighting
@@ -1439,13 +1407,6 @@ const chart4 = computed(() => {
       ],
     }
   })
-
-  // How often daylight sits above dark, among the bins actually shown.
-  const daylightHigherBins = kept.filter((binPoints) => {
-    const day = binPoints.find((p) => p.lighting === 'daylight')
-    const dark = binPoints.find((p) => p.lighting === 'dark')
-    return day !== undefined && dark !== undefined && day.pctGroupStops > dark.pctGroupStops
-  }).length
 
   return {
     xAxis,

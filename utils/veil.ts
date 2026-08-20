@@ -278,7 +278,7 @@ export function pctStopsInMajorityWhiteDistricts(
 }
 
 /** Display order for lighting states: daylight side of the veil first. */
-const LIGHT_ORDER = ['daylight', 'dark']
+export const LIGHT_ORDER = ['daylight', 'dark'] as const
 
 export interface ClockBinPoint {
   clockBin: number
@@ -328,4 +328,86 @@ export function groupTravelByClockBin(cube: VeilCube, race: string): ClockBinPoi
       pctGroupStops: e.total === 0 ? 0 : (e.grouped / e.total) * 100,
       stops: e.total,
     }))
+}
+
+/** Why a clock bin was dropped from chart 4. Prose is the caller's business. */
+export type SuppressedBin =
+  | { clockBin: number; reason: 'unpaired'; present: string[] }
+  | { clockBin: number; reason: 'thin'; thin: Array<{ lighting: string; stops: number }> }
+
+export interface ClockBinSelection {
+  /** Kept bins, ascending by clock time, each holding both lighting states. */
+  kept: ClockBinPoint[][]
+  /** Dropped bins, ascending by clock time, one entry per bin. */
+  suppressed: SuppressedBin[]
+  /** Kept bins where the daylight share exceeds the dark one. */
+  daylightHigherBins: number
+}
+
+/**
+ * Choose which clock bins chart 4 may draw.
+ *
+ * A bin is a veil-of-darkness comparison only if it is observed in BOTH
+ * lighting states and both rest on enough stops. The window is truncated at
+ * both ends (17:08-20:35), so the first dark bin and the last daylight bin sit
+ * on very few stops and their percentages swing wildly; one 40-stop bin would
+ * otherwise set the chart's y-axis.
+ *
+ * Bins are kept or dropped as a pair. Half a pair reads as a missing
+ * comparison rather than a thin one, and it corrupts the counts: a lone bar
+ * would be counted in `kept` yet, having no counterpart to beat, never counted
+ * in `daylightHigherBins`, quietly deflating the "12 of the 13 bins" sentence
+ * on the page. Testing thickness alone does not catch that — `some`/`every`
+ * over a one-element array is vacuous — which is why the pairing check is
+ * separate and comes first. No such bin exists in the current cube; this closes
+ * the case rather than relying on that staying true.
+ *
+ * `minStops` is inclusive: a side resting on exactly the minimum is thick
+ * enough.
+ */
+export function selectClockBinPairs(
+  points: ClockBinPoint[],
+  minStops: number,
+): ClockBinSelection {
+  const bins = new Map<number, ClockBinPoint[]>()
+  for (const p of points) {
+    const existing = bins.get(p.clockBin)
+    if (existing) existing.push(p)
+    else bins.set(p.clockBin, [p])
+  }
+
+  const kept: ClockBinPoint[][] = []
+  const suppressed: SuppressedBin[] = []
+
+  for (const [clockBin, binPoints] of [...bins.entries()].sort((a, b) => a[0] - b[0])) {
+    const missing = LIGHT_ORDER.filter((state) => !binPoints.some((p) => p.lighting === state))
+    if (missing.length > 0) {
+      // Unpaired is reported ahead of thinness: a lone bar has no comparison to
+      // be thin about, and naming both reasons would overstate the case.
+      suppressed.push({
+        clockBin,
+        reason: 'unpaired',
+        present: LIGHT_ORDER.filter((state) => binPoints.some((p) => p.lighting === state)),
+      })
+      continue
+    }
+    const thin = binPoints.filter((p) => p.stops < minStops)
+    if (thin.length > 0) {
+      suppressed.push({
+        clockBin,
+        reason: 'thin',
+        thin: thin.map((p) => ({ lighting: p.lighting, stops: p.stops })),
+      })
+      continue
+    }
+    kept.push(binPoints)
+  }
+
+  const daylightHigherBins = kept.filter((binPoints) => {
+    const day = binPoints.find((p) => p.lighting === 'daylight')
+    const dark = binPoints.find((p) => p.lighting === 'dark')
+    return day !== undefined && dark !== undefined && day.pctGroupStops > dark.pctGroupStops
+  }).length
+
+  return { kept, suppressed, daylightHigherBins }
 }

@@ -7,6 +7,7 @@ import {
   pctMotoristsInGroups,
   pctStopsInMajorityWhiteDistricts,
   REPLICATION_YEARS,
+  selectClockBinPairs,
   restrictToYears,
   type VeilCube,
   type VeilModel,
@@ -68,6 +69,77 @@ describe('groupTravelByClockBin', () => {
     // motorists. A caller thresholding on `stops` must see 20.
     const series = groupTravelByClockBin(cube, 'Black - Non-Latino')
     expect(series.map((p) => p.stops)).toEqual([100, 20])
+  })
+})
+
+describe('selectClockBinPairs', () => {
+  const pt = (clockBin: number, lighting: string, stops: number, pctGroupStops: number) =>
+    ({ clockBin, lighting, stops, pctGroupStops })
+
+  it('keeps a bin only when both lighting states clear the threshold', () => {
+    const sel = selectClockBinPairs([
+      pt(1080, 'daylight', 500, 30),
+      pt(1080, 'dark', 400, 20),
+    ], 200)
+    expect(sel.kept.map((b) => b[0].clockBin)).toEqual([1080])
+    expect(sel.suppressed).toEqual([])
+  })
+
+  it('drops the whole bin when either side is thin, and says which side', () => {
+    const sel = selectClockBinPairs([
+      pt(1080, 'daylight', 500, 30),
+      pt(1080, 'dark', 40, 20),
+    ], 200)
+    expect(sel.kept).toEqual([])
+    expect(sel.suppressed).toEqual([
+      { clockBin: 1080, reason: 'thin', thin: [{ lighting: 'dark', stops: 40 }] },
+    ])
+  })
+
+  // The bug this closes: `every`/`some` over a one-element array made a
+  // single-lighting bin look thick enough, so it drew as a lone unpaired bar,
+  // counted in shownBins, and — having nothing to beat — never counted in
+  // daylightHigherBins, quietly deflating the "12 of the 13 bins" sentence.
+  it('drops a bin observed in only one lighting state, however thick', () => {
+    const sel = selectClockBinPairs([pt(1080, 'daylight', 100000, 30)], 200)
+    expect(sel.kept).toEqual([])
+    expect(sel.suppressed).toEqual([
+      { clockBin: 1080, reason: 'unpaired', present: ['daylight'] },
+    ])
+  })
+
+  it('reports unpaired ahead of thin when a lone bar is also thin', () => {
+    const sel = selectClockBinPairs([pt(1080, 'dark', 5, 30)], 200)
+    expect(sel.suppressed).toEqual([
+      { clockBin: 1080, reason: 'unpaired', present: ['dark'] },
+    ])
+  })
+
+  it('counts only kept bins where daylight sits above dark', () => {
+    const sel = selectClockBinPairs([
+      pt(1080, 'daylight', 500, 30), pt(1080, 'dark', 500, 20),  // daylight higher
+      pt(1095, 'daylight', 500, 10), pt(1095, 'dark', 500, 40),  // dark higher
+      pt(1110, 'daylight', 500, 25), pt(1110, 'dark', 500, 25),  // equal: not higher
+      pt(1125, 'daylight', 500, 90), pt(1125, 'dark', 40, 10),   // dropped, thin
+    ], 200)
+    expect(sel.kept.length).toBe(3)
+    expect(sel.daylightHigherBins).toBe(1)
+  })
+
+  it('returns bins in ascending clock order', () => {
+    const sel = selectClockBinPairs([
+      pt(1110, 'daylight', 500, 30), pt(1110, 'dark', 500, 20),
+      pt(1080, 'daylight', 500, 30), pt(1080, 'dark', 500, 20),
+    ], 200)
+    expect(sel.kept.map((b) => b[0].clockBin)).toEqual([1080, 1110])
+  })
+
+  it('is threshold-inclusive: exactly the minimum is thick enough', () => {
+    const sel = selectClockBinPairs([
+      pt(1080, 'daylight', 200, 30),
+      pt(1080, 'dark', 200, 20),
+    ], 200)
+    expect(sel.kept.length).toBe(1)
   })
 })
 
