@@ -212,5 +212,9 @@ Page language stays at "no longer detectable", never "eliminated".
 
 - Design: `docs/superpowers/specs/2026-08-09-veil-of-darkness-design.md`
 - Plan: `docs/superpowers/plans/2026-08-09-veil-of-darkness.md`
-- A methods note prepared for the paper's authors — including four traps in the
-  source data and three open questions for them — is linked from the PR description.
+- Methods note for the paper's authors, covering the side-by-side comparison with
+  both papers, every deliberate deviation, what the source data hides, what is
+  still unguarded, and the open questions:
+  `docs/veil-of-darkness-methods-note.md`. It is in the repo on purpose — the
+  earlier note lived outside it, went stale against the year-by-year section, and
+  the pointer here said "ask Steve for it".
