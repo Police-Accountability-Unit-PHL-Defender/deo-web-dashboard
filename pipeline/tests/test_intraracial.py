@@ -93,6 +93,20 @@ def test_drops_non_black_motorists():
     assert len(out) == 0
 
 
+def test_race_and_district_restrictions_can_be_overridden_for_extensions():
+    stops = pd.DataFrame([
+        _stop(race="White - Non-Latino", districtoccur="09"),
+        _stop(race="Black - Non-Latino", districtoccur="09"),
+        _stop(race="White - Non-Latino", districtoccur="12"),
+    ])
+    out = build_sample(
+        stops, _sun(), races=("White - Non-Latino",), districts=("09",),
+    )
+    assert len(out) == 1
+    assert out.iloc[0].race == "White - Non-Latino"
+    assert out.iloc[0]._district == "09"
+
+
 def test_drops_minors():
     assert len(build_sample(pd.DataFrame([_stop(age=17)]), _sun())) == 0
 

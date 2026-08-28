@@ -14,6 +14,8 @@ import sqlite3
 
 import pandas as pd
 
+from build_districts import build as build_district_demographics
+
 from veil.intraracial import (
     DISTRICTS,
     OUTCOMES,
@@ -44,6 +46,8 @@ MEASURES = ["n_stops", "n_motorists", "n_frisked", "n_ticketed"]
 BIN_MINUTES = 15
 BLACK = "Black - Non-Latino"
 WHITE = "White - Non-Latino"
+
+COMPARISON_RACES = {"black": BLACK, "white": WHITE}
 
 
 def _normalize_district(d) -> str:
@@ -133,25 +137,8 @@ def _fit_all(df: pd.DataFrame) -> dict:
     return models
 
 
-def _by_year(stops: pd.DataFrame, sun: pd.DataFrame) -> dict:
-    """Per-calendar-year fits, for the trend chart above the lead section.
-
-    ONE `build_sample` call over the whole TREND_WINDOW, then split by year --
-    deliberately not one call per year. `build_sample` derives both the
-    inter-twilight window and the seasonality weights from the window it is
-    given, so per-year calls would hand each year a slightly different
-    time-of-day window, and a year-over-year difference could then reflect
-    that moving window rather than a change in who gets stopped.
-
-    Only the four group outcomes are fitted (TREND_OUTCOMES): 5 years x 4
-    outcomes = 20 fits, roughly 35s of the cube build.
-
-    This sample is NOT the reproduction's sample and its 2025 is a full
-    calendar year where the paper's is January-August. The two must never be
-    presented as the same quantity -- see the caveats on the page.
-    """
-    df = build_sample(stops, sun, window=TREND_WINDOW)
-
+def _year_estimates(df: pd.DataFrame) -> list[dict]:
+    """Fit the four mutually exclusive age/gender outcomes for every year."""
     estimates = []
     for year in TREND_YEARS:
         subset = df[df.year == year]
@@ -176,6 +163,48 @@ def _by_year(stops: pd.DataFrame, sun: pd.DataFrame) -> dict:
                 "marginal_ci_lo_pp": result["marginal_ci_lo_pp"],
                 "marginal_ci_hi_pp": result["marginal_ci_hi_pp"],
             })
+    return estimates
+
+
+def _comparison_districts() -> dict[str, tuple[str, ...]]:
+    """Dashboard-wide >50% White split, derived from the committed Census input."""
+    demographics = build_district_demographics()
+    majority_white = tuple(sorted(k for k, v in demographics.items() if v["whiteness"] > 50))
+    majority_non_white = tuple(sorted(k for k, v in demographics.items() if v["whiteness"] <= 50))
+    return {"majority_white": majority_white, "majority_non_white": majority_non_white}
+
+
+def _by_year(stops: pd.DataFrame, sun: pd.DataFrame) -> dict:
+    """Per-calendar-year fits, for the trend chart above the lead section.
+
+    ONE `build_sample` call over the whole TREND_WINDOW, then split by year --
+    deliberately not one call per year. `build_sample` derives both the
+    inter-twilight window and the seasonality weights from the window it is
+    given, so per-year calls would hand each year a slightly different
+    time-of-day window, and a year-over-year difference could then reflect
+    that moving window rather than a change in who gets stopped.
+
+    Only the four mutually exclusive group outcomes are fitted
+    (TREND_OUTCOMES), separately for Black and White motorists in each of
+    the dashboard's two district contexts: 12 years x 4 outcomes x 4 strata.
+
+    These samples are NOT the reproduction's sample and their 2025 is a full
+    calendar year where the paper's is January-August. The two must never be
+    presented as the same quantity -- see the caveats on the page.
+    """
+    strata = []
+    for district_context, districts in _comparison_districts().items():
+        for race, race_value in COMPARISON_RACES.items():
+            sample = build_sample(
+                stops, sun, window=TREND_WINDOW,
+                races=(race_value,), districts=districts,
+            )
+            strata.append({
+                "race": race,
+                "district_context": district_context,
+                "districts": list(districts),
+                "estimates": _year_estimates(sample),
+            })
 
     return {
         "window": {"start": TREND_WINDOW[0], "end": TREND_WINDOW[1]},
@@ -186,7 +215,7 @@ def _by_year(stops: pd.DataFrame, sun: pd.DataFrame) -> dict:
         "default_years": [
             int(y) for y in TREND_YEARS if y not in TREND_DEFAULT_EXCLUDED_YEARS
         ],
-        "estimates": estimates,
+        "strata": strata,
     }
 
 

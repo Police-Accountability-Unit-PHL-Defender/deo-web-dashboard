@@ -69,6 +69,8 @@ export interface VeilIntraracialModel {
 
 export type VeilIntraracialGroup = 'young_male' | 'young_female' | 'older_male' | 'older_female'
 export type VeilIntraracialLighting = 'daylight' | 'dark'
+export type VeilComparisonRace = 'black' | 'white'
+export type VeilDistrictContext = 'majority_white' | 'majority_non_white'
 
 export interface VeilIntraracialProbability {
   group: VeilIntraracialGroup
@@ -128,7 +130,12 @@ export interface VeilIntraracialByYear {
    * do not shift with the light.
    */
   default_years: number[]
-  estimates: VeilIntraracialYearEstimate[]
+  strata: Array<{
+    race: VeilComparisonRace
+    district_context: VeilDistrictContext
+    districts: string[]
+    estimates: VeilIntraracialYearEstimate[]
+  }>
 }
 
 export interface VeilMarginalProbabilityAggregate {

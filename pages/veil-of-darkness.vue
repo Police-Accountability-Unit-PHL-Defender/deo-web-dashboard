@@ -25,17 +25,22 @@
           <h2 class="text-heading-3 text-left pt-10 mb-6">What changes after sunset?</h2>
           <AnswerText>
             <p class="text-body-4">
-              This chart follows the analysis in
+              This chart extends the analysis in
               <a class="text-hyperlink" href="https://doi.org/10.1007/s12103-025-09879-8" target="_blank" rel="noopener">Hannon
               &amp; Biddle (2025), <em>Unequal Policing of Black Motorists in Black Communities by Age and
-              Gender</em></a>. The first chart gives the report-style before-and-after view on a probability scale:
+              Gender</em></a>. The paper analyzes Black motorists in majority-Black districts; this extension fits
+              Black and White motorists separately and lets you switch between the dashboard's Census-based
+              majority-White and majority-non-White district groups. The first chart gives the report-style
+              before-and-after view on a probability scale:
               each line connects a group's model-adjusted share of stops in daylight with its share after dark.
               Use the selectors to aggregate any combination of years and compare any age-and-gender groups.
             </p>
           </AnswerText>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-[660px] mt-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-[900px] mt-6">
             <SelectVeilGroups v-model="selectedGroups" :items="trendGroupOptions"/>
+            <SelectVeilRaces v-model="selectedRaces" :items="raceOptions"/>
+            <SelectVeilDistrictContext v-model="selectedDistrictContext" :items="districtContextOptions"/>
             <SelectYears v-model="selectedYears" :items="trendYearOptions"/>
           </div>
 
@@ -50,7 +55,9 @@
               <p class="text-caption text-neutral-800 pt-4 px-4 max-w-[630px] mx-auto">
                 This combines the selected calendar years by weighting each year's marginal prediction by the number
                 of stops in that year's model. It is an aggregate of the annual standardized estimates, not a newly
-                fitted pooled regression. The same selected years and groups control the chart below.
+                fitted pooled regression. Black and White motorists are always fitted separately. “Majority White”
+                means more than 50% of district residents are White; every other classified residential district is
+                “majority non-White.” The same selections control the chart below.
               </p>
             </template>
           </LineGraph>
@@ -107,45 +114,10 @@
           </CoefficientGraph>
 
           <AnswerText>
-            <p class="text-body-4" v-if="trendHeadlineRun">
-              <strong v-if="trendHeadlineRun.unbroken">Both headline findings hold in every one of the
-              {{ trendYearOptions.length }} years.</strong>
-              <strong v-else>The headline findings hold in {{ trendHeadlineRun.hits }} of
-              {{ trendHeadlineRun.total }} year-and-group estimates.</strong>
-              Across {{ trendYearOptions[0] }}&ndash;{{ trendYearOptions[trendYearOptions.length - 1] }}, young men are
-              stopped significantly less often once it is dark and older women significantly more often, without a
-              single exception and without a single year reversing direction. That run spans two mayors, a pandemic,
-              the introduction of Driving Equality, and a halving of the city's overall stop volume. Whatever produces
-              this pattern, it is neither a recent development nor an artifact of one unusual year.
-            </p>
-            <p class="text-body-4 mt-6" v-if="trendOlderFemaleSpread">
-              <strong>The size of each effect moves around, and the recent direction is not a trend.</strong> The
-              older-woman estimate has ranged between {{ trendOlderFemaleSpread.min.toFixed(1) }} and
-              {{ trendOlderFemaleSpread.max.toFixed(1) }} percentage points across the series, averaging
-              {{ trendOlderFemaleSpread.mean.toFixed(1) }}. It is lower in
-              {{ trendOlderFemaleSpread.last.year }} ({{ trendOlderFemaleSpread.last.marginal_effect_pp.toFixed(1) }} points) than in the
-              years just before it, but
-              <template v-if="!trendOlderFemaleSpread.lastIsOutsideEarlierRange">that figure sits inside the range
-              earlier years already covered, and the highest values in the whole series are the ones immediately
-              preceding it. Read over the full period this looks like a return toward the middle of the range rather
-              than a decline</template><template v-else>it now sits below every earlier year in the series. That makes
-              the latest year a new low, but one point cannot establish a downward trend; the next years will show
-              whether it persists</template>.
-              An earlier version of this page, written when only the most recent years had been fitted, described it as
-              a possible weakening; the longer series does not support that reading.
-            </p>
-            <p class="text-body-4 mt-6">
-              <strong>The other two groups behave quite differently from each other, and neither is a finding.</strong>
-              Older men are detectable in just {{ trendOlderMale.hits }} of {{ trendOlderMale.total }} years, with the
-              estimate falling on both sides of zero &mdash; the shape of noise. Young women are different: significant
-              in {{ trendYoungFemale.hits }} of {{ trendYoungFemale.total }} years
-              ({{ trendYoungFemale.years.join(', ') }}), essentially flat in the rest, and
-              <template v-if="!trendYoungFemale.anyNegative">never appreciably negative in any year</template><template
-              v-else>negative in at least one year</template>. That is weaker than an established effect but not
-              obviously nothing, and it is why the pooled model reports no result for this group rather than a small
-              one. With {{ trendTestCount }} estimates on this chart, a handful of isolated hits is expected at the
-              usual threshold, so none of this should be cited as a finding about young women &mdash; only as a reason
-              the question stays open.
+            <p class="text-body-4">
+              These comparisons are exploratory extensions. The paper's published coefficients validate the original
+              Black-motorist, majority-Black-district specification; they do not validate every race-and-context line
+              shown here. Read repeated direction across years more heavily than an isolated confidence interval.
             </p>
           </AnswerText>
         </section>
@@ -159,12 +131,15 @@
 import CoefficientGraph from '~/components/CoefficientGraph.vue'
 import LineGraph from '~/components/LineGraph.vue'
 import SelectVeilGroups from '~/components/SelectVeilGroups.vue'
+import SelectVeilRaces from '~/components/SelectVeilRaces.vue'
+import SelectVeilDistrictContext from '~/components/SelectVeilDistrictContext.vue'
 import SelectYears from '~/components/SelectYears.vue'
 import { useVeilCube } from '~/composables/useVeilCube'
 import {
   aggregateMarginalProbabilities,
+  type VeilComparisonRace,
+  type VeilDistrictContext,
   type VeilIntraracialGroup,
-  type VeilIntraracialYearEstimate,
 } from '~/utils/veil'
 
 useHead({
@@ -202,16 +177,27 @@ const TREND_LABEL: Record<VeilIntraracialGroup, string> = {
   older_female: 'Older woman (30+)',
 }
 
-// Four hues from the site palette, checked as a set rather than picked by
-// eye: worst all-pairs separation is ΔE 9.4 under deutan simulation and
-// 25.6 for normal vision, both clear of the floors. Two of them sit under
-// 3:1 against the chart surface, which is why the legend below is not
-// optional -- it is the relief that makes them identifiable.
-const TREND_CLASSES: Record<string, string> = {
-  [TREND_LABEL.young_male]: 'stroke-purple fill-purple bg-purple',
-  [TREND_LABEL.young_female]: 'stroke-red fill-red bg-red',
-  [TREND_LABEL.older_male]: 'stroke-yellowgreen fill-yellowgreen bg-yellowgreen',
-  [TREND_LABEL.older_female]: 'stroke-highlight fill-highlight bg-highlight',
+// One fixed palette entry per race/group combination. Keeping the complete
+// class strings literal here also ensures Tailwind includes every SVG stroke
+// and legend fill in the generated stylesheet.
+const SERIES_CLASSES = [
+  'stroke-purple fill-purple bg-purple', 'stroke-violet fill-violet bg-violet',
+  'stroke-red fill-red bg-red', 'stroke-yellow fill-yellow bg-yellow',
+  'stroke-yellowgreen fill-yellowgreen bg-yellowgreen', 'stroke-mint fill-mint bg-mint',
+  'stroke-highlight fill-highlight bg-highlight', 'stroke-primary-800 fill-primary-800 bg-primary-800',
+]
+const TREND_CLASSES: Record<string, string> = {}
+let seriesClassIndex = 0
+for (const race of ['Black', 'White']) {
+  for (const group of Object.values(TREND_LABEL)) {
+    TREND_CLASSES[`${race}: ${group}`] = SERIES_CLASSES[seriesClassIndex++]
+  }
+}
+
+const RACE_LABEL: Record<VeilComparisonRace, string> = { black: 'Black', white: 'White' }
+const CONTEXT_LABEL: Record<VeilDistrictContext, string> = {
+  majority_non_white: 'Majority non-White districts',
+  majority_white: 'Majority White districts',
 }
 
 const trendYearOptions = computed<string[]>(() =>
@@ -219,12 +205,20 @@ const trendYearOptions = computed<string[]>(() =>
 )
 
 const trendGroupOptions = Object.values(TREND_LABEL)
+const raceOptions = Object.values(RACE_LABEL)
+const districtContextOptions = Object.values(CONTEXT_LABEL)
 const selectedGroups = ref<string[]>([
   TREND_LABEL.young_male,
   TREND_LABEL.older_female,
 ])
+const selectedRaces = ref<string[]>(raceOptions)
+const selectedDistrictContext = ref<string>(CONTEXT_LABEL.majority_non_white)
 const trendLegend = computed<Record<string, string>>(() =>
-  Object.fromEntries(selectedGroups.value.map((label) => [label, label])),
+  Object.fromEntries(
+    selectedRaces.value.flatMap((race) =>
+      selectedGroups.value.map((group) => [`${race}: ${group}`, `${race}: ${group}`]),
+    ),
+  ),
 )
 
 /**
@@ -255,22 +249,35 @@ const trendData = computed(() => {
   if (!byYear) return []
   const chosen = new Set(selectedYears.value)
   const chosenGroups = new Set(selectedGroups.value)
-  return byYear.estimates
+  return selectedStrata.value.flatMap((stratum) => stratum.estimates
     .filter((e) => chosen.has(String(e.year)) && chosenGroups.has(TREND_LABEL[e.outcome]))
-    .map((e) => ({
+    .map((e) => {
+      const series = `${RACE_LABEL[stratum.race]}: ${TREND_LABEL[e.outcome]}`
+      return {
       x: String(e.year),
-      group: TREND_LABEL[e.outcome],
+      group: series,
       value: e.marginal_effect_pp,
       ciLo: e.marginal_ci_lo_pp,
       ciHi: e.marginal_ci_hi_pp,
       hoverText: [
-        `${TREND_LABEL[e.outcome]}, ${e.year}`,
+        `${series}, ${e.year}`,
         `${e.marginal_daylight_pct.toFixed(1)}% in daylight; ${e.marginal_dark_pct.toFixed(1)}% after dark`,
         `${formatSigned(e.marginal_effect_pp)} percentage points after dark`,
         `95% interval ${formatSigned(e.marginal_ci_lo_pp)} to ${formatSigned(e.marginal_ci_hi_pp)} (p ${fmtP(e.p_value)})`,
         `${e.n.toLocaleString()} stops`,
       ],
+      }
     }))
+})
+
+const selectedStrata = computed(() => {
+  const byYear = intraracialByYear.value
+  if (!byYear) return []
+  const races = new Set(selectedRaces.value)
+  return byYear.strata.filter((stratum) =>
+    races.has(RACE_LABEL[stratum.race])
+    && CONTEXT_LABEL[stratum.district_context] === selectedDistrictContext.value,
+  )
 })
 
 const aggregateProbabilityData = computed(() => {
@@ -284,8 +291,9 @@ const aggregateProbabilityData = computed(() => {
     .filter((outcome): outcome is VeilIntraracialGroup => Boolean(outcome))
   const years = selectedYears.value.map(Number)
 
-  return aggregateMarginalProbabilities(byYear.estimates, outcomes, years).flatMap((estimate) => {
-    const label = TREND_LABEL[estimate.outcome]
+  return selectedStrata.value.flatMap((stratum) =>
+    aggregateMarginalProbabilities(stratum.estimates, outcomes, years).flatMap((estimate) => {
+    const label = `${RACE_LABEL[stratum.race]}: ${TREND_LABEL[estimate.outcome]}`
     const difference = estimate.darkPct - estimate.daylightPct
     const common = [
       label,
@@ -298,7 +306,7 @@ const aggregateProbabilityData = computed(() => {
       { group: label, Lighting: 'After sunset', 'Model-adjusted share of stops (%)': estimate.darkPct,
         hover_text: [label, `${estimate.darkPct.toFixed(1)}% after sunset`, ...common.slice(1)] },
     ]
-  })
+  }))
 })
 
 /** "2021–2025", from the trend window rather than asserted in the page's voice. */
@@ -321,75 +329,6 @@ const intraracialWindowLabel = computed(() => {
 })
 
 /** An estimate's interval clears the no-effect mark in its own right. */
-function isSignificant(e: VeilIntraracialYearEstimate): boolean {
-  return e.marginal_ci_lo_pp > 0 || e.marginal_ci_hi_pp < 0
-}
-
-function estimatesFor(outcome: VeilIntraracialGroup): VeilIntraracialYearEstimate[] {
-  return (intraracialByYear.value?.estimates ?? []).filter((e) => e.outcome === outcome)
-}
-
-/**
- * The two headline outcomes across every year fitted.
- *
- * `unbroken` is the page's strongest claim -- every year, both groups,
- * interval clear of zero -- so it is computed rather than asserted. If a
- * future data vintage broke the run, the sentence below stops claiming it.
- */
-const trendHeadlineRun = computed(() => {
-  const series = [...estimatesFor('young_male'), ...estimatesFor('older_female')]
-  if (!series.length) return null
-  const hits = series.filter(isSignificant).length
-  return { hits, total: series.length, unbroken: hits === series.length }
-})
-
-/**
- * Older women across the whole series. This replaces an earlier "the effect
- * appears to be weakening" claim written when only 2021-2025 was fitted:
- * over twelve years the estimate oscillates with no trend, and the recent
- * fall sits inside the band the series has always occupied. Kept as derived
- * values so the wording cannot outlive the data that justified it.
- */
-const trendOlderFemaleSpread = computed(() => {
-  const series = estimatesFor('older_female')
-  if (series.length < 3) return null
-  const effects = series.map((e) => e.marginal_effect_pp)
-  const min = Math.min(...effects)
-  const max = Math.max(...effects)
-  const last = series[series.length - 1]
-  return {
-    min,
-    max,
-    mean: effects.reduce((a, b) => a + b, 0) / effects.length,
-    last,
-    // Is the latest year actually outside the range the earlier years
-    // already covered? If not, "declining" is not a claim the data supports.
-    lastIsOutsideEarlierRange:
-      last.marginal_effect_pp < Math.min(...series.slice(0, -1).map((e) => e.marginal_effect_pp)),
-  }
-})
-
-/** How often each pooled-null outcome reaches significance on its own. */
-function nullOutcomeSummary(outcome: VeilIntraracialGroup) {
-  const series = estimatesFor(outcome)
-  const hits = series.filter(isSignificant)
-  return {
-    hits: hits.length,
-    total: series.length,
-    years: hits.map((e) => e.year),
-    // Sign consistency separates "scattered noise" from "weak but real".
-    allSameSign: hits.length > 0 && (
-      hits.every((e) => e.marginal_effect_pp > 0)
-      || hits.every((e) => e.marginal_effect_pp < 0)
-    ),
-    anyNegative: series.some((e) => e.marginal_effect_pp < -0.1),
-  }
-}
-
-const trendYoungFemale = computed(() => nullOutcomeSummary('young_female'))
-const trendOlderMale = computed(() => nullOutcomeSummary('older_male'))
-const trendTestCount = computed(() => intraracialByYear.value?.estimates.length ?? 0)
-
 function formatSigned(value: number): string {
   return `${value > 0 ? '+' : ''}${value.toFixed(1)}`
 }

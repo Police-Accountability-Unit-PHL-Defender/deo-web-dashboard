@@ -242,12 +242,25 @@ export const CHECKS = [
     name: 'veil trend defaults to young men and older women',
     pages: ['veil'],
     assert: ({ text }) => {
-      const selector = /Age and gender\s+([^\n]+)\s+([^\n]+)\s+Years/.exec(text)
+      const selector = /Age and gender\s+([^\n]+)\s+([^\n]+)\s+Motorist race/.exec(text)
       if (!selector) return 'could not find the age-and-gender selector'
       const selected = [selector[1], selector[2]]
       const expected = ['Young man (18–29)', 'Older woman (30+)']
       return selected.join('|') === expected.join('|')
         || `default groups were [${selected.join(', ')}], expected [${expected.join(', ')}]`
+    },
+  },
+  {
+    name: 'veil extension exposes race and district-context selectors',
+    pages: ['veil'],
+    assert: ({ text }) => {
+      if (!/Motorist race\s+Black\s+White/.test(text))
+        return 'Black and White motorist selections are not both visible'
+      if (!/District context\s+Majority non-White districts/.test(text))
+        return 'majority-non-White district context is not the default'
+      if (!text.includes('majority-White and majority-non-White district groups'))
+        return 'both district-context choices are not explained'
+      return true
     },
   },
 ]

@@ -89,6 +89,9 @@ def build_sample(
     stops: pd.DataFrame,
     sun: pd.DataFrame,
     window: tuple[str, str] = WINDOW,
+    *,
+    races: tuple[str, ...] = (BLACK_RACE,),
+    districts: tuple[str, ...] = DISTRICTS,
 ) -> pd.DataFrame:
     """Apply the 2025 paper's restrictions and derive its six outcomes.
 
@@ -144,10 +147,10 @@ def build_sample(
     window_end_ts = pd.Timestamp(window[1]) + pd.Timedelta(days=1)  # exclusive
 
     keep = (
-        stops["_district"].isin(DISTRICTS)
+        stops["_district"].isin(districts)
         & stops.ts_local.ge(window_start_ts)
         & stops.ts_local.lt(window_end_ts)
-        & (stops.race == BLACK_RACE)
+        & stops.race.isin(races)
         & stops.age.notna()
         & (stops.age >= YOUNG_MIN)
         & (stops.is_mvc == 1)
