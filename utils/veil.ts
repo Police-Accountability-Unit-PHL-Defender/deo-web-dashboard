@@ -101,6 +101,14 @@ export interface VeilIntraracialYearEstimate {
   p_value: number
   n: number
   converged: boolean
+  /** Sample-average predicted probabilities under the two counterfactuals. */
+  marginal_daylight_pct: number
+  marginal_dark_pct: number
+  /** Dark minus daylight, in percentage points, with delta-method bounds. */
+  marginal_effect_pp: number
+  marginal_effect_se_pp: number
+  marginal_ci_lo_pp: number
+  marginal_ci_hi_pp: number
 }
 
 /**
@@ -121,6 +129,48 @@ export interface VeilIntraracialByYear {
    */
   default_years: number[]
   estimates: VeilIntraracialYearEstimate[]
+}
+
+export interface VeilMarginalProbabilityAggregate {
+  outcome: VeilIntraracialGroup
+  n: number
+  daylightPct: number
+  darkPct: number
+}
+
+/**
+ * Combine annual standardized predictions for a display-only pooled view.
+ * Each annual probability is weighted by that fit's stop count. This is not
+ * a pooled regression: callers must describe it as an aggregation of annual
+ * estimates so it cannot be mistaken for the paper-window model.
+ */
+export function aggregateMarginalProbabilities(
+  estimates: VeilIntraracialYearEstimate[],
+  outcomes: VeilIntraracialGroup[],
+  years: number[],
+): VeilMarginalProbabilityAggregate[] {
+  const chosenOutcomes = new Set(outcomes)
+  const chosenYears = new Set(years)
+  const totals = new Map<VeilIntraracialGroup, { n: number; daylight: number; dark: number }>()
+
+  for (const estimate of estimates) {
+    if (!chosenOutcomes.has(estimate.outcome) || !chosenYears.has(estimate.year)) continue
+    const total = totals.get(estimate.outcome) ?? { n: 0, daylight: 0, dark: 0 }
+    total.n += estimate.n
+    total.daylight += estimate.marginal_daylight_pct * estimate.n
+    total.dark += estimate.marginal_dark_pct * estimate.n
+    totals.set(estimate.outcome, total)
+  }
+
+  return outcomes.flatMap((outcome) => {
+    const total = totals.get(outcome)
+    return !total?.n ? [] : [{
+      outcome,
+      n: total.n,
+      daylightPct: total.daylight / total.n,
+      darkPct: total.dark / total.n,
+    }]
+  })
 }
 
 export interface VeilIntraracial {

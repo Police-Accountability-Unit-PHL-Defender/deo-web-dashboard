@@ -20,6 +20,7 @@ import numpy as np
 import pandas as pd
 import statsmodels.api as sm
 import statsmodels.formula.api as smf
+from patsy import build_design_matrices
 from scipy.stats import norm
 
 # The two-sided 95% normal critical value. Taken from scipy rather than
@@ -149,6 +150,7 @@ def fit_vod(df: pd.DataFrame, outcome: str, full_controls: bool) -> dict:
             n=int(fit.nobs),
             converged=bool(fit.converged),
         )
+
         if abs(result["coef"]) > _DEGENERATE_BOUND or result["se"] > _DEGENERATE_BOUND:
             result["converged"] = False
             result["degenerate"] = True
@@ -254,6 +256,37 @@ def fit_intraracial(df: pd.DataFrame, outcome: str) -> dict:
             n=int(fit.nobs),
             converged=bool(fit.converged),
         )
+        # Average marginal change from daylight to darkness, expressed in
+        # percentage points. Counterfactual predictions retain every row's
+        # observed controls; only obscured_view changes. The delta-method
+        # gradient propagates the fitted quasi-binomial covariance through
+        # that nonlinear sample average, giving the probability-scale
+        # interval used by the year-by-year chart.
+        daylight = df.copy()
+        dark = df.copy()
+        daylight["obscured_view"] = 0
+        dark["obscured_view"] = 1
+        design_info = fit.model.data.design_info
+        x_daylight = np.asarray(build_design_matrices([design_info], daylight)[0])
+        x_dark = np.asarray(build_design_matrices([design_info], dark)[0])
+        p_daylight = np.asarray(fit.predict(daylight))
+        p_dark = np.asarray(fit.predict(dark))
+        marginal_effect = float(np.mean(p_dark - p_daylight))
+        gradient = np.mean(
+            p_dark[:, None] * (1 - p_dark[:, None]) * x_dark
+            - p_daylight[:, None] * (1 - p_daylight[:, None]) * x_daylight,
+            axis=0,
+        )
+        marginal_se = float(np.sqrt(gradient @ np.asarray(fit.cov_params()) @ gradient))
+        marginal_lo, marginal_hi = confidence_interval(marginal_effect, marginal_se)
+        result.update(
+            marginal_daylight_pct=float(100 * p_daylight.mean()),
+            marginal_dark_pct=float(100 * p_dark.mean()),
+            marginal_effect_pp=float(100 * marginal_effect),
+            marginal_effect_se_pp=float(100 * marginal_se),
+            marginal_ci_lo_pp=float(100 * marginal_lo),
+            marginal_ci_hi_pp=float(100 * marginal_hi),
+        )
         if abs(result["coef"]) > _DEGENERATE_BOUND or result["se"] > _DEGENERATE_BOUND:
             result["converged"] = False
             result["degenerate"] = True
@@ -266,18 +299,21 @@ def fit_intraracial(df: pd.DataFrame, outcome: str) -> dict:
     return result
 
 
-# Factor controls in _FULL whose reference (modal) level predicted_probabilities
-# holds fixed. clock_minutes is the one numeric control and is held at its mean.
-_INTRARACIAL_FACTOR_CONTROLS = ("dow", "year", "police_area", "assigned_unit", "is_summer")
-
-
 def predicted_probabilities(df: pd.DataFrame, outcome: str) -> dict:
-    """Average predicted probability of ``outcome`` at daylight vs. dark.
+    """Average marginal predictions of ``outcome`` at daylight vs. dark.
 
-    Numeric controls (clock_minutes) are held at their sample mean; factor
-    controls are held at their modal (most common) level. obscured_view is
-    then set to 0 (daylight) and 1 (dark) and the fitted model's predicted
-    probabilities are reported as percentages.
+    This is the g-computation/standardisation performed by R's
+    ``marginaleffects::avg_predictions(fit, variables = "obscured_view")``:
+    retain every row's observed controls, replace ``obscured_view`` with 0
+    for every row and average those predictions, then repeat with it set to
+    1. These are true sample-average marginal predictions, not predictions
+    for an artificial person whose numeric controls are means and whose
+    factor controls are modal levels.
+
+    ``avg_predictions`` uses an unweighted mean unless its ``wts`` argument
+    is requested. We mirror that default here. The model's seasonality
+    weights still affect the fitted coefficients; they do not weight the
+    population over which predictions are averaged.
     """
     formula = f"{outcome} ~ {_FULL}"
     df = df.copy()
@@ -291,18 +327,17 @@ def predicted_probabilities(df: pd.DataFrame, outcome: str) -> dict:
         )
         fit = model.fit(scale="X2")
 
-    row = {"clock_minutes": float(df["clock_minutes"].mean())}
-    for col in _INTRARACIAL_FACTOR_CONTROLS:
-        row[col] = df[col].mode().iloc[0]
-
-    frame = pd.DataFrame([row, row]).reset_index(drop=True)
-    frame["obscured_view"] = [0, 1]
+    daylight = df.copy()
+    dark = df.copy()
+    daylight["obscured_view"] = 0
+    dark["obscured_view"] = 1
 
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        preds = fit.predict(frame)
+        daylight_mean = float(np.asarray(fit.predict(daylight)).mean())
+        dark_mean = float(np.asarray(fit.predict(dark)).mean())
 
     return {
-        "daylight": round(float(preds.iloc[0]) * 100, 1),
-        "dark": round(float(preds.iloc[1]) * 100, 1),
+        "daylight": round(daylight_mean * 100, 1),
+        "dark": round(dark_mean * 100, 1),
     }

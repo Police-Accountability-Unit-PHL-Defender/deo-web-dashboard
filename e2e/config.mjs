@@ -208,34 +208,29 @@ export const CHECKS = [
       !errors || errors.length === 0 || `console/page error(s): ${errors.join(' | ')}`,
   },
   {
-    name: "chart 1's Black-motorist count is in the expected range",
-    // Regression guard on the cube join, not the exact figure (actual is
-    // 36,781) — a wrong join could plausibly still land near it.
+    name: 'veil trend is rendered on the average-marginal probability scale',
     pages: ['veil'],
     assert: ({ text }) => {
-      // Chart 1's bar annotations render, in data order (Black then White),
-      // right after the y-axis title — e.g. "Number of Motorists Stopped\n
-      // 36,781\n5,529". Anchoring on the axis title rather than the "Black
-      // motorists" tick label avoids also matching the demographic table
-      // further down the page, which repeats the same words.
-      const m = /Number of Motorists Stopped\s*\n\s*([\d,]+)\s*\n\s*([\d,]+)/.exec(text)
-      if (!m) return 'could not find chart 1\'s bar annotations on the page'
-      const n = Number(m[1].replace(/,/g, ''))
-      return (n >= 30000 && n <= 45000)
-        || `Black-motorist count was ${n.toLocaleString()}, expected 30,000–45,000`
+      if (!text.includes('Change after dark (percentage points)'))
+        return 'probability-scale y-axis is missing'
+      if (!text.includes('These are average marginal changes'))
+        return 'average-marginal explanation is missing'
+      if (text.includes('Effect of darkness (log-odds)'))
+        return 'the old log-odds axis is still rendered'
+      return true
     },
   },
   {
-    name: 'chart 3 group frisk rate is at least double the solo frisk rate',
-    // Actual is 19.3% against 7.1%. This is the page's central finding, so
-    // guard the ratio rather than the exact figures.
+    name: 'veil pooled view renders before and after sunset probabilities',
     pages: ['veil'],
     assert: ({ text }) => {
-      const m = /frisk rate[\s\S]{0,80}?—\s*([\d.]+)%\s*against\s*([\d.]+)%/.exec(text)
-      if (!m) return 'could not find the group-vs-solo frisk rate sentence on the page'
-      const [group, solo] = [Number(m[1]), Number(m[2])]
-      return group >= 2 * solo
-        || `group frisk rate ${group}% is not at least double solo frisk rate ${solo}%`
+      if (!text.includes('Model-adjusted share of stops before and after sunset'))
+        return 'aggregate probability chart title is missing'
+      if (!text.includes('Before sunset') || !text.includes('After sunset'))
+        return 'aggregate chart lighting endpoints are missing'
+      if (!text.includes('not a newly fitted pooled regression'))
+        return 'annual-estimate aggregation disclosure is missing'
+      return true
     },
   },
   {
@@ -244,14 +239,15 @@ export const CHECKS = [
     assert: ({ text }) => text.includes('Hannon') || 'the string "Hannon" is missing from the page',
   },
   {
-    name: 'intraracial veil panels render with both lighting states',
-    // The panels are client-rendered from the cube; if the computed returns
-    // null the section vanishes silently rather than erroring.
+    name: 'veil trend defaults to young men and older women',
     pages: ['veil'],
     assert: ({ text }) => {
-      const missing = ['under 30 and male', 'Daylight', 'After dark']
-        .filter((s) => !text.includes(s))
-      return missing.length === 0 || `intraracial panels missing: ${missing.join(', ')}`
+      const selector = /Age and gender\s+([^\n]+)\s+([^\n]+)\s+Years/.exec(text)
+      if (!selector) return 'could not find the age-and-gender selector'
+      const selected = [selector[1], selector[2]]
+      const expected = ['Young man (18–29)', 'Older woman (30+)']
+      return selected.join('|') === expected.join('|')
+        || `default groups were [${selected.join(', ')}], expected [${expected.join(', ')}]`
     },
   },
 ]

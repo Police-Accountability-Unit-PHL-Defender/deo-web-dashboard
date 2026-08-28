@@ -169,6 +169,12 @@ def _by_year(stops: pd.DataFrame, sun: pd.DataFrame) -> dict:
                 "p_value": result["p_value"],
                 "n": result["n"],
                 "converged": result["converged"],
+                "marginal_daylight_pct": result["marginal_daylight_pct"],
+                "marginal_dark_pct": result["marginal_dark_pct"],
+                "marginal_effect_pp": result["marginal_effect_pp"],
+                "marginal_effect_se_pp": result["marginal_effect_se_pp"],
+                "marginal_ci_lo_pp": result["marginal_ci_lo_pp"],
+                "marginal_ci_hi_pp": result["marginal_ci_hi_pp"],
             })
 
     return {

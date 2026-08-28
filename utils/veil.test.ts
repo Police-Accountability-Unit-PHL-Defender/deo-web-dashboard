@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { readFileSync } from 'node:fs'
 import {
+  aggregateMarginalProbabilities,
   frisksAndTickets,
   groupTravelByClockBin,
   motoristsByRace,
@@ -11,7 +12,45 @@ import {
   restrictToYears,
   type VeilCube,
   type VeilModel,
+  type VeilIntraracialYearEstimate,
 } from './veil'
+
+describe('aggregateMarginalProbabilities', () => {
+  const estimate = (
+    year: number,
+    outcome: 'young_male' | 'older_female',
+    n: number,
+    daylight: number,
+    dark: number,
+  ): VeilIntraracialYearEstimate => ({
+    year, outcome, n,
+    marginal_daylight_pct: daylight,
+    marginal_dark_pct: dark,
+    marginal_effect_pp: dark - daylight,
+    marginal_effect_se_pp: 1,
+    marginal_ci_lo_pp: dark - daylight - 2,
+    marginal_ci_hi_pp: dark - daylight + 2,
+    coef: 0, se: 0, ci_lo: 0, ci_hi: 0, odds_ratio: 1, p_value: 1, converged: true,
+  })
+
+  it('weights annual marginal predictions by each fit sample size', () => {
+    const result = aggregateMarginalProbabilities([
+      estimate(2021, 'young_male', 100, 20, 10),
+      estimate(2022, 'young_male', 300, 40, 30),
+    ], ['young_male'], [2021, 2022])
+    expect(result).toEqual([{ outcome: 'young_male', n: 400, daylightPct: 35, darkPct: 25 }])
+  })
+
+  it('honors both selectors and preserves requested group order', () => {
+    const result = aggregateMarginalProbabilities([
+      estimate(2021, 'young_male', 100, 20, 10),
+      estimate(2022, 'young_male', 100, 90, 90),
+      estimate(2021, 'older_female', 50, 30, 40),
+    ], ['older_female', 'young_male'], [2021])
+    expect(result.map((d) => d.outcome)).toEqual(['older_female', 'young_male'])
+    expect(result.map((d) => d.n)).toEqual([50, 100])
+  })
+})
 
 // dimensions: year, era, clock_bin, lighting, party_race, group_travel, district
 // measures:   n_stops, n_motorists, n_frisked, n_ticketed

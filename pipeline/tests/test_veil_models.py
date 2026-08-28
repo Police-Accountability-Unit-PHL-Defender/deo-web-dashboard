@@ -1,14 +1,17 @@
 """Model-fitting tests on synthetic data with a known planted effect."""
-
 import numpy as np
 import pandas as pd
 import pytest
+import statsmodels.api as sm
+import statsmodels.formula.api as smf
 
 from veil.models import (
     _DEGENERATE_BOUND,
     _collapse_sparse_levels,
     confidence_interval,
+    fit_intraracial,
     fit_vod,
+    predicted_probabilities,
 )
 
 
@@ -140,3 +143,73 @@ def test_confidence_interval_is_the_wald_interval_around_the_coefficient():
 
 def test_confidence_interval_of_a_zero_se_estimate_is_a_point():
     assert confidence_interval(0.4, 0.0) == (0.4, 0.4)
+
+
+def test_predicted_probabilities_are_averaged_over_observed_rows():
+    """Pin g-computation, not an at-means/modal reference profile."""
+    df = synthetic(n=6000, effect=-0.5)
+    df["weight"] = 0.25 + np.linspace(0, 1, len(df))
+
+    got = predicted_probabilities(df, "outcome")
+
+    fit = smf.glm(
+        'outcome ~ obscured_view + cr(clock_minutes, df=6, constraints="center")'
+        ' + C(dow) + C(year) + C(police_area) + C(assigned_unit) + C(is_summer)',
+        data=df,
+        family=sm.families.Binomial(),
+        var_weights=df["weight"],
+    ).fit(scale="X2")
+    expected = {}
+    for label, value in (("daylight", 0), ("dark", 1)):
+        counterfactual = df.copy()
+        counterfactual["obscured_view"] = value
+        expected[label] = round(float(fit.predict(counterfactual).mean()) * 100, 1)
+
+    assert got == expected
+
+
+def test_intraracial_fit_reports_probability_scale_marginal_change_and_interval():
+    df = synthetic(n=6000, effect=-0.5)
+    df["weight"] = 0.25 + np.linspace(0, 1, len(df))
+    result = fit_intraracial(df, "outcome")
+
+    assert result["converged"]
+    assert result["marginal_effect_pp"] == pytest.approx(
+        result["marginal_dark_pct"] - result["marginal_daylight_pct"]
+    )
+    assert result["marginal_effect_pp"] < 0
+    assert result["marginal_ci_lo_pp"] < result["marginal_effect_pp"]
+    assert result["marginal_ci_hi_pp"] > result["marginal_effect_pp"]
+    assert result["marginal_effect_se_pp"] > 0
+
+
+def test_marginal_predictions_are_not_the_modal_profile_predictions():
+    """A nonlinear logit makes average predictions differ from at-means."""
+    df = synthetic(n=6000, effect=-0.5)
+    df["weight"] = 1.0
+    df.loc[:2999, "clock_minutes"] = 1028
+    df.loc[3000:, "clock_minutes"] = 1234
+
+    got = predicted_probabilities(df, "outcome")
+
+    fit = smf.glm(
+        'outcome ~ obscured_view + cr(clock_minutes, df=6, constraints="center")'
+        ' + C(dow) + C(year) + C(police_area) + C(assigned_unit) + C(is_summer)',
+        data=df,
+        family=sm.families.Binomial(),
+        var_weights=df["weight"],
+    ).fit(scale="X2")
+    reference = {
+        "clock_minutes": float(df.clock_minutes.mean()),
+        "dow": df.dow.mode().iloc[0],
+        "year": df.year.mode().iloc[0],
+        "police_area": df.police_area.mode().iloc[0],
+        "assigned_unit": df.assigned_unit.mode().iloc[0],
+        "is_summer": df.is_summer.mode().iloc[0],
+    }
+    at_reference = []
+    for value in (0, 1):
+        row = pd.DataFrame([{**reference, "obscured_view": value}])
+        at_reference.append(round(float(fit.predict(row).iloc[0]) * 100, 1))
+
+    assert [got["daylight"], got["dark"]] != at_reference

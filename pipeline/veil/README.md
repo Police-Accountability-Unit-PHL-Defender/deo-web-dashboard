@@ -57,6 +57,86 @@ Sun times are **committed as a CSV** rather than computed at build time, so the
 values are reviewable in a diff and cannot drift with an `astral` upgrade. `astral`
 is a dev dependency only. Regenerate only to extend the year range past 2030.
 
+## Standalone R reproduction of the 2025 intraracial paper
+
+`r_reproduction/` is the email-ready reproduction of Hannon & Biddle (2025),
+["Unequal Policing of Black Motorists in Black Communities by Age and
+Gender"](https://doi.org/10.1007/s12103-025-09879-8). It is deliberately separate
+from the 2026 group-travel analysis described elsewhere in this README.
+
+The folder contains exactly two inputs:
+
+| File | Does |
+|---|---|
+| `r_reproduction/reproduce_intraracial_analysis.R` | Fits all six weighted quasi-binomial models, reproduces Table 1 and Figure 1, and prints average marginal predictions as a separate diagnostic |
+| `r_reproduction/veil_intraracial_sample.csv` | The 75,879-row, model-ready sample with the six outcomes, controls, and seasonality weight |
+
+The CSV is plain text, not gzipped, so the folder can be sent as-is. It is the
+**final analytic sample**, not the raw ODP export: constructing it still depends on
+the private backup, timezone conversion, lighting calculation, sample restrictions,
+and seasonality weights in the Python pipeline. Once the CSV exists, however, the R
+analysis has no Python, SQLite, or repository dependency.
+
+Run from inside the folder:
+
+```bash
+Rscript -e 'install.packages(c("ggeffects", "marginaleffects"))'  # once
+Rscript reproduce_intraracial_analysis.R
+```
+
+The R reproduction was run end to end on 2026-08-28. Its six darkness coefficients
+and standard errors closely reproduce Table 1:
+
+| Outcome | R coefficient (SE) | paper coefficient (SE) |
+|---|---:|---:|
+| `is_young` | −0.174 (0.021) | −0.17 (0.02) |
+| `is_male` | −0.221 (0.021) | −0.21 (0.02) |
+| `young_male` | −0.241 (0.023) | −0.23 (0.02) |
+| `young_female` | +0.055 (0.031), n.s. | +0.05 (0.03), n.s. |
+| `older_male` | −0.006 (0.020), n.s. | −0.01 (0.02), n.s. |
+| `older_female` | +0.261 (0.025) | +0.25 (0.02) |
+
+### Why the script prints two kinds of probabilities
+
+The paper says Figure 1 was produced with `ggeffects`: numeric controls held at
+their means and factor controls at their omitted reference categories. It reports
+that the probability a stopped Black adult was a young man was about 26% in
+daylight and 22% after dark.
+
+The paper does **not** name its omitted factor categories or publish its model code.
+On our later data vintage, using R's arbitrary alphabetical reference levels gives
+18.7% and 15.3%, which plainly does not reproduce the figure. Releveling each
+factor to its modal category reproduces all four panels, including 26.1% and 21.7%
+for young men. The R script therefore uses these modal omitted categories and
+labels them as an **inference**, not a documented author choice:
+
+| Control | Inferred omitted category |
+|---|---|
+| day of week | `1` |
+| year | `2024` |
+| police area | `19-2` |
+| assigned unit | `12TH DISTRICT` |
+| summer | `0` |
+
+The same R-fitted model also goes through
+`marginaleffects::avg_predictions()`. That function sets every observed row to
+daylight and averages its prediction, then repeats under darkness. It gives 28.0%
+and 23.4% for young men. Those are true sample-average marginal predictions, but
+they are **not substituted for the paper's Figure 1 estimand**. The script prints
+them separately to make the distinction auditable:
+
+```text
+Paper:                                 about 26% -> 22%
+R ggeffects mean/reference prediction:       26.1% -> 21.7%
+R average marginal prediction:               28.0% -> 23.4%
+```
+
+All three describe the same underlying darkness coefficient. They differ at the
+probability level because a logistic model is nonlinear: a prediction for one
+mean/reference profile is not generally equal to the average of predictions over
+the observed sample. Do not call the `ggeffects` values average marginal
+predictions, and do not claim the modal reference categories came from the paper.
+
 ## The sample
 
 Per the paper's Data and Methods section, in this order:
