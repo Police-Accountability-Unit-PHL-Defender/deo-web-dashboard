@@ -304,3 +304,45 @@ costs 90-190ms on the bigger pages. They were set from three runs of a release
 build with about half again as headroom. If a page gets legitimately slower,
 move its budget in the commit that slows it and say why. Raising one quietly to
 turn a run green is worse than deleting it, because it still reads as coverage.
+
+---
+
+## Four traps in the raw stop export
+
+Found while building the veil-of-darkness analysis (`pipeline/veil/` — see its
+README). None of these crashes or fails a test; each produces output that looks
+entirely reasonable and is wrong. They apply to any analysis of the raw CSVs, not
+just that one.
+
+**`datetimeoccur` is UTC.** Values look like `2025-01-10T03:10:00Z`. Convert to
+`America/New_York` before anything else touches the data. Anything keyed on time
+of day — an evening window, a rush-hour split, a day/night comparison — is off by
+four or five hours if you skip this, which for a daylight/darkness design inverts
+the result rather than degrading it.
+
+**The literal string `"NA"` is a real `mvc_code` value.** 21,134 rows in 2024
+alone, every one `stoptype='vehicle'` with `mvc_reason='Other'` — genuine MVC
+stops whose specific code went unrecorded. They are a *different category* from
+true nulls (a separate 21,593 in 2024, carrying no reason at all).
+`pandas.read_csv` treats `"NA"` as missing by default, so filtering on "has an MVC
+code" silently drops about 11% of the sample. Read that column with
+`converters={"mvc_code": lambda v: v}` to bypass the sentinel. R's `read.csv` has
+the same default. This was caught only because an exploratory query in DuckDB,
+which preserves the string, disagreed with pandas by 3,600 stops on identical
+input.
+
+**`psa` alone does not identify a service area.** PPD numbers service areas 1–4
+*within each district*, so the raw field takes only five distinct values citywide.
+The unique beat is `(districtoccur, psa)` — 66 combinations. Controlling or
+grouping on `psa` alone pools PSA 2 of the 12th District in Southwest with PSA 2
+of the 7th in the Far Northeast. `cube_builders/stops.py` has the correct idiom:
+`f"{district}-{psa}"`. Note also that `districtoccur` reads as REAL out of SQLite
+(pandas inferred `'02'` → `2.0` at load), so cast to int before zero-padding or a
+`.isdigit()` check silently does nothing.
+
+**The export is partitioned by UTC year; the analytic year is local.** Because
+evening windows straddle the UTC date boundary, every 31 December evening sits in
+the following year's CSV. A year-restricted extract loses stops at the end of its
+range and gains stops from before the start. Under 0.1% for a narrow evening
+window, but systematic at both ends. `veil/build.py` handles it by reading the
+neighbouring years and filtering on local year afterwards.

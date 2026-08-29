@@ -7,6 +7,7 @@
       <svg class="mx-auto text-body-4" ref="graphSvg"></svg>
       <div class="tooltip text-caption"></div>
     </div>
+    <slot name="footer"></slot>
     <div v-if="props.chartLegend" class="text-caption pt-4 px-4 text-neutral-800 flex gap-x-8 gap-y-2 flex-wrap md:justify-center md:ml-20">
       <div v-for="(item, key) in props.chartLegend" :key="key" class="flex gap-1 items-center">
         <div :class="props.groupClasses[key]" class="w-3 h-3"></div>
