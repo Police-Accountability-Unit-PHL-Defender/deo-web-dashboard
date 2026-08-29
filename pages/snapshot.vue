@@ -8,7 +8,7 @@
       <div class="absolute inset-0 z-[1] bg-black opacity-50"></div>
     </template>
     <template #quote>
-      <Quote author="Elder Melanie DuBouse" source="https://soundcloud.com/speakingfreelyaclupa/a-state-of-perpetual-alert-living-while-black-in-philadelphia" backgroundClass="bg-[#CCF1FF]" quoteMarkClass="fill-highlight" bold-color-class="text-[#00B8FF]">
+      <Quote author="Elder Melanie DuBouse" source="https://podcast.app/a-state-of-perpetual-alert-living-while-black-in-philadelphia-e69712864" backgroundClass="bg-[#CCF1FF]" quoteMarkClass="fill-highlight" bold-color-class="text-[#00B8FF]">
         <template #quoteText>
           <p>
             We, as Black and brown people, are witnesses to the racism every day in the Philadelphia Police Department and the city and the country.
@@ -98,39 +98,22 @@
 <script setup>
 import QuestionHeader from '~/components/QuestionHeader.vue';
 import Graph from '~/components/Graph.vue';
-import SelectLocation from '~/components/SelectLocation.vue'
-import SelectTimeGranularity from '~/components/SelectTimeGranularity.vue'
 import HorizontalLine from '~/components/ui/HorizontalLine.vue';
-import Button from '~/components/ui/Button.vue';
 import Tooltip from '~/components/ui/Tooltip.vue';
+import { useStopsCube } from '~/composables/useStopsCube';
+import { buildAnnualSummary } from '~/utils/snapshot';
+import { Quarter } from '~/utils/index';
 
 useHead({
   title: 'Snapshot of traffic enforcement in Philadelphia',
 })
 
-const config = useRuntimeConfig()
-
-const selectedLocation = ref('Philadelphia')
-const selectedTimeGranularity = ref('year')
-const q2ADemographicCategory = ref('race')
-const q2AQuarterStart = ref(new Quarter(2023, QuarterMonths['Jan-Mar']))
-const q2AQuarterEnd = ref(new Quarter(2023, QuarterMonths['Oct-Dec']))
-const q2ARace = ref('White')
-const q2AGender = ref('Male')
-const q2AAgeGroup = ref('<25')
-const q3AEvent = ref('traffic stops')
-const selectedDistricts = ref(['District 25', 'District 05'])
-
-const q1AParams = ref([selectedLocation, selectedTimeGranularity])
-const { data: q1A, refresh: refreshQ1A } = await useAsyncData('q1A',
-  () => $fetch(`${config.public.apiBaseUrl}/snapshot/annual-summary`, {
-    params: {
-      location: getLocationParam(selectedLocation.value),
-      time_aggregation: selectedTimeGranularity.value,
-    },
-    options
-  })
+const { data: stopsBundle } = await useStopsCube()
+const mostRecentQuarter = Quarter.fromParamString(useState('mostRecentQuarter').value)
+// Was a prebuilt snapshot.json; now computed from the stops cube like every
+// other page. See utils/snapshot.ts.
+const q1A = computed(() =>
+  stopsBundle.value ? buildAnnualSummary(stopsBundle.value.cube, mostRecentQuarter) : null,
 )
-watch(q1AParams, async () => { refreshQ1A() }, { deep: true })
 
 </script>

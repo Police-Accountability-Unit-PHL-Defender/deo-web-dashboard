@@ -30,6 +30,7 @@
 </style>
 <script setup>
 import * as d3 from 'd3'
+import { wrapLabel, buildYScale, drawYAxis, createTooltip } from '~/utils/chart'
 
 const props = defineProps({
   graphData: {
@@ -185,15 +186,6 @@ const drawGraph = (graphData) => {
     stackedColorMap.value = keys.map((key, index) => ({ key: key, color: colors[index] }))
   }
 
-  let yScaleDomainMax = undefined
-  if (props.yScaleDomainMax) {
-    yScaleDomainMax = props.yScaleDomainMax
-  } else if (props.stackName) {
-    yScaleDomainMax = maxStackHeight
-  } else {
-    yScaleDomainMax = d3.max(graphData, (d) => d[props.axisProperties.y])
-  }
-
   const x = d3.scaleBand()
     .domain(graphData.map(d => d[props.axisProperties.x]))
     .range([margin.left, width - margin.right])
@@ -221,12 +213,14 @@ const tickValues = averageTickLength > 4 && props.quarterlyXAxisTicks
     })
   : x.domain();
   const marginBottomAdjustment = props.quarterlyXAxisTicks && x.bandwidth() < 100 ? 16 : 0
-  svg.append("g")
+  const xAxisTickText = svg.append("g")
     .attr("transform", `translate(0,${height - (margin.bottom + marginBottomAdjustment)})`)
     .attr("class", "text-caption")
     .call(d3.axisBottom(x).tickSizeInner(0).tickSizeOuter(0).tickPadding(12).tickValues(tickValues))
-    .selectAll(".tick text")
-      .call(wrap, x.bandwidth() + 29);
+    .selectAll(".tick text");
+  if (props.wrapXAxisLabels) {
+    wrapLabel(xAxisTickText, x.bandwidth() + 29);
+  }
   // Add the x-axis label
   svg.append("text")
     .attr("x", (width + margin.left) / 2)
@@ -237,27 +231,17 @@ const tickValues = averageTickLength > 4 && props.quarterlyXAxisTicks
     .text(props.axisProperties.x);
 
   // Add the y-axis and label, and remove the domain line.
-  const y = d3.scaleLinear()
-    .domain([0, yScaleDomainMax])
-    .range([height - (margin.bottom + marginBottomAdjustment), margin.top])
-    .nice()
-  svg.append("g")
-    .attr("transform", `translate(${margin.left},0)`)
-    .attr("class", "text-caption")
-    .call(d3.axisLeft(y).tickSizeInner(-width, 0, 0).tickSizeOuter(0).tickPadding(8))
-    .call(g => g.append("foreignObject")
-      .attr("x", -margin.left)
-      .attr("y", 0)
-      .attr("width", margin.left * 2)
-      .attr("height", margin.top)
-      .append("xhtml:div")
-      .attr("class", "text-body-4 graph-y-axis-container font-semibold")
-      .html(applyLineBreaks(props.axisProperties.y)))
-  
-  const MOUSE_POS_Y_OFFSET = 8;
-  const MOUSE_POS_X_OFFSET = 0;
+  const y = buildYScale(
+    props.stackName ? maxStackHeight : d3.max(graphData, (d) => d[props.axisProperties.y]),
+    height - (margin.bottom + marginBottomAdjustment),
+    margin.top,
+    props.yScaleDomainMax
+  )
+  drawYAxis(svg, y, { marginLeft: margin.left, marginTop: margin.top, label: props.axisProperties.y })
+
   const tooltipDiv = d3.select(container.value).select('.tooltip')
-  const tooltip = (selectionGroup, tooltipDiv, trendline = false, isStack = false) => {
+  const tip = createTooltip(tooltipDiv.node(), { width, height })
+  const tooltip = (selectionGroup, trendline = false, isStack = false) => {
     selectionGroup.each(function () {
       d3.select(this)
         .on("mouseover.tooltip", handleMouseover)
@@ -267,62 +251,26 @@ const tickValues = averageTickLength > 4 && props.quarterlyXAxisTicks
     function handleMouseover() {
       // show/reveal the tooltip, set its contents,
       // style the element being hovered on
-      showTooltip();
       let datum
       if (isStack) {
         datum = graphData.find(d => d[props.axisProperties.x] === d3.select(this).datum().data[0] && d[props.stackName] === d3.select(this.parentNode).datum().key)
       } else {
         datum = d3.select(this).datum()
       }
-      setContents(datum, tooltipDiv);
+      tip.show(datum.hover_text.map((d) => `<p>${d}</p>`).join(''));
       setStyle(d3.select(this));
     }
     function handleMousemove(event) {
       // update the tooltip's position
-      const { offsetX, offsetY } = event
-      // add the left & top margin values to account for the SVG g element transform
-      setPosition(offsetX, offsetY);
+      tip.move(event);
     }
     function handleMouseleave() {
       // do things like hide the tooltip
       // reset the style of the element being hovered on
-      hideTooltip();
+      tip.hide();
       resetStyle(d3.select(this));
     }
-    function showTooltip() {
-      tooltipDiv.style("visibility", "visible");
-    }
-    function hideTooltip() {
-      tooltipDiv.style("visibility", "hidden");
-    }
-    function setPosition(mouseX, mouseY) {
-      tooltipDiv
-        .style(
-          "top",
-          mouseY < height / 2
-            ? `${mouseY + MOUSE_POS_Y_OFFSET}px`
-            : "initial"
-        )
-        .style(
-          "right",
-          mouseX > width / 2
-            ? `${width - mouseX + MOUSE_POS_X_OFFSET}px`
-            : "initial"
-        )
-        .style(
-          "bottom",
-          mouseY > height / 2
-            ? `${height - mouseY + MOUSE_POS_Y_OFFSET}px`
-            : "initial"
-        )
-        .style(
-          "left",
-          mouseX < width / 2
-            ? `${mouseX + MOUSE_POS_X_OFFSET}px`
-            : "initial"
-        );
-      }
-    }
+  }
 
   // grouped
   if (isGrouped.value) {
@@ -346,7 +294,7 @@ const tickValues = averageTickLength > 4 && props.quarterlyXAxisTicks
         .attr("height", (d) => y(0) - y(d[props.axisProperties.y]))
         .attr("width", barWidth)
         .attr("class", (d) => getGroupClass(d.group))
-      .call(tooltip, tooltipDiv);
+      .call(tooltip);
   } else if (isStacked.value) {
     svg.append("g")
       .selectAll("g")
@@ -366,7 +314,7 @@ const tickValues = averageTickLength > 4 && props.quarterlyXAxisTicks
             }
             return 1;  // Fully opaque otherwise
         })
-        .call(tooltip, tooltipDiv, false, true);
+        .call(tooltip, false, true);
   } else {
     // text above bars for baseline comparisons
     const group = svg.append("g")
@@ -386,7 +334,7 @@ const tickValues = averageTickLength > 4 && props.quarterlyXAxisTicks
       .attr("y", (d) => y(d[props.axisProperties.y]))
       .attr("height", (d) => y(0) - y(d[props.axisProperties.y]))
       .attr("width", x.bandwidth())
-      .call(tooltip, tooltipDiv);
+      .call(tooltip);
     group.append("text")
       .attr("x", (d) => x(d[props.axisProperties.x]) + x.bandwidth() / 2)
       .attr("y", (d) => {
@@ -400,6 +348,24 @@ const tickValues = averageTickLength > 4 && props.quarterlyXAxisTicks
       })
       .attr("class", "text-caption")
       .text((d) => d[props.barAnnotationProperty]);
+
+    // Shrink any label wider than its own bar. Labels are centred on the bar
+    // and were drawn at a fixed size, so a long one ("2.1x of Baseline") spilled
+    // past a narrow bar and got cut off at the plot edge.
+    const MIN_LABEL_PX = 8;
+    const available = x.bandwidth() - 4;
+    group.selectAll("text").each(function () {
+      if (available <= 0 || typeof this.getComputedTextLength !== "function") return;
+      let size = parseFloat(window.getComputedStyle(this).fontSize) || 12;
+      // Must be an inline style, not a font-size attribute: the label carries
+      // the .text-caption class, and a CSS rule outranks an SVG presentation
+      // attribute, so setting the attribute changes nothing and this loop
+      // would spin down to the minimum with no visible effect.
+      while (this.getComputedTextLength() > available && size > MIN_LABEL_PX) {
+        size -= 0.5;
+        d3.select(this).style("font-size", size + "px");
+      }
+    });
   }
 
   // trendline
@@ -440,66 +406,11 @@ const tickValues = averageTickLength > 4 && props.quarterlyXAxisTicks
   //   .attr('stroke', 'lightgray');
 }
 
-// source: https://observablehq.com/@clhenrick/tooltip-d3-convention
-function setContents(datum, tooltipDiv) {
-  // customize this function to set the tooltip's contents however you see fit
-  tooltipDiv
-    .selectAll("p")
-    .data(datum.hover_text)
-    .join("p")
-    .html((d) => d);
-}
 function setStyle(selection) {
   selection.attr("opacity", "0.8");
 }
 function resetStyle(selection) {
   selection.attr("opacity", "1");
-}
-
-// modified from source: https://gist.github.com/mbostock/7555321
-function wrap(text, width) {
-  if (!props.wrapXAxisLabels) return
-  text.each(function() {
-    var wordsSplitBySlash = d3.select(this).text().split(/\//)
-    wordsSplitBySlash = wordsSplitBySlash.map((word, index) => index < wordsSplitBySlash.length - 1 ? word + '/' : word)
-    var text = d3.select(this),
-        // wordsSplitBySlash = text.text().split(/(?=\/)/)
-        // words = text.text().split(/(?=\/)/).reverse(),
-        words = wordsSplitBySlash.flatMap(w => w.split(/\s+/)).reverse(),
-        word,
-        line = [],
-        lineNumber = 0,
-        lineHeight = 1.1, // ems
-        y = text.attr("y"),
-        dy = parseFloat(text.attr("dy")),
-        tspan = text.text(null) // .append("tspan").attr("x", 0).attr("y", y).attr("dy", dy + "em");  
-    let firstWord = true
-    while (word = words.pop()) {
-      line.push(word);
-      tspan.text(line.join(" "));
-      if (!firstWord && tspan.node().getComputedTextLength() > width) {
-        lineNumber++
-        line.pop();
-        tspan.text(line.join(" "));
-        line = [word];
-        tspan = text.append("tspan").attr("x", 0).attr("y", y).attr("dy", lineNumber * lineHeight + dy + "em").text(word);
-      }
-      firstWord = false
-    }
-  });
-}
-
-function applyLineBreaks(text) {
-  switch (text) {
-    case 'Number of Traffic Stops':
-      return 'Number of\nTraffic Stops'
-    case 'Contraband Hit Rate (%)':
-      return 'Contraband\nHit Rate (%)'
-    case 'District':
-      return 'District'
-    default:
-      return text
-  }
 }
 </script>
 

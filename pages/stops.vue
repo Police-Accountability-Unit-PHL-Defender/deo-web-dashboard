@@ -87,7 +87,7 @@
             <div class="text-body-4 text-left">Select time(s) of year</div>
             <SelectTimeOfYear class="mt-2 max-w-[390px]" v-model="q1CQuarters"/>
           </div>
-          <Answer>
+          <Answer v-if="q1C">
             <Graph :graph-data="q1C.figures.barplot.data" :axis-properties="{x: q1C.figures.barplot.properties.xAxis, y: q1C.figures.barplot.properties.yAxis}">
               <h4 class="max-w-[550px] mx-auto">{{ q1C.figures.barplot.properties.title }}</h4>
             </Graph>
@@ -209,10 +209,19 @@ import SelectTimeGranularity from '~/components/SelectTimeGranularity.vue';
 import Button from '~/components/ui/Button.vue';
 import HorizontalLine from '~/components/ui/HorizontalLine.vue';
 import Tooltip from '~/components/ui/Tooltip.vue';
+import { groupSum, sumMeasure, groupTupleSum, scalarsKey } from '~/utils/cube';
+import { useStopsCube } from '~/composables/useStopsCube';
 
 useHead({
   title: 'How many stops do police make, and who do they stop?',
 })
+
+// SEASON mapping mirrors deo_backend/models.py SEASON_QUARTER_MAPPING.
+const SEASON_LABEL = { Q1: 'Jan-Mar', Q2: 'Apr-Jun', Q3: 'July-Sep', Q4: 'Oct-Dec' }
+function seasonAndYear(qStr) {
+  const [year, q] = qStr.split('-')
+  return `${SEASON_LABEL[q]} ${year}`
+}
 
 const config = useRuntimeConfig()
 const mostRecentQuarter = Quarter.fromParamString(useState("mostRecentQuarter").value)
@@ -239,86 +248,299 @@ watch(isTableShowingAll, (newValue) => {
   }
 })
 
-const q1AParams = ref([selectedLocation, selectedTimeGranularity])
-const { data: q1A, refresh: refreshQ1A } = await useAsyncData('q1A',
-  () => $fetch(`${config.public.apiBaseUrl}/stops/num-stops`, {
-    params: {
-      location: getLocationParam(selectedLocation.value),
-      time_aggregation: selectedTimeGranularity.value,
-    },
-    options
-  })
-)
-watch(q1AParams, async () => { refreshQ1A() }, { deep: true })
+const { data: stopsBundle } = await useStopsCube()
 
-const q1BParams = ref([selectedLocation, q1BQuarterStart, q1BQuarterEnd])
-const { data: q1B, refresh: refreshQ1B } = await useAsyncData('q1B',
-  () => $fetch(`${config.public.apiBaseUrl}/stops/num-stops-time-slice`, {
-    params: {
-      location: getLocationParam(selectedLocation.value),
-      start_qyear: q1BQuarterStart.value.toParamString(),
-      end_qyear: q1BQuarterEnd.value.toParamString(),
-    },
-    options
-  })
-)
-watch(q1BParams, async () => { refreshQ1B() }, { deep: true })
+const firstQuarter = new Quarter(2014, 1)
 
-const q1CParams = ref([selectedLocation, q1CQuarters])
-const { data: q1C, refresh: refreshQ1C } = await useAsyncData('q1C',
-  () => $fetch(`${config.public.apiBaseUrl}/stops/seasonal`, {
-    params: {
-      location: getLocationParam(selectedLocation.value),
-      q_over_year_select: q1CQuarters.value.map(q => getQuarterParam(q)),
-    },
-    options
-  })
-)
-watch(q1CParams, async () => { refreshQ1C() }, { deep: true })
+const q1A = computed(() => {
+  const bundle = stopsBundle.value
+  if (!bundle) return null
+  const { cube, scalars } = bundle
+  const loc = getLocationParam(selectedLocation.value)
+  const locStr = formatLocationForSentence(selectedLocation.value)
+  const timeDim = selectedTimeGranularity.value // 'year' or 'quarter'
 
-const q2AParams = ref([selectedLocation, q1BQuarterStart, q1BQuarterEnd, q2ADemographicCategory])
-const { data: q2A, refresh: refreshQ2A } = await useAsyncData('q2A',
-  () => $fetch(`${config.public.apiBaseUrl}/stops/by-demographic-category`, {
-    params: {
-      location: getLocationParam(selectedLocation.value),
-      start_qyear: q1BQuarterStart.value.toParamString(),
-      end_qyear: q1BQuarterEnd.value.toParamString(),
-      demographic_category: getDemographicGroupParam(q2ADemographicCategory.value),
-    },
-    options
-  })
-)
-watch(q2AParams, async () => { refreshQ2A() }, { deep: true })
+  const groups = groupSum(cube, 'quarter', 'n_stopped', { location: loc })
+  const rolled = new Map()
+  for (const { key, value } of groups) {
+    const bucket = timeDim === 'year' ? key.slice(0, 4) : key
+    rolled.set(bucket, (rolled.get(bucket) ?? 0) + value)
+  }
+  const sorted = Array.from(rolled, ([key, value]) => ({ key, value })).sort((a, b) => a.key.localeCompare(b.key))
 
-const q2BParams = ref([selectedLocation, q1BQuarterStart, q1BQuarterEnd])
-const { data: q2B, refresh: refreshQ2B } = await useAsyncData('q2B',
-  () => $fetch(`${config.public.apiBaseUrl}/stops/most-frequent-stops`, {
-    params: {
-      location: getLocationParam(selectedLocation.value),
-      start_qyear: q1BQuarterStart.value.toParamString(),
-      end_qyear: q1BQuarterEnd.value.toParamString(),
-    },
-    options
-  })
-)
-watch(q2BParams, async () => { refreshQ2B() }, { deep: true })
+  const total = sumMeasure(cube, 'n_stopped', { location: loc })
+  // Districts arrive as "14*"; the scalars tables are keyed "14".
+  const sk = scalarsKey(loc)
+  const baseline = scalars['stops_monthly_avg_2014_2018']?.[sk] ?? null
+  const surge    = scalars['stops_monthly_avg_2019']?.[sk] ?? null
+  const covid    = scalars['stops_monthly_avg_2020Q2_2021Q1']?.[sk] ?? null
 
-const q2CParams = ref([selectedLocation, q1BQuarterStart, q1BQuarterEnd, q2CGroup1AgeRange, q2CGroup2AgeRange, q2CGroup1Gender, q2CGroup2Gender, q2CGroup1Race, q2CGroup2Race])
-const { data: q2C, refresh: refreshQ2C } = await useAsyncData('q2C',
-  () => $fetch(`${config.public.apiBaseUrl}/stops/group-comparison`, {
-    params: {
-      age_group1: q2CGroup1AgeRange.value,
-      gender_group1: q2CGroup1Gender.value,
-      racial_group1: q2CGroup1Race.value,
-      age_group2: q2CGroup2AgeRange.value,
-      gender_group2: q2CGroup2Gender.value,
-      racial_group2: q2CGroup2Race.value,
-      location: getLocationParam(selectedLocation.value),
-      start_qyear: q1BQuarterStart.value.toParamString(),
-      end_qyear: q1BQuarterEnd.value.toParamString(),
+  const startStr = firstQuarter.getStartString()
+  const endStr   = mostRecentQuarter.getEndString()
+  const startYear = sorted.length ? sorted[0].key.slice(0,4) : '2014'
+  const endYear   = sorted.length ? sorted[sorted.length-1].key.slice(0,4) : String(mostRecentQuarter.year)
+
+  const xAxisLabel = timeDim === 'year' ? 'Year' : 'Quarter'
+  return {
+    text: [
+      `From the start of ${startStr} through the end of ${endStr}, Philadelphia police made a total of <span>${total.toLocaleString()}</span> traffic stops in ${locStr}.`,
+      `In ${locStr}:`,
+      baseline === null ? '' : `From the start of 2014 through the end of 2018, Philadelphia police made an average of <span>${Math.round(baseline).toLocaleString()}</span> traffic stops per month.`,
+      surge    === null ? '' : `During a surge in traffic stops in 2019, Philadelphia police made an average of <span>${Math.round(surge).toLocaleString()}</span> traffic stops per month.`,
+      covid    === null ? '' : `From the start of April 2020 through the end of March 2021 (pandemic), Philadelphia police made an average of <span>${Math.round(covid).toLocaleString()}</span> traffic stops per month.`,
+    ],
+    figures: {
+      barplot: {
+        properties: { xAxis: xAxisLabel, yAxis: 'Number of Traffic Stops', title: `Number of PPD Traffic Stops in ${locStr} from ${startYear} through ${endYear}` },
+        trendlines: [],
+        data: sorted.map(({ key, value }) => ({
+          group: null,
+          [xAxisLabel]: key,
+          'Number of Traffic Stops': value,
+          annotation: null,
+          hover_text: [`${key}`, `${value.toLocaleString()} traffic stops`],
+        })),
+      },
     },
-    options
-  })
-)
-watch(q2CParams, async () => { refreshQ2C() }, { deep: true })
+    tables: {},
+    geojsons: [],
+    data: {},
+  }
+})
+
+const q1B = computed(() => {
+  const bundle = stopsBundle.value
+  if (!bundle) return null
+  const { cube } = bundle
+  const loc = getLocationParam(selectedLocation.value)
+  const locStr = formatLocationForSentence(selectedLocation.value)
+  const start = q1BQuarterStart.value.toParamString()
+  const end   = q1BQuarterEnd.value.toParamString()
+
+  const groups = groupSum(cube, 'quarter', 'n_stopped', { location: loc, startQuarter: start, endQuarter: end })
+  const total = groups.reduce((s, g) => s + g.value, 0)
+  const months = Math.max(1, groups.length * 3)
+  const perMonth = Math.round(total / months)
+
+  return {
+    text: [`Philadelphia police made an average of <span>${perMonth.toLocaleString()}</span> traffic stops per month in ${locStr}, totaling <span>${total.toLocaleString()}</span> traffic stops during that period.`],
+    figures: {
+      barplot: {
+        properties: { xAxis: 'Quarter', yAxis: 'Number of Traffic Stops', title: 'Number of PPD Traffic Stops by Quarter' },
+        trendlines: [],
+        data: groups.map(({ key, value }) => ({
+          group: null,
+          Quarter: key,
+          'Number of Traffic Stops': value,
+          annotation: null,
+          hover_text: [key, `${value.toLocaleString()} traffic stops`],
+        })),
+      },
+    },
+    tables: {}, geojsons: [], data: {},
+  }
+})
+
+const q1C = computed(() => {
+  const bundle = stopsBundle.value
+  if (!bundle) return null
+  const { cube } = bundle
+  const loc = getLocationParam(selectedLocation.value)
+  const locStr = formatLocationForSentence(selectedLocation.value)
+  const wantedQuarters = new Set(q1CQuarters.value.map(q => getQuarterParam(q))) // ['Q1', 'Q3', ...]
+
+  const seasonStr = q1CQuarters.value.join(', ')
+  // Graph.vue reads each row's x value by `axisProperties.x`, so the data key
+  // has to be the display label itself.
+  const xAxisLabel = `Times of Year: ${seasonStr}`
+
+  const groups = groupSum(cube, 'quarter', 'n_stopped', { location: loc })
+  const filtered = groups
+    .filter(g => wantedQuarters.has(g.key.slice(-2))) // 'YYYY-QN' → 'QN'
+    .map(({ key, value }) => ({
+      group: key.slice(-2),
+      [xAxisLabel]: key.slice(0, 4),
+      'Number of Traffic Stops': value,
+      annotation: null,
+      hover_text: [key, `${value.toLocaleString()} traffic stops`],
+    }))
+
+  const startYear = filtered.length ? filtered[0][xAxisLabel] : '2014'
+  const endYear   = filtered.length ? filtered[filtered.length-1][xAxisLabel] : String(mostRecentQuarter.year)
+
+  return {
+    text: [],
+    figures: {
+      barplot: {
+        properties: { xAxis: xAxisLabel, yAxis: 'Number of Traffic Stops', title: `Number of PPD Traffic Stops in ${locStr} for ${seasonStr} from ${startYear} through ${endYear}` },
+        trendlines: [],
+        data: filtered,
+      },
+    },
+    tables: {}, geojsons: [], data: {},
+  }
+})
+
+const DEMO_DIM_MAP = {
+  'Age Range': 'age_range',
+  'Gender': 'gender',
+  'Race': 'race',
+  'age_range': 'age_range',
+  'gender': 'gender',
+  'race': 'race',
+}
+
+// Order-of-group lists mirror DemographicCategory.order_of_group. groupSum
+// returns keys alphabetically, which would put "All Other Races" first.
+const RACE_ORDER = ['Asian', 'Black', 'Latino', 'White', 'All Other Races']
+const GENDER_ORDER = ['Male', 'Female']
+const AGE_ORDER = ['Under 25', '25-34', '35-44', '45-54', '55-64', '65+']
+
+function demoOrder(dimName) {
+  if (dimName === 'race') return RACE_ORDER
+  if (dimName === 'gender') return GENDER_ORDER
+  if (dimName === 'age_range') return AGE_ORDER
+  return null
+}
+
+const q2A = computed(() => {
+  const bundle = stopsBundle.value
+  if (!bundle) return null
+  const { cube } = bundle
+  const loc = getLocationParam(selectedLocation.value)
+  const locStr = formatLocationForSentence(selectedLocation.value)
+  const start = q1BQuarterStart.value.toParamString()
+  const end   = q1BQuarterEnd.value.toParamString()
+  const dim = DEMO_DIM_MAP[getDemographicGroupParam(q2ADemographicCategory.value)]
+  const dimLabel = { age_range: 'Age Range', gender: 'Gender', race: 'Race' }[dim] || dim
+
+  const order = demoOrder(dim)
+  const unordered = groupSum(cube, dim, 'n_stopped', { location: loc, startQuarter: start, endQuarter: end })
+  const groups = order
+    ? order.filter(k => unordered.some(g => g.key === k)).map(k => unordered.find(g => g.key === k))
+    : unordered
+  const total = groups.reduce((s, g) => s + g.value, 0)
+  const withPct = groups.map(({ key, value }) => ({
+    key,
+    pct: total === 0 ? 0 : Math.round((value / total) * 1000) / 10,
+    value,
+  }))
+
+  const startStr = q1BQuarterStart.value.getStartString()
+  const endStr   = q1BQuarterEnd.value.getEndString()
+
+  return {
+    text: [],
+    figures: {
+      barplot: {
+        properties: { xAxis: dimLabel, yAxis: 'Percentage (%)', title: `Percent of PPD Traffic Stops in ${locStr} by ${dimLabel} from ${startStr} through ${endStr}` },
+        trendlines: [],
+        data: withPct.map(({ key, pct, value }) => ({
+          group: null,
+          [dimLabel]: key,
+          'Percentage (%)': pct,
+          annotation: null,
+          hover_text: [key, `${pct}% of traffic stops`],
+        })),
+      },
+    },
+    tables: {}, geojsons: [], data: {},
+  }
+})
+
+const q2B = computed(() => {
+  const bundle = stopsBundle.value
+  if (!bundle) return null
+  const { cube } = bundle
+  const loc = getLocationParam(selectedLocation.value)
+  const start = q1BQuarterStart.value.toParamString()
+  const end   = q1BQuarterEnd.value.toParamString()
+
+  const tuples = groupTupleSum(
+    cube, ['race', 'gender', 'age_range'], 'n_stopped',
+    { location: loc, startQuarter: start, endQuarter: end }
+  )
+  const total = tuples.reduce((s, t) => s + t.value, 0)
+  const withPct = tuples
+    .map(({ keys, value }) => ({
+      Race: keys[0],
+      Gender: keys[1],
+      'Age Range': keys[2],
+      '% of traffic stops': total === 0 ? 0 : Math.round((value / total) * 1000) / 10,
+    }))
+    .filter(r => r['% of traffic stops'] > 0)
+
+  const top = withPct[0]
+  const locationStr = formatLocationForSentence(selectedLocation.value)
+  const startStr = q1BQuarterStart.value.getStartString()
+  const endStr   = q1BQuarterEnd.value.getEndString()
+  const title = `Demographic Groups Stopped by PPD in ${locationStr} from ${startStr} through ${endStr}`
+  const sentence = top
+    ? `Philadelphia police most frequently stopped <span>${String(top.Race).toLowerCase().replace(/(^|\s)\S/g, c => c.toUpperCase())} ${String(top.Gender).toLowerCase()} ${top['Age Range']}</span> year old drivers in ${locationStr} from the start of ${startStr} through the end of ${endStr}, or <span>${top['% of traffic stops'].toFixed(1)}%</span> of stops.`
+    : ''
+
+  return {
+    text: [title, sentence],
+    figures: {},
+    tables: { demo: withPct },
+    geojsons: [], data: {},
+  }
+})
+
+const q2C = computed(() => {
+  const bundle = stopsBundle.value
+  if (!bundle) return null
+  const { cube } = bundle
+  const loc = getLocationParam(selectedLocation.value)
+  const start = q1BQuarterStart.value.toParamString()
+  const end   = q1BQuarterEnd.value.toParamString()
+
+  // Both groups are broken out by quarter and drawn as a grouped bar series,
+  // mirroring group_comparison.py (groupby ["group", "quarter"], x="season").
+  const quartersFor = (ages, genders, races) =>
+    groupSum(cube, 'quarter', 'n_stopped', {
+      location: loc, startQuarter: start, endQuarter: end,
+      race: races.length ? races : undefined,
+      gender: genders.length ? genders : undefined,
+      ageRange: ages.length ? ages : undefined,
+    })
+
+  const series = [
+    { name: 'Group 1', rows: quartersFor(q2CGroup1AgeRange.value, q2CGroup1Gender.value, q2CGroup1Race.value) },
+    { name: 'Group 2', rows: quartersFor(q2CGroup2AgeRange.value, q2CGroup2Gender.value, q2CGroup2Race.value) },
+  ]
+
+  // groupSum sorts by 'YYYY-QN', which is already chronological.
+  const allQuarters = Array.from(new Set(series.flatMap(s => s.rows.map(r => r.key)))).sort()
+  const data = []
+  for (const q of allQuarters) {
+    const season = seasonAndYear(q)
+    for (const s of series) {
+      const hit = s.rows.find(r => r.key === q)
+      if (!hit) continue
+      data.push({
+        group: s.name,
+        Quarter: season,
+        'Number of Traffic Stops': hit.value,
+        annotation: null,
+        hover_text: [s.name, season, `${hit.value.toLocaleString()} traffic stops`],
+      })
+    }
+  }
+
+  const locStr = formatLocationForSentence(selectedLocation.value)
+  const startStr = q1BQuarterStart.value.getStartString()
+  const endStr   = q1BQuarterEnd.value.getEndString()
+  return {
+    text: [],
+    figures: {
+      barplot: {
+        properties: { xAxis: 'Quarter', yAxis: 'Number of Traffic Stops', title: `Number of PPD Traffic Stops in ${locStr}, Comparing Group 1 to Group 2, from ${startStr} through ${endStr}` },
+        trendlines: [],
+        data,
+      },
+    },
+    tables: {}, geojsons: [], data: {},
+  }
+})
 </script>

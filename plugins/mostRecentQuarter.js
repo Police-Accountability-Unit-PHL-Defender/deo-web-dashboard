@@ -7,26 +7,22 @@ function getPreviousQuarter() {
     return Quarter.fromParamString(`${year}-Q${quarter}`).getPreviousQuarter().toParamString();
 }
 
-export default defineNuxtPlugin(async (nuxtApp) => {
-    const runtimeConfig = useRuntimeConfig();
-    const fallbackQuarter = getPreviousQuarter();
-    const fallbackDeoYears = [2022, 2023];
-    useState('mostRecentQuarter', () => fallbackQuarter);
-    useState('deoYears', () => fallbackDeoYears);
-
-    try {
-        const response = await fetch(`${runtimeConfig.public.apiBaseUrl}/settings`);
-
-        if (!response.ok) {
-            throw new Error(`API returned status: ${response.status}`);
-        }
-        const data = await response.json();
-
-        useState('mostRecentQuarter').value =  data.mostRecentQuarter || fallbackQuarter;
-        useState('deoYears').value =  data.deoYears || fallbackDeoYears;
-        console.info(`Data most recently updated for quarter: ${data.mostRecentQuarter}`);
-        console.info(`Data most recently updated for deoYears: ${data.deoYears}`);
-    } catch (error) {
-        console.error(`Failed to fetch mostRecentQuarter. Using fallback value: ${fallbackQuarter}`, error.message);
-    }
+export default defineNuxtPlugin(() => {
+    // mostRecentQuarter = (current calendar quarter) - 1. Mirrors the
+    // computation in deo_backend/models.py:MOST_RECENT_QUARTER.
+    //
+    // The e2e parity harness pins this (and the year derived from it) so a
+    // local build can be compared against a production site that was built in
+    // an earlier quarter. Never set these in a real deploy.
+    const pinned = useRuntimeConfig().public.pinnedMostRecentQuarter;
+    const mostRecentQuarter = pinned || getPreviousQuarter();
+    // DEO_YEARS = list(range(2022, current_year)) — full calendar years
+    // since the Driving Equality Ordinance took effect.
+    const currentYear = pinned
+        ? Number(pinned.split('-Q')[0])
+        : new Date().getFullYear();
+    const deoYears = [];
+    for (let y = 2022; y < currentYear; y += 1) deoYears.push(y);
+    useState('mostRecentQuarter', () => mostRecentQuarter);
+    useState('deoYears', () => deoYears);
 });

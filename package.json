@@ -3,17 +3,25 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "nuxt build",
+    "build": "nuxt generate",
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
-    "postinstall": "nuxt prepare"
+    "postinstall": "nuxt prepare",
+    "test": "vitest run",
+    "e2e": "node e2e/parity.mjs",
+    "e2e:checks": "node e2e/parity.mjs --checks-only",
+    "update-data": "node scripts/update-data.mjs"
   },
   "devDependencies": {
     "@nuxt/devtools": "latest",
     "@nuxtjs/tailwindcss": "^6.8.0",
+    "@vitejs/plugin-vue": "^4.6.2",
+    "@vue/test-utils": "^2.4.11",
+    "happy-dom": "^20.11.2",
     "nuxt": "^3.8.0",
     "sass": "^1.69.4",
+    "vitest": "^4.1.7",
     "vue": "^3.3.6",
     "vue-router": "^4.2.5"
   },
