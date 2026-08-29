@@ -106,12 +106,6 @@ export interface VeilIntraracialYearEstimate {
   /** Sample-average predicted probabilities under the two counterfactuals. */
   marginal_daylight_pct: number
   marginal_dark_pct: number
-  marginal_daylight_se_pp: number
-  marginal_dark_se_pp: number
-  marginal_daylight_ci_lo_pct: number
-  marginal_daylight_ci_hi_pct: number
-  marginal_dark_ci_lo_pct: number
-  marginal_dark_ci_hi_pct: number
   /** Dark minus daylight, in percentage points, with delta-method bounds. */
   marginal_effect_pp: number
   marginal_effect_se_pp: number
@@ -149,10 +143,6 @@ export interface VeilMarginalProbabilityAggregate {
   n: number
   daylightPct: number
   darkPct: number
-  daylightCiLoPct: number
-  daylightCiHiPct: number
-  darkCiLoPct: number
-  darkCiHiPct: number
   effectPp: number
   effectCiLoPp: number
   effectCiHiPp: number
@@ -172,22 +162,18 @@ export function aggregateMarginalProbabilities(
   const chosenOutcomes = new Set(outcomes)
   const chosenYears = new Set(years)
   const totals = new Map<VeilIntraracialGroup, {
-    n: number; daylight: number; dark: number; effect: number
-    daylightVariance: number; darkVariance: number; effectVariance: number
+    n: number; daylight: number; dark: number; effect: number; effectVariance: number
   }>()
 
   for (const estimate of estimates) {
     if (!chosenOutcomes.has(estimate.outcome) || !chosenYears.has(estimate.year)) continue
     const total = totals.get(estimate.outcome) ?? {
-      n: 0, daylight: 0, dark: 0, effect: 0,
-      daylightVariance: 0, darkVariance: 0, effectVariance: 0,
+      n: 0, daylight: 0, dark: 0, effect: 0, effectVariance: 0,
     }
     total.n += estimate.n
     total.daylight += estimate.marginal_daylight_pct * estimate.n
     total.dark += estimate.marginal_dark_pct * estimate.n
     total.effect += estimate.marginal_effect_pp * estimate.n
-    total.daylightVariance += (estimate.n * estimate.marginal_daylight_se_pp) ** 2
-    total.darkVariance += (estimate.n * estimate.marginal_dark_se_pp) ** 2
     total.effectVariance += (estimate.n * estimate.marginal_effect_se_pp) ** 2
     totals.set(estimate.outcome, total)
   }
@@ -198,18 +184,12 @@ export function aggregateMarginalProbabilities(
     const daylightPct = total.daylight / total.n
     const darkPct = total.dark / total.n
     const effectPp = total.effect / total.n
-    const daylightSe = Math.sqrt(total.daylightVariance) / total.n
-    const darkSe = Math.sqrt(total.darkVariance) / total.n
     const effectSe = Math.sqrt(total.effectVariance) / total.n
     return [{
       outcome,
       n: total.n,
       daylightPct,
       darkPct,
-      daylightCiLoPct: daylightPct - 1.96 * daylightSe,
-      daylightCiHiPct: daylightPct + 1.96 * daylightSe,
-      darkCiLoPct: darkPct - 1.96 * darkSe,
-      darkCiHiPct: darkPct + 1.96 * darkSe,
       effectPp,
       effectCiLoPp: effectPp - 1.96 * effectSe,
       effectCiHiPp: effectPp + 1.96 * effectSe,

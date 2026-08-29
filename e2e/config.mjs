@@ -230,8 +230,6 @@ export const CHECKS = [
         return 'aggregate chart lighting endpoints are missing'
       if (!text.includes('not a newly fitted pooled regression'))
         return 'annual-estimate aggregation disclosure is missing'
-      if (!text.includes('Vertical bars are 95% confidence intervals'))
-        return 'aggregate confidence-interval explanation is missing'
       return true
     },
   },

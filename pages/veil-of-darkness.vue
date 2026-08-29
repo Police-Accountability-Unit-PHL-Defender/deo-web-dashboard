@@ -57,8 +57,7 @@
                 of stops in that year's model. It is an aggregate of the annual standardized estimates, not a newly
                 fitted pooled regression. Black and White motorists are always fitted separately. “Majority White”
                 means more than 50% of district residents are White; every other classified residential district is
-                “majority non-White.” Vertical bars are 95% confidence intervals, combining independent annual
-                variances with the same stop-count weights. The same selections control the chart below.
+                “majority non-White.” The same selections control the charts below.
               </p>
             </template>
           </LineGraph>
@@ -318,13 +317,9 @@ const aggregateProbabilityData = computed(() => {
     ]
     return [
       { group: label, Lighting: 'Before sunset', 'Model-adjusted share of stops (%)': estimate.daylightPct,
-        ci_lo: estimate.daylightCiLoPct, ci_hi: estimate.daylightCiHiPct,
-        hover_text: [label, `${estimate.daylightPct.toFixed(1)}% before sunset`,
-          `95% interval ${estimate.daylightCiLoPct.toFixed(1)}% to ${estimate.daylightCiHiPct.toFixed(1)}%`, ...common.slice(1)] },
+        hover_text: [label, `${estimate.daylightPct.toFixed(1)}% before sunset`, ...common.slice(1)] },
       { group: label, Lighting: 'After sunset', 'Model-adjusted share of stops (%)': estimate.darkPct,
-        ci_lo: estimate.darkCiLoPct, ci_hi: estimate.darkCiHiPct,
-        hover_text: [label, `${estimate.darkPct.toFixed(1)}% after sunset`,
-          `95% interval ${estimate.darkCiLoPct.toFixed(1)}% to ${estimate.darkCiHiPct.toFixed(1)}%`, ...common.slice(1)] },
+        hover_text: [label, `${estimate.darkPct.toFixed(1)}% after sunset`, ...common.slice(1)] },
     ]
   }))
 })

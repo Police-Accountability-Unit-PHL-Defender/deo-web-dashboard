@@ -66,18 +66,6 @@ describe('LineGraph', () => {
     expect(factory().findAll('circle')).toHaveLength(rows.length)
   })
 
-  it('draws a vertical interval and two caps for points carrying confidence bounds', () => {
-    const withIntervals = rows.map((row) => ({
-      ...row,
-      ci_lo: row['Percentage (%)'] - 2,
-      ci_hi: row['Percentage (%)'] + 2,
-    }))
-    const wrapper = factory({ graphData: withIntervals })
-    expect(wrapper.findAll('line.interval')).toHaveLength(rows.length)
-    expect(wrapper.findAll('line.cap-ci_lo')).toHaveLength(rows.length)
-    expect(wrapper.findAll('line.cap-ci_hi')).toHaveLength(rows.length)
-  })
-
   it('renders no dashed segment when dashedFromX is null', () => {
     const wrapper = factory()
     const paths = seriesPaths(wrapper)
