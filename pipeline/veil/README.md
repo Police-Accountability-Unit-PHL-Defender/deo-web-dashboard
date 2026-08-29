@@ -281,7 +281,11 @@ The annual cube contains 192 fits (12 full calendar years × four age/gender
 outcomes × four race/context strata). Race is never a cosmetic frontend filter:
 Black and White estimates come from different fitted samples. The before/after
 chart combines selected years by weighting each annual marginal prediction by
-that year's model sample size; it is not a newly fitted pooled regression.
+that year's model sample size; it is not a newly fitted pooled regression. Each
+daylight/dark endpoint carries a delta-method standard error from its annual fit.
+Because calendar-year samples are disjoint, the aggregate chart combines their
+variances as `sum((n_year * se_year)^2) / sum(n_year)^2` and draws 95% Wald
+intervals around both endpoints.
 
 ## Follow-ups
 

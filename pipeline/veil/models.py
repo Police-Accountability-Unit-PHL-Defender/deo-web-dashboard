@@ -272,16 +272,29 @@ def fit_intraracial(df: pd.DataFrame, outcome: str) -> dict:
         p_daylight = np.asarray(fit.predict(daylight))
         p_dark = np.asarray(fit.predict(dark))
         marginal_effect = float(np.mean(p_dark - p_daylight))
-        gradient = np.mean(
-            p_dark[:, None] * (1 - p_dark[:, None]) * x_dark
-            - p_daylight[:, None] * (1 - p_daylight[:, None]) * x_daylight,
-            axis=0,
+        daylight_gradient = np.mean(
+            p_daylight[:, None] * (1 - p_daylight[:, None]) * x_daylight, axis=0,
         )
-        marginal_se = float(np.sqrt(gradient @ np.asarray(fit.cov_params()) @ gradient))
+        dark_gradient = np.mean(
+            p_dark[:, None] * (1 - p_dark[:, None]) * x_dark, axis=0,
+        )
+        covariance = np.asarray(fit.cov_params())
+        daylight_se = float(np.sqrt(daylight_gradient @ covariance @ daylight_gradient))
+        dark_se = float(np.sqrt(dark_gradient @ covariance @ dark_gradient))
+        gradient = dark_gradient - daylight_gradient
+        marginal_se = float(np.sqrt(gradient @ covariance @ gradient))
+        daylight_lo, daylight_hi = confidence_interval(float(p_daylight.mean()), daylight_se)
+        dark_lo, dark_hi = confidence_interval(float(p_dark.mean()), dark_se)
         marginal_lo, marginal_hi = confidence_interval(marginal_effect, marginal_se)
         result.update(
             marginal_daylight_pct=float(100 * p_daylight.mean()),
             marginal_dark_pct=float(100 * p_dark.mean()),
+            marginal_daylight_se_pp=float(100 * daylight_se),
+            marginal_dark_se_pp=float(100 * dark_se),
+            marginal_daylight_ci_lo_pct=float(100 * daylight_lo),
+            marginal_daylight_ci_hi_pct=float(100 * daylight_hi),
+            marginal_dark_ci_lo_pct=float(100 * dark_lo),
+            marginal_dark_ci_hi_pct=float(100 * dark_hi),
             marginal_effect_pp=float(100 * marginal_effect),
             marginal_effect_se_pp=float(100 * marginal_se),
             marginal_ci_lo_pp=float(100 * marginal_lo),

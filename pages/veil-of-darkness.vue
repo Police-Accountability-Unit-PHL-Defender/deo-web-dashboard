@@ -57,10 +57,26 @@
                 of stops in that year's model. It is an aggregate of the annual standardized estimates, not a newly
                 fitted pooled regression. Black and White motorists are always fitted separately. “Majority White”
                 means more than 50% of district residents are White; every other classified residential district is
-                “majority non-White.” The same selections control the chart below.
+                “majority non-White.” Vertical bars are 95% confidence intervals, combining independent annual
+                variances with the same stop-count weights. The same selections control the chart below.
               </p>
             </template>
           </LineGraph>
+
+          <CoefficientGraph
+            :estimates="aggregateEffectData"
+            :axis-properties="{x: 'Age and gender', y: 'Change after dark (percentage points)'}"
+            :group-classes="TREND_CLASSES"
+            :chart-legend="trendLegend">
+            <h4>Combined model-adjusted change after dark across the selected years</h4>
+            <template #footer>
+              <p class="text-caption text-neutral-800 pt-4 px-4 max-w-[630px] mx-auto">
+                One point summarizes all selected years for each identity; its vertical bar is a 95% confidence
+                interval. Annual marginal effects and their independent variances use the same stop-count weighting
+                as the before/after chart. Below zero means a smaller adjusted share after dark; above zero, larger.
+              </p>
+            </template>
+          </CoefficientGraph>
 
           <h3 id="intra-trend" class="text-heading-4 text-left pt-10 mb-6">Does this pattern hold up year by year?</h3>
           <AnswerText>
@@ -302,11 +318,45 @@ const aggregateProbabilityData = computed(() => {
     ]
     return [
       { group: label, Lighting: 'Before sunset', 'Model-adjusted share of stops (%)': estimate.daylightPct,
-        hover_text: [label, `${estimate.daylightPct.toFixed(1)}% before sunset`, ...common.slice(1)] },
+        ci_lo: estimate.daylightCiLoPct, ci_hi: estimate.daylightCiHiPct,
+        hover_text: [label, `${estimate.daylightPct.toFixed(1)}% before sunset`,
+          `95% interval ${estimate.daylightCiLoPct.toFixed(1)}% to ${estimate.daylightCiHiPct.toFixed(1)}%`, ...common.slice(1)] },
       { group: label, Lighting: 'After sunset', 'Model-adjusted share of stops (%)': estimate.darkPct,
-        hover_text: [label, `${estimate.darkPct.toFixed(1)}% after sunset`, ...common.slice(1)] },
+        ci_lo: estimate.darkCiLoPct, ci_hi: estimate.darkCiHiPct,
+        hover_text: [label, `${estimate.darkPct.toFixed(1)}% after sunset`,
+          `95% interval ${estimate.darkCiLoPct.toFixed(1)}% to ${estimate.darkCiHiPct.toFixed(1)}%`, ...common.slice(1)] },
     ]
   }))
+})
+
+const aggregateEffectData = computed(() => {
+  const labelToOutcome = new Map(
+    Object.entries(TREND_LABEL).map(([outcome, label]) => [label, outcome as VeilIntraracialGroup]),
+  )
+  const outcomes = selectedGroups.value
+    .map((label) => labelToOutcome.get(label))
+    .filter((outcome): outcome is VeilIntraracialGroup => Boolean(outcome))
+  const years = selectedYears.value.map(Number)
+
+  return selectedStrata.value.flatMap((stratum) =>
+    aggregateMarginalProbabilities(stratum.estimates, outcomes, years).map((estimate) => {
+      const identity = TREND_LABEL[estimate.outcome]
+      const series = `${RACE_LABEL[stratum.race]}: ${identity}`
+      return {
+        x: identity,
+        group: series,
+        value: estimate.effectPp,
+        ciLo: estimate.effectCiLoPp,
+        ciHi: estimate.effectCiHiPp,
+        hoverText: [
+          series,
+          `${formatSigned(estimate.effectPp)} percentage points after dark`,
+          `95% interval ${formatSigned(estimate.effectCiLoPp)} to ${formatSigned(estimate.effectCiHiPp)}`,
+          `${estimate.n.toLocaleString()} stops across ${years.length} selected ${years.length === 1 ? 'year' : 'years'}`,
+        ],
+      }
+    }),
+  )
 })
 
 /** "2021–2025", from the trend window rather than asserted in the page's voice. */

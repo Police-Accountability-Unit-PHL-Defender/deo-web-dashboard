@@ -26,6 +26,12 @@ describe('aggregateMarginalProbabilities', () => {
     year, outcome, n,
     marginal_daylight_pct: daylight,
     marginal_dark_pct: dark,
+    marginal_daylight_se_pp: 1,
+    marginal_dark_se_pp: 1,
+    marginal_daylight_ci_lo_pct: daylight - 1.96,
+    marginal_daylight_ci_hi_pct: daylight + 1.96,
+    marginal_dark_ci_lo_pct: dark - 1.96,
+    marginal_dark_ci_hi_pct: dark + 1.96,
     marginal_effect_pp: dark - daylight,
     marginal_effect_se_pp: 1,
     marginal_ci_lo_pp: dark - daylight - 2,
@@ -38,7 +44,16 @@ describe('aggregateMarginalProbabilities', () => {
       estimate(2021, 'young_male', 100, 20, 10),
       estimate(2022, 'young_male', 300, 40, 30),
     ], ['young_male'], [2021, 2022])
-    expect(result).toEqual([{ outcome: 'young_male', n: 400, daylightPct: 35, darkPct: 25 }])
+    expect(result[0]).toMatchObject({ outcome: 'young_male', n: 400, daylightPct: 35, darkPct: 25 })
+    // Independent annual variances combine as sqrt(sum((n_i * se_i)^2)) / sum(n_i).
+    const combinedSe = Math.sqrt(100 ** 2 + 300 ** 2) / 400
+    expect(result[0].daylightCiLoPct).toBeCloseTo(35 - 1.96 * combinedSe)
+    expect(result[0].daylightCiHiPct).toBeCloseTo(35 + 1.96 * combinedSe)
+    expect(result[0].darkCiLoPct).toBeCloseTo(25 - 1.96 * combinedSe)
+    expect(result[0].darkCiHiPct).toBeCloseTo(25 + 1.96 * combinedSe)
+    expect(result[0].effectPp).toBeCloseTo(-10)
+    expect(result[0].effectCiLoPp).toBeCloseTo(-10 - 1.96 * combinedSe)
+    expect(result[0].effectCiHiPp).toBeCloseTo(-10 + 1.96 * combinedSe)
   })
 
   it('honors both selectors and preserves requested group order', () => {

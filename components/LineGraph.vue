@@ -148,7 +148,7 @@ const drawGraph = (graphData) => {
     .text(props.axisProperties.x)
 
   const y = buildYScale(
-    d3.max(graphData, (d) => d[props.axisProperties.y]),
+    d3.max(graphData, (d) => d.ci_hi ?? d[props.axisProperties.y]),
     height - margin.bottom,
     margin.top,
     props.yScaleDomainMax
@@ -252,6 +252,29 @@ const drawGraph = (graphData) => {
           .attr('stroke-width', 2)
           .attr('d', line)
       }
+    }
+
+    const intervals = sorted.filter((d) => Number.isFinite(d.ci_lo) && Number.isFinite(d.ci_hi))
+    const whiskers = svg.append('g').attr('class', 'confidence-intervals')
+    whiskers.selectAll('line.interval')
+      .data(intervals)
+      .join('line')
+      .attr('class', `interval ${strokeClass}`)
+      .attr('x1', (d) => x(d[props.axisProperties.x]))
+      .attr('x2', (d) => x(d[props.axisProperties.x]))
+      .attr('y1', (d) => y(d.ci_lo))
+      .attr('y2', (d) => y(d.ci_hi))
+      .attr('stroke-width', 2)
+    for (const bound of ['ci_lo', 'ci_hi']) {
+      whiskers.selectAll(`line.cap-${bound}`)
+        .data(intervals)
+        .join('line')
+        .attr('class', `cap-${bound} ${strokeClass}`)
+        .attr('x1', (d) => x(d[props.axisProperties.x]) - 5)
+        .attr('x2', (d) => x(d[props.axisProperties.x]) + 5)
+        .attr('y1', (d) => y(d[bound]))
+        .attr('y2', (d) => y(d[bound]))
+        .attr('stroke-width', 2)
     }
 
     svg.append('g')

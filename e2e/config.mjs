@@ -230,6 +230,19 @@ export const CHECKS = [
         return 'aggregate chart lighting endpoints are missing'
       if (!text.includes('not a newly fitted pooled regression'))
         return 'annual-estimate aggregation disclosure is missing'
+      if (!text.includes('Vertical bars are 95% confidence intervals'))
+        return 'aggregate confidence-interval explanation is missing'
+      return true
+    },
+  },
+  {
+    name: 'veil pooled effect view renders one combined interval per identity',
+    pages: ['veil'],
+    assert: ({ text }) => {
+      if (!text.includes('Combined model-adjusted change after dark across the selected years'))
+        return 'combined-years effect chart title is missing'
+      if (!text.includes('One point summarizes all selected years for each identity'))
+        return 'combined effect interval explanation is missing'
       return true
     },
   },

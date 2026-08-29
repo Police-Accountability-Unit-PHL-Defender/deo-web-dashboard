@@ -357,6 +357,10 @@ def test_by_year_estimates_carry_average_marginal_probability_changes(cube_outpu
         label = f"{e['year']}/{e['outcome']}"
         assert 0 <= e["marginal_daylight_pct"] <= 100, label
         assert 0 <= e["marginal_dark_pct"] <= 100, label
+        assert e["marginal_daylight_ci_lo_pct"] < e["marginal_daylight_pct"] < e["marginal_daylight_ci_hi_pct"], label
+        assert e["marginal_dark_ci_lo_pct"] < e["marginal_dark_pct"] < e["marginal_dark_ci_hi_pct"], label
+        assert e["marginal_daylight_se_pp"] > 0, label
+        assert e["marginal_dark_se_pp"] > 0, label
         assert e["marginal_effect_pp"] == pytest.approx(
             e["marginal_dark_pct"] - e["marginal_daylight_pct"]
         ), label
