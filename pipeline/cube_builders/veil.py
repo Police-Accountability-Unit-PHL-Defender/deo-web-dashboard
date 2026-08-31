@@ -195,6 +195,7 @@ def _by_year(stops: pd.DataFrame, sun: pd.DataFrame) -> dict:
     """
     strata = []
     pooled_race_interaction = []
+    attribute_comparison = []
     for district_context, districts in _comparison_districts().items():
         for race, race_value in COMPARISON_RACES.items():
             sample = build_sample(
@@ -224,6 +225,31 @@ def _by_year(stops: pd.DataFrame, sun: pd.DataFrame) -> dict:
             "outcome": "young_male",
             **fit_pooled_race_interaction(pooled, "young_male"),
         })
+        effects = []
+        for attribute, outcome in (
+            ("race", "is_black"),
+            ("age", "is_young"),
+            ("gender", "is_male"),
+        ):
+            result = fit_intraracial(pooled, outcome)
+            effects.append({
+                "attribute": attribute,
+                "outcome": outcome,
+                "daylight_pct": result["marginal_daylight_pct"],
+                "dark_pct": result["marginal_dark_pct"],
+                "effect_pp": result["marginal_effect_pp"],
+                "effect_se_pp": result["marginal_effect_se_pp"],
+                "effect_ci_lo_pp": result["marginal_ci_lo_pp"],
+                "effect_ci_hi_pp": result["marginal_ci_hi_pp"],
+                "p_value": result["p_value"],
+                "n": result["n"],
+                "converged": result["converged"],
+            })
+        attribute_comparison.append({
+            "district_context": district_context,
+            "districts": list(districts),
+            "effects": effects,
+        })
 
     return {
         "window": {"start": TREND_WINDOW[0], "end": TREND_WINDOW[1]},
@@ -236,6 +262,7 @@ def _by_year(stops: pd.DataFrame, sun: pd.DataFrame) -> dict:
         ],
         "strata": strata,
         "pooled_race_interaction": pooled_race_interaction,
+        "attribute_comparison": attribute_comparison,
     }
 
 

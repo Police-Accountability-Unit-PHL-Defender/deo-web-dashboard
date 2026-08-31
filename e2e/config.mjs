@@ -262,6 +262,27 @@ export const CHECKS = [
     },
   },
   {
+    name: 'veil attribute comparison ranks common-sample composition shifts',
+    pages: ['veil'],
+    assert: ({ text }) => {
+      if (!text.includes('Which visible characteristic changes most after dark?'))
+        return 'race/age/gender comparison heading is missing'
+      if (!text.includes('gender shows the largest change in stop composition'))
+        return 'common-sample attribute ranking is missing'
+      if (!text.includes('Gender · male share') || !text.includes('-4.4 points'))
+        return 'default-context gender effect is missing or implausible'
+      if (!text.includes('Age · 18–29 share') || !text.includes('-3.6 points'))
+        return 'default-context age effect is missing or implausible'
+      if (!text.includes('Race · Black share') || !text.includes('-0.9 points'))
+        return 'default-context race effect is missing or implausible'
+      if (!text.includes('Largest shift'))
+        return 'largest attribute shift is not called out visually'
+      if (!text.includes('does not say that gender or age explains a percentage of racial bias'))
+        return 'attribute comparison lost its non-decomposition caveat'
+      return true
+    },
+  },
+  {
     name: 'Hannon attribution survives on the veil-of-darkness page',
     pages: ['veil'],
     assert: ({ text }) => text.includes('Hannon') || 'the string "Hannon" is missing from the page',

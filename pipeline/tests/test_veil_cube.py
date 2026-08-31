@@ -420,3 +420,27 @@ def test_pooled_race_interaction_pins_the_contextual_conclusion(cube_outputs):
     white = results["majority_white"]
     assert white["difference_pp"] == pytest.approx(-0.39, abs=0.20)
     assert white["difference_ci_lo_pp"] < 0 < white["difference_ci_hi_pp"]
+
+
+def test_attribute_comparison_uses_one_common_sample_and_scale(cube_outputs):
+    comparisons = cube_outputs[0]["intraracial"]["by_year"]["attribute_comparison"]
+    assert {c["district_context"] for c in comparisons} == {
+        "majority_white", "majority_non_white",
+    }
+    for comparison in comparisons:
+        effects = comparison["effects"]
+        assert {e["attribute"] for e in effects} == {"race", "age", "gender"}
+        assert len({e["n"] for e in effects}) == 1
+        for effect in effects:
+            assert effect["converged"]
+            assert effect["effect_pp"] == pytest.approx(
+                effect["dark_pct"] - effect["daylight_pct"]
+            )
+            assert effect["effect_ci_lo_pp"] < effect["effect_pp"] < effect["effect_ci_hi_pp"]
+
+
+def test_gender_has_the_largest_composition_shift_in_both_contexts(cube_outputs):
+    comparisons = cube_outputs[0]["intraracial"]["by_year"]["attribute_comparison"]
+    for comparison in comparisons:
+        effects = {e["attribute"]: abs(e["effect_pp"]) for e in comparison["effects"]}
+        assert effects["gender"] > effects["age"] > effects["race"]

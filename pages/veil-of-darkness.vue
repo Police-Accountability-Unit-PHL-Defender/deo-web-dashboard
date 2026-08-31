@@ -77,6 +77,49 @@
             </template>
           </CoefficientGraph>
 
+          <h3 class="text-heading-4 text-left pt-10 mb-6">Which visible characteristic changes most after dark?</h3>
+          <div v-if="selectedAttributeComparison" class="grid grid-cols-1 md:grid-cols-3 gap-4 my-6">
+            <div
+              v-for="(effect, index) in rankedAttributeEffects"
+              :key="effect.attribute"
+              class="rounded-xl bg-[#FCFCFC] shadow-graph p-5 border-t-4 border-purple">
+              <p class="text-body-4 font-semibold text-primary-800">{{ ATTRIBUTE_CARD_LABEL[effect.attribute] }}</p>
+              <p class="text-heading-3 text-purple mt-2">{{ formatSigned(effect.effect_pp) }} points</p>
+              <p class="text-caption text-neutral-800 mt-2">
+                95% interval {{ formatSigned(effect.effect_ci_lo_pp) }} to {{ formatSigned(effect.effect_ci_hi_pp) }}
+              </p>
+              <p v-if="index === 0" class="text-caption font-semibold text-primary-800 mt-3">Largest shift</p>
+            </div>
+          </div>
+          <AnswerText v-if="selectedAttributeComparison">
+            <p class="text-body-4">
+              On the same sample and percentage-point scale, gender shows the largest change in stop composition in
+              {{ CONTEXT_LABEL[selectedAttributeComparison.district_context].toLowerCase() }}, followed by age, then
+              race.
+            </p>
+            <p class="text-body-4 mt-4">
+              This ranks the size of three adjusted <em>composition changes</em>; it does not say that gender or age
+              explains a percentage of racial bias. Race, age, and gender overlap in people's identities, and the stop
+              data cannot reveal how officers perceived or combined them. Each estimate uses the same motorists,
+              default years ({{ pooledYearsLabel }}), controls, seasonality weights, and average-marginal method.
+            </p>
+          </AnswerText>
+
+          <CoefficientGraph
+            v-if="selectedAttributeComparison"
+            :estimates="attributeComparisonData"
+            :axis-properties="{x: 'Visible characteristic', y: 'Change after dark (percentage points)'}"
+            :group-classes="ATTRIBUTE_CLASSES">
+            <h4>Adjusted change in stop composition after dark</h4>
+            <template #footer>
+              <p class="text-caption text-neutral-800 pt-4 px-4 max-w-[630px] mx-auto">
+                Race is the Black rather than white non-Latino share; age is the 18–29 rather than 30+ share; gender
+                is the male rather than female share. Below zero means the named group makes up a smaller adjusted
+                share of stops after dark. Bars are 95% confidence intervals.
+              </p>
+            </template>
+          </CoefficientGraph>
+
           <h3 class="text-heading-4 text-left pt-10 mb-6">Are the declines for young Black and white men actually different?</h3>
           <AnswerText v-if="selectedPooledComparison">
             <p class="text-body-4">
@@ -282,6 +325,48 @@ const pooledYearsLabel = computed(() => {
   ranges.push(start === previous ? String(start) : `${start}–${previous}`)
   return ranges.join(' and ')
 })
+
+const ATTRIBUTE_LABEL = {
+  race: 'Race: Black share',
+  age: 'Age: 18–29 share',
+  gender: 'Gender: male share',
+} as const
+const ATTRIBUTE_CARD_LABEL = {
+  race: 'Race · Black share',
+  age: 'Age · 18–29 share',
+  gender: 'Gender · male share',
+} as const
+const ATTRIBUTE_CLASSES = {
+  Attribute: 'stroke-purple fill-purple bg-purple',
+}
+
+const selectedAttributeComparison = computed(() =>
+  intraracialByYear.value?.attribute_comparison.find(
+    (result) => CONTEXT_LABEL[result.district_context] === selectedDistrictContext.value,
+  ) ?? null,
+)
+
+const rankedAttributeEffects = computed(() =>
+  [...(selectedAttributeComparison.value?.effects ?? [])]
+    .sort((a, b) => Math.abs(b.effect_pp) - Math.abs(a.effect_pp)),
+)
+
+const attributeComparisonData = computed(() =>
+  selectedAttributeComparison.value?.effects.map((effect) => ({
+    x: ATTRIBUTE_LABEL[effect.attribute],
+    group: 'Attribute',
+    value: effect.effect_pp,
+    ciLo: effect.effect_ci_lo_pp,
+    ciHi: effect.effect_ci_hi_pp,
+    hoverText: [
+      ATTRIBUTE_LABEL[effect.attribute],
+      `${formatSigned(effect.effect_pp)} percentage points after dark`,
+      `95% interval ${formatSigned(effect.effect_ci_lo_pp)} to ${formatSigned(effect.effect_ci_hi_pp)}`,
+      `${effect.daylight_pct.toFixed(1)}% in daylight; ${effect.dark_pct.toFixed(1)}% after dark`,
+      `${effect.n.toLocaleString()} stops`,
+    ],
+  })) ?? [],
+)
 const trendLegend = computed<Record<string, string>>(() =>
   Object.fromEntries(
     selectedRaces.value.flatMap((race) =>
