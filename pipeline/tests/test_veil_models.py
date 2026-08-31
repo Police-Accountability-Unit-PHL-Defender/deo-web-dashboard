@@ -10,6 +10,7 @@ from veil.models import (
     _collapse_sparse_levels,
     confidence_interval,
     fit_intraracial,
+    fit_pooled_race_interaction,
     fit_vod,
     predicted_probabilities,
 )
@@ -181,6 +182,36 @@ def test_intraracial_fit_reports_probability_scale_marginal_change_and_interval(
     assert result["marginal_ci_lo_pp"] < result["marginal_effect_pp"]
     assert result["marginal_ci_hi_pp"] > result["marginal_effect_pp"]
     assert result["marginal_effect_se_pp"] > 0
+
+
+def test_pooled_race_interaction_recovers_a_darker_black_effect():
+    """The pooled fit must test the difference, not compare separate CIs."""
+    rng = np.random.default_rng(42)
+    n = 12000
+    obscured = rng.integers(0, 2, n)
+    is_black = rng.integers(0, 2, n)
+    # White darkness effect -0.10; Black darkness effect -0.70.
+    logit = 0.2 - 0.1 * obscured + 0.15 * is_black - 0.6 * obscured * is_black
+    outcome = rng.random(n) < 1 / (1 + np.exp(-logit))
+    df = synthetic(n=n, seed=42).assign(
+        outcome=outcome.astype(int),
+        obscured_view=obscured,
+        is_black=is_black,
+        weight=1.0,
+    )
+
+    result = fit_pooled_race_interaction(df, "outcome")
+
+    assert result["converged"], result
+    assert result["interaction_coef"] == pytest.approx(-0.6, abs=0.15)
+    assert result["interaction_p_value"] < 0.001
+    assert result["effects"]["black"]["effect_pp"] < result["effects"]["white"]["effect_pp"]
+    assert result["difference_pp"] == pytest.approx(
+        result["effects"]["black"]["effect_pp"]
+        - result["effects"]["white"]["effect_pp"]
+    )
+    assert result["difference_ci_hi_pp"] < 0
+    assert result["difference_p_value"] < 0.001
 
 
 def test_marginal_predictions_are_not_the_modal_profile_predictions():

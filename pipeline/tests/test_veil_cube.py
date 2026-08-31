@@ -389,3 +389,58 @@ def test_by_year_default_selection_omits_the_pandemic_year(cube_outputs):
     assert 2020 in by_year["years"], "2020 must remain selectable"
     assert 2020 not in by_year["default_years"]
     assert by_year["default_years"] == [y for y in by_year["years"] if y != 2020]
+
+
+def test_pooled_race_interaction_directly_compares_young_men(cube_outputs):
+    by_year = cube_outputs[0]["intraracial"]["by_year"]
+    results = by_year["pooled_race_interaction"]
+    assert {r["district_context"] for r in results} == {
+        "majority_white", "majority_non_white",
+    }
+    for result in results:
+        assert result["outcome"] == "young_male"
+        assert result["converged"]
+        assert set(result["effects"]) == {"black", "white"}
+        assert result["difference_pp"] == pytest.approx(
+            result["effects"]["black"]["effect_pp"]
+            - result["effects"]["white"]["effect_pp"]
+        )
+        assert result["difference_ci_lo_pp"] < result["difference_pp"] < result["difference_ci_hi_pp"]
+
+
+def test_pooled_race_interaction_pins_the_contextual_conclusion(cube_outputs):
+    results = {
+        r["district_context"]: r
+        for r in cube_outputs[0]["intraracial"]["by_year"]["pooled_race_interaction"]
+    }
+    non_white = results["majority_non_white"]
+    assert non_white["difference_pp"] == pytest.approx(-2.73, abs=0.20)
+    assert non_white["difference_ci_hi_pp"] < 0
+
+    white = results["majority_white"]
+    assert white["difference_pp"] == pytest.approx(-0.39, abs=0.20)
+    assert white["difference_ci_lo_pp"] < 0 < white["difference_ci_hi_pp"]
+
+
+def test_attribute_comparison_uses_one_common_sample_and_scale(cube_outputs):
+    comparisons = cube_outputs[0]["intraracial"]["by_year"]["attribute_comparison"]
+    assert {c["district_context"] for c in comparisons} == {
+        "majority_white", "majority_non_white",
+    }
+    for comparison in comparisons:
+        effects = comparison["effects"]
+        assert {e["attribute"] for e in effects} == {"race", "age", "gender"}
+        assert len({e["n"] for e in effects}) == 1
+        for effect in effects:
+            assert effect["converged"]
+            assert effect["effect_pp"] == pytest.approx(
+                effect["dark_pct"] - effect["daylight_pct"]
+            )
+            assert effect["effect_ci_lo_pp"] < effect["effect_pp"] < effect["effect_ci_hi_pp"]
+
+
+def test_gender_has_the_largest_composition_shift_in_both_contexts(cube_outputs):
+    comparisons = cube_outputs[0]["intraracial"]["by_year"]["attribute_comparison"]
+    for comparison in comparisons:
+        effects = {e["attribute"]: abs(e["effect_pp"]) for e in comparison["effects"]}
+        assert effects["gender"] > effects["age"] > effects["race"]

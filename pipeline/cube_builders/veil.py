@@ -32,6 +32,7 @@ from veil.models import (
     MODEL_TARGETS,
     confidence_interval,
     fit_intraracial,
+    fit_pooled_race_interaction,
     fit_vod,
     predicted_probabilities,
 )
@@ -193,6 +194,8 @@ def _by_year(stops: pd.DataFrame, sun: pd.DataFrame) -> dict:
     presented as the same quantity -- see the caveats on the page.
     """
     strata = []
+    pooled_race_interaction = []
+    attribute_comparison = []
     for district_context, districts in _comparison_districts().items():
         for race, race_value in COMPARISON_RACES.items():
             sample = build_sample(
@@ -206,6 +209,48 @@ def _by_year(stops: pd.DataFrame, sun: pd.DataFrame) -> dict:
                 "estimates": _year_estimates(sample),
             })
 
+        # The separate race fits above describe each race but cannot test
+        # whether their darkness effects differ. Fit young men together over
+        # the chart's default years and estimate the Black-minus-white
+        # difference in after-dark changes over one common pooled population.
+        pooled = build_sample(
+            stops, sun, window=TREND_WINDOW,
+            races=(BLACK, WHITE), districts=districts,
+        )
+        pooled = pooled[~pooled.year.isin(TREND_DEFAULT_EXCLUDED_YEARS)].copy()
+        pooled["is_black"] = (pooled.race == BLACK).astype(int)
+        pooled_race_interaction.append({
+            "district_context": district_context,
+            "districts": list(districts),
+            "outcome": "young_male",
+            **fit_pooled_race_interaction(pooled, "young_male"),
+        })
+        effects = []
+        for attribute, outcome in (
+            ("race", "is_black"),
+            ("age", "is_young"),
+            ("gender", "is_male"),
+        ):
+            result = fit_intraracial(pooled, outcome)
+            effects.append({
+                "attribute": attribute,
+                "outcome": outcome,
+                "daylight_pct": result["marginal_daylight_pct"],
+                "dark_pct": result["marginal_dark_pct"],
+                "effect_pp": result["marginal_effect_pp"],
+                "effect_se_pp": result["marginal_effect_se_pp"],
+                "effect_ci_lo_pp": result["marginal_ci_lo_pp"],
+                "effect_ci_hi_pp": result["marginal_ci_hi_pp"],
+                "p_value": result["p_value"],
+                "n": result["n"],
+                "converged": result["converged"],
+            })
+        attribute_comparison.append({
+            "district_context": district_context,
+            "districts": list(districts),
+            "effects": effects,
+        })
+
     return {
         "window": {"start": TREND_WINDOW[0], "end": TREND_WINDOW[1]},
         "years": [int(y) for y in TREND_YEARS],
@@ -216,6 +261,8 @@ def _by_year(stops: pd.DataFrame, sun: pd.DataFrame) -> dict:
             int(y) for y in TREND_YEARS if y not in TREND_DEFAULT_EXCLUDED_YEARS
         ],
         "strata": strata,
+        "pooled_race_interaction": pooled_race_interaction,
+        "attribute_comparison": attribute_comparison,
     }
 
 
