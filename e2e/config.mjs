@@ -245,6 +245,23 @@ export const CHECKS = [
     },
   },
   {
+    name: 'veil pooled race interaction states the direct comparison and denominator',
+    pages: ['veil'],
+    assert: ({ text }) => {
+      if (!text.includes('Are the declines for young Black and white men actually different?'))
+        return 'pooled race-interaction heading is missing'
+      if (!text.includes("young white men's share of stops changed by -2.0 percentage points"))
+        return 'default-context white pooled effect is missing or implausible'
+      if (!text.includes("young Black men's share changed by -4.7 points"))
+        return 'default-context Black pooled effect is missing or implausible'
+      if (!text.includes('2.7 points more negative'))
+        return 'Black-minus-white pooled contrast is missing or implausible'
+      if (!text.includes('shares among recorded stops'))
+        return 'pooled comparison lost its among-stops denominator disclosure'
+      return true
+    },
+  },
+  {
     name: 'Hannon attribution survives on the veil-of-darkness page',
     pages: ['veil'],
     assert: ({ text }) => text.includes('Hannon') || 'the string "Hannon" is missing from the page',

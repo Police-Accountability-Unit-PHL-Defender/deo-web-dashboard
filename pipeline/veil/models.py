@@ -75,6 +75,16 @@ _BASE = 'obscured_view + cr(clock_minutes, df=6, constraints="center") + C(dow) 
 # specify is not a change this reproduction should make.)
 _FULL = _BASE + " + C(police_area) + C(assigned_unit) + C(is_summer)"
 
+# Pooled age/gender comparison. `fit_intraracial` estimates darkness within
+# one race at a time; those separate fits cannot test whether the darkness
+# effect differs by race. This specification puts both races in one model and
+# makes that comparison explicit. `is_black` is supplied by the caller and is
+# 1 for Black - Non-Latino, 0 for White - Non-Latino.
+_POOLED_RACE_INTERACTION = (
+    'obscured_view * is_black + cr(clock_minutes, df=6, constraints="center")'
+    ' + C(dow) + C(year) + C(police_area) + C(assigned_unit) + C(is_summer)'
+)
+
 # Sparse fixed-effect levels (e.g. a specialist unit with a handful of stops)
 # can perfectly separate a binary outcome: GLM then drives that level's
 # coefficient toward +/-infinity while still reporting converged=True. 100
@@ -295,6 +305,118 @@ def fit_intraracial(df: pd.DataFrame, outcome: str) -> dict:
                 f"exceeds the plausible log-odds bound ({_DEGENERATE_BOUND:g})."
             )
     except Exception as exc:  # separation, singular design matrix, empty cells
+        result["error"] = f"{type(exc).__name__}: {exc}"
+    return result
+
+
+def fit_pooled_race_interaction(df: pd.DataFrame, outcome: str) -> dict:
+    """Test whether the after-dark change differs for Black and white stops.
+
+    The two races are fitted together with an ``obscured_view * is_black``
+    interaction. Probability-scale effects are standardized over the same
+    pooled rows: every row is predicted as white/daylight, white/dark,
+    Black/daylight, and Black/dark. The reported contrast is therefore a
+    genuine difference-in-differences, not a subtraction of effects averaged
+    over two different covariate distributions.
+
+    Positive ``difference_pp`` means the after-dark change is more positive
+    (or less negative) for Black motorists; negative means it is more negative.
+    """
+    formula = f"{outcome} ~ {_POOLED_RACE_INTERACTION}"
+    result = {
+        "interaction_coef": float("nan"), "interaction_se": float("nan"),
+        "interaction_p_value": float("nan"), "interaction_odds_ratio": float("nan"),
+        "n": int(len(df)), "converged": False,
+        "collapsed_units": 0, "min_unit_count": _MIN_UNIT_COUNT,
+        "other_row_share": {},
+    }
+    try:
+        df = df.copy()
+        collapsed = 0
+        for col in _SPARSE_COLUMNS:
+            if col in df.columns:
+                counts = df[col].value_counts()
+                collapsed += int((counts < _MIN_UNIT_COUNT).sum())
+                df[col] = _collapse_sparse_levels(df[col], _MIN_UNIT_COUNT)
+                result["other_row_share"][col] = (
+                    float((df[col] == "OTHER").mean()) if len(df) else 0.0
+                )
+        result["collapsed_units"] = collapsed
+
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            model = smf.glm(
+                formula, data=df, family=sm.families.Binomial(), var_weights=df["weight"]
+            )
+            fit = model.fit(scale="X2")
+
+        interaction = "obscured_view:is_black"
+        result.update(
+            interaction_coef=float(fit.params[interaction]),
+            interaction_se=float(fit.bse[interaction]),
+            interaction_p_value=float(fit.pvalues[interaction]),
+            interaction_odds_ratio=float(np.exp(fit.params[interaction])),
+            n=int(fit.nobs),
+            converged=bool(fit.converged),
+        )
+
+        design_info = fit.model.data.design_info
+        scenarios = {}
+        for race, is_black in (("white", 0), ("black", 1)):
+            for lighting, obscured in (("daylight", 0), ("dark", 1)):
+                counterfactual = df.copy()
+                counterfactual["is_black"] = is_black
+                counterfactual["obscured_view"] = obscured
+                x = np.asarray(build_design_matrices([design_info], counterfactual)[0])
+                p = np.asarray(fit.predict(counterfactual))
+                scenarios[(race, lighting)] = {
+                    "pct": float(100 * p.mean()),
+                    "gradient": np.mean(p[:, None] * (1 - p[:, None]) * x, axis=0),
+                }
+
+        covariance = np.asarray(fit.cov_params())
+        effects = {}
+        for race in ("white", "black"):
+            daylight = scenarios[(race, "daylight")]
+            dark = scenarios[(race, "dark")]
+            gradient = dark["gradient"] - daylight["gradient"]
+            effect = (dark["pct"] - daylight["pct"]) / 100
+            se = float(np.sqrt(gradient @ covariance @ gradient))
+            lo, hi = confidence_interval(effect, se)
+            effects[race] = {
+                "daylight_pct": daylight["pct"],
+                "dark_pct": dark["pct"],
+                "effect_pp": float(100 * effect),
+                "effect_se_pp": float(100 * se),
+                "effect_ci_lo_pp": float(100 * lo),
+                "effect_ci_hi_pp": float(100 * hi),
+            }
+
+        # (Black dark - Black daylight) - (white dark - white daylight).
+        difference_gradient = (
+            scenarios[("black", "dark")]["gradient"]
+            - scenarios[("black", "daylight")]["gradient"]
+            - scenarios[("white", "dark")]["gradient"]
+            + scenarios[("white", "daylight")]["gradient"]
+        )
+        difference = (effects["black"]["effect_pp"] - effects["white"]["effect_pp"]) / 100
+        difference_se = float(np.sqrt(difference_gradient @ covariance @ difference_gradient))
+        difference_lo, difference_hi = confidence_interval(difference, difference_se)
+        z = difference / difference_se if difference_se else float("nan")
+        result.update(
+            effects=effects,
+            difference_pp=float(100 * difference),
+            difference_se_pp=float(100 * difference_se),
+            difference_ci_lo_pp=float(100 * difference_lo),
+            difference_ci_hi_pp=float(100 * difference_hi),
+            difference_p_value=float(2 * norm.sf(abs(z))),
+        )
+
+        if abs(result["interaction_coef"]) > _DEGENERATE_BOUND or result["interaction_se"] > _DEGENERATE_BOUND:
+            result["converged"] = False
+            result["degenerate"] = True
+            result["error"] = "Degenerate pooled race-interaction fit."
+    except Exception as exc:
         result["error"] = f"{type(exc).__name__}: {exc}"
     return result
 

@@ -136,6 +136,35 @@ export interface VeilIntraracialByYear {
     districts: string[]
     estimates: VeilIntraracialYearEstimate[]
   }>
+  pooled_race_interaction: VeilPooledRaceInteraction[]
+}
+
+export interface VeilPooledRaceEffect {
+  daylight_pct: number
+  dark_pct: number
+  effect_pp: number
+  effect_se_pp: number
+  effect_ci_lo_pp: number
+  effect_ci_hi_pp: number
+}
+
+export interface VeilPooledRaceInteraction {
+  district_context: VeilDistrictContext
+  districts: string[]
+  outcome: 'young_male'
+  n: number
+  converged: boolean
+  interaction_coef: number
+  interaction_se: number
+  interaction_p_value: number
+  interaction_odds_ratio: number
+  effects: Record<VeilComparisonRace, VeilPooledRaceEffect>
+  /** Black after-dark change minus white after-dark change. */
+  difference_pp: number
+  difference_se_pp: number
+  difference_ci_lo_pp: number
+  difference_ci_hi_pp: number
+  difference_p_value: number
 }
 
 export interface VeilMarginalProbabilityAggregate {
