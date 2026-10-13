@@ -10,6 +10,8 @@
 </style>
 
 <script setup>
+import { mapBasemap } from '~/utils/mapBasemap'
+
 const config = useRuntimeConfig()
 
 const props = defineProps(['geoAggregation', 'modelValue'])
@@ -88,13 +90,7 @@ let {
   center = [0, 0],
   scrollWheelZoom = false,
   selectedFeatureStyle = null,
-  tilelayers = [
-    {
-      url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-      attribution:
-        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-    },
-  ],
+  tilelayers = [mapBasemap(config.public.cartoBasemapApiKey)],
   controls = {
     zoomControl: true,
     position: "topleft",

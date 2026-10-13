@@ -45,6 +45,12 @@ npm run preview
 
 Deployed as a static site on Vercel.
 
+Set `NUXT_PUBLIC_CARTO_BASEMAP_API_KEY` in your local `.env` and Vercel's
+Production, Preview, and Development environments to use CARTO Positron maps.
+The key is public in browser tile requests; keep its value out of source control.
+Because the site is static, changing the key requires a new build/deployment.
+Without a key, maps use the standard OpenStreetMap basemap.
+
 ## Updating the data
 
 ```bash
