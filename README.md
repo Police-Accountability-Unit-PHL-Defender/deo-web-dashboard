@@ -69,3 +69,18 @@ node e2e/parity.mjs                # full parity vs the live site
 
 See `AGENTS.md` for the full runbook, including comparing a build against
 production.
+# Refreshing 2026-Q3
+
+Use the October backup and the July backup as the person-order reference:
+
+```bash
+npm run update-data -- \
+  --zip car_ped_stops_2026-10-23T00_53_17.zip \
+  --row-order-reference-zip car_ped_stops_2026-07-20T03_45_06.zip
+```
+
+Both archives and the existing 2022 MVC correction archive must be in
+`pipeline/data/`. Carto regenerated `cartodb_id` and `objectid` between these
+backups. The reference preserves the existing choice of driver for matching
+person records; new records retain their source order. Without the reference,
+unchanged historical records can produce different demographic totals.
