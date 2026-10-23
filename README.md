@@ -69,7 +69,8 @@ node e2e/parity.mjs                # full parity vs the live site
 
 See `AGENTS.md` for the full runbook, including comparing a build against
 production.
-# Refreshing 2026-Q3
+
+## Refreshing 2026-Q3
 
 Use the October backup and the July backup as the person-order reference:
 
