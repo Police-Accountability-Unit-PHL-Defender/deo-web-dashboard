@@ -1,0 +1,125 @@
+<title>Reports</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap');
+
+  :root {
+    --ground: #FAF9F7;
+    --surface: #FFFFFF;
+    --ink: #23222A;
+    --muted: #6A6772;
+    --accent: #5A2D82;
+    --accent-soft: #F0E9F7;
+    --rule: #E3E1E8;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #191820;
+      --surface: #211F2A;
+      --ink: #E9E7F0;
+      --muted: #A09CAE;
+      --accent: #C9A8E8;
+      --accent-soft: #2E2740;
+      --rule: #37333F;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #191820;
+    --surface: #211F2A;
+    --ink: #E9E7F0;
+    --muted: #A09CAE;
+    --accent: #C9A8E8;
+    --accent-soft: #2E2740;
+    --rule: #37333F;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: 'Source Serif 4', Georgia, 'Times New Roman', serif;
+    font-size: 1.05rem;
+    line-height: 1.65;
+    margin: 0;
+    padding: 3rem 1.25rem 5rem;
+  }
+  .wrap { max-width: 42rem; margin: 0 auto; }
+
+  .eyebrow {
+    font-family: 'Archivo', 'Helvetica Neue', Arial, sans-serif;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 0.75rem;
+  }
+  h1 {
+    font-family: 'Fraunces', Georgia, serif;
+    font-size: clamp(1.9rem, 4vw, 2.4rem);
+    font-weight: 700;
+    line-height: 1.15;
+    margin: 0 0 1rem;
+  }
+  p.lede { margin: 0 0 2.5rem; }
+
+  ul.files {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  ul.files a {
+    display: block;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-left: 4px solid var(--accent);
+    padding: 1rem 1.4rem;
+    text-decoration: none;
+    color: var(--ink);
+  }
+  ul.files a:hover, ul.files a:focus-visible { background: var(--accent-soft); }
+  ul.files a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  ul.files .name {
+    font-family: 'Archivo', 'Helvetica Neue', Arial, sans-serif;
+    font-weight: 600;
+    font-size: 1rem;
+  }
+  ul.files .desc {
+    display: block;
+    color: var(--muted);
+    font-size: 0.9rem;
+    margin-top: 0.15rem;
+  }
+
+  footer {
+    margin-top: 3rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--rule);
+    font-size: 0.88rem;
+    color: var(--muted);
+  }
+</style>
+
+<div class="wrap">
+  <p class="eyebrow">Philadelphia traffic stops</p>
+  <h1>Reports</h1>
+  <p class="lede">Self-contained write-ups. Each file opens in any browser and can be shared as-is.</p>
+
+  <ul class="files">
+    <li>
+      <a href="veil-of-darkness-replication.html">
+        <span class="name">The Veil of Darkness in Philadelphia</span>
+        <span class="desc">Full replication of two Hannon &amp; Biddle studies against the city's
+        open stop data — how the test works, step-by-step R code, both studies' charts and model
+        tables, and every deviation from the published work.</span>
+      </a>
+    </li>
+  </ul>
+
+  <footer>
+    <p>Prepared for review with the authors. Works from Philadelphia's published stop data on
+    OpenDataPhilly.</p>
+  </footer>
+</div>

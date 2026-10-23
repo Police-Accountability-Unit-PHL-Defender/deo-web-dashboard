@@ -305,7 +305,9 @@ CarPedStops = TableFromZip(
         sum(was_arrested) as n_arrested,
         sum(was_found_with_contraband) as n_contraband,
         sum(was_frisked) as n_frisked,
-        sum(was_intruded) as n_intruded
+        sum(was_intruded) as n_intruded,
+        -- Keep the joint count: total arrests include stops without a frisk/search.
+        sum(CASE WHEN was_intruded = 1 AND was_arrested = 1 THEN 1 ELSE 0 END) as n_arrested_intruded
         FROM (
             SELECT 
             stop.*, driver.race, driver.age_range, driver.gender,datetimeoccur_local, n_people_in_car,

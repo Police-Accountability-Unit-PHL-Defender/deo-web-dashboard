@@ -35,6 +35,7 @@ const props = defineProps({
 const dictionary = {
   "Contraband": "Any item that police consider to be evidence of a crime, including drugs and some weapons.",
   "Contraband hit rate": "How often police find contraband when they intrude during traffic stops.",
+  "Confidence interval": "A range of plausible values for an estimate. A 95% confidence interval that does not include zero means the result is unlikely to be due to chance alone.",
   "Disparity": "A difference in outcomes or treatment, particularly one that is considered unfair.",
   "District": "Philadelphia Police District",
   "Division": "Philadelphia Police Division",
@@ -46,11 +47,13 @@ const dictionary = {
   "MVC": "Pennsylvania Motor Vehicle Code. See Title 75 Pa.C.S.A.",
   "Operational": "An MVC violation stemming from a person driving the vehicle, such as speeding.",
   "Nonoperational": "An MVC violation not the result of the manner of operating the vehicle, such as window tint.",
+  "Percentage point": "The difference between two percentages. A share moving from 80% to 79% is a change of 1 percentage point.",
   "PPD": "Philadelphia Police Department",
   "PSA": "Police Service Area: The smallest geographical subdivision of a police district to which police personnel are assigned.",
   "Search": "An examination by police of a person and/or their property or premises that a person would reasonably consider private with the intent of discovering evidence of the commission of a crime.",
   "Search rate": "How often police search people and/or vehicles during traffic stops.",
   "Traffic Stop": "When police pull over a vehicle for a known or suspected traffic violation.",
+  "Veil of darkness": "A method that compares who police stop at the same time of evening when it is light out and when it is dark, when officers have a harder time seeing a driver's race.",
   "Year after": "April 1, 2022 - March 31, 2023"
 }
 const definition = computed(() => {

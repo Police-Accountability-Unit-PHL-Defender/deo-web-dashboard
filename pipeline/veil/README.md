@@ -1,9 +1,18 @@
 # veil — the veil-of-darkness analysis
 
+The public-facing main page at `/veil-of-darkness` now shows one pre/post Driving
+Equality comparison, using sole-occupant adult non-Latino Black/white vehicle
+stops without requiring an MVC code. Its significance statement follows the
+direct difference's 95% confidence interval. `/veil-sensitivity` holds the
+sixteen sample variants and the older annual, subgroup, district, and method
+sections. Both routes remain unlinked from the main navigation. See
+[SENSITIVITY.md](SENSITIVITY.md) for the current comparison pipeline and refresh
+instructions. The replication notes below describe the supporting analyses.
+
 Reproduces Hannon & Biddle (2026), ["Are Young Black Men Traveling Together
 Targeted for Traffic Stops?"](https://doi.org/10.21428/cb6ab371.f1d81a4b)
 (CrimRxiv, Villanova), against our copy of the OpenDataPhilly stop data, and
-publishes the result at `/veil-of-darkness`.
+publishes the supporting results at `/veil-sensitivity`.
 
 The page is **unlinked** — not in the header or footer — pending a decision about
 whether it folds into `/stops` or `/neighborhoods`.
@@ -17,7 +26,7 @@ of the stop decision that depends on what the officer could see. The paper appli
 this twice: the traditional inter-racial version (is the party more likely to be
 Black in daylight?) and a novel intra-racial version (among stops of young Black
 men, is the car more likely to hold two or more of them in daylight?). The second
-is the paper's contribution, and the one this page leads with.
+is the paper's contribution.
 
 ## Re-running it
 

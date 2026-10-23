@@ -36,6 +36,12 @@
                 How did traffic stops change after Driving Equality?
               </a>
             </li>
+            <li>
+              <a href="#veil-of-darkness" class="deo_scroll text-hyperlink flex">
+                <IconsChevron class="fill-black -rotate-90"/>
+                Did the daylight-darkness difference change after Driving Equality?
+              </a>
+            </li>
           </ul>
         </nav>
         <section>
@@ -90,12 +96,15 @@
             </Graph>
           </Answer>
         </section>
+        <HorizontalLine class="my-12" :color="true"/>
+        <VeilSummary/>
       </div>
     </div>
   </main>
 </template>
 
 <script setup>
+import VeilSummary from '~/components/VeilSummary.vue';
 import QuestionHeader from '~/components/QuestionHeader.vue';
 import Graph from '~/components/Graph.vue';
 import HorizontalLine from '~/components/ui/HorizontalLine.vue';

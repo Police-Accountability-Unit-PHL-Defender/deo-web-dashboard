@@ -18,7 +18,7 @@ import { fileURLToPath } from 'node:url'
 const ROOT = resolve(fileURLToPath(new URL('.', import.meta.url)), '..')
 const PIPELINE = join(ROOT, 'pipeline')
 const CUBES = join(ROOT, 'public', 'cubes')
-const TOPICS = ['stops', 'reasons', 'safety', 'scalars']
+const TOPICS = ['stops', 'reasons', 'safety', 'scalars', 'veil', 'veil-comparison']
 
 const argv = process.argv.slice(2)
 const zipIdx = argv.indexOf('--zip')
@@ -50,6 +50,10 @@ console.log(`\n[1/4] Building SQLite from ${zip} (this takes ~25 minutes)`)
 run('uv', ['run', 'python', 'update_db.py', '--zip', zip], PIPELINE)
 
 const dbName = `open_data_philly_${zip.replace('car_ped_stops_', '').split('T')[0].replace(/-/g, '_')}.db`
+// The veil models require person-level evening tables, rebuilt from this archive.
+for (const module of ['veil.build', 'veil.build_intraracial', 'veil.sensitivity']) {
+  run('uv', ['run', 'python', '-m', module, '--zip', join('data', zip), '--db', join('data', dbName)], PIPELINE)
+}
 console.log(`\n[2/4] Building cubes from ${dbName}`)
 const staging = mkdtempSync(join(tmpdir(), 'deo-cubes-'))
 run('uv', ['run', 'python', 'build_cubes.py', '--db', join('data', dbName), '--out', staging], PIPELINE)

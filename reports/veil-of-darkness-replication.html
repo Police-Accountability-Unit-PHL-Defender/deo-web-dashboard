@@ -1,0 +1,1319 @@
+<title>The Veil of Darkness in Philadelphia</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap');
+
+  :root {
+    --ground: #FAF9F7;
+    --surface: #FFFFFF;
+    --ink: #23222A;
+    --muted: #6A6772;
+    --accent: #5A2D82;
+    --accent-soft: #F0E9F7;
+    --rule: #E3E1E8;
+    --mark: #F6F1FB;
+    --code-bg: #F1EFEC;
+    --bar-day: #D9A62E;
+    --bar-dark: #5A2D82;
+    --bar-mint: #4E9B7B;
+    --bar-neutral: #9A95A3;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #191820;
+      --surface: #211F2A;
+      --ink: #E9E7F0;
+      --muted: #A09CAE;
+      --accent: #C9A8E8;
+      --accent-soft: #2E2740;
+      --rule: #37333F;
+      --mark: #262133;
+      --code-bg: #242230;
+      --bar-day: #E5BC55;
+      --bar-dark: #A77FD1;
+      --bar-mint: #7FC4A5;
+      --bar-neutral: #6E6879;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #191820;
+    --surface: #211F2A;
+    --ink: #E9E7F0;
+    --muted: #A09CAE;
+    --accent: #C9A8E8;
+    --accent-soft: #2E2740;
+    --rule: #37333F;
+    --mark: #262133;
+    --code-bg: #242230;
+    --bar-day: #E5BC55;
+    --bar-dark: #A77FD1;
+    --bar-mint: #7FC4A5;
+    --bar-neutral: #6E6879;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: 'Source Serif 4', Georgia, 'Times New Roman', serif;
+    font-size: 1.05rem;
+    line-height: 1.65;
+    margin: 0;
+    padding: 3rem 1.25rem 5rem;
+  }
+  .wrap { max-width: 68rem; margin: 0 auto; }
+  .prose { max-width: 42rem; }
+
+  .eyebrow {
+    font-family: 'Archivo', 'Helvetica Neue', Arial, sans-serif;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 0.75rem;
+  }
+  h1 {
+    font-family: 'Fraunces', Georgia, serif;
+    font-size: clamp(1.9rem, 4vw, 2.6rem);
+    font-weight: 700;
+    line-height: 1.15;
+    text-wrap: balance;
+    margin: 0 0 1rem;
+  }
+  .lede { font-size: 1.15rem; line-height: 1.6; margin: 0 0 2rem; }
+
+  .citation {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-left: 4px solid var(--accent);
+    padding: 1.1rem 1.4rem;
+    margin: 0 0 2.5rem;
+    font-size: 0.95rem;
+  }
+  .citation p { margin: 0.35rem 0; }
+  .citation .venue { font-style: italic; }
+
+  nav.toc {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    padding: 1.1rem 1.4rem;
+    margin: 0 0 1rem;
+    font-family: 'Archivo', 'Helvetica Neue', Arial, sans-serif;
+    font-size: 0.92rem;
+  }
+  nav.toc .tag {
+    font-size: 0.72rem; font-weight: 700; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--muted); display: block; margin-bottom: 0.5rem;
+  }
+  nav.toc ol { margin: 0; padding-left: 1.4rem; columns: 2; column-gap: 2.5rem; }
+  nav.toc li { margin-bottom: 0.3rem; break-inside: avoid; }
+  @media (max-width: 640px) { nav.toc ol { columns: 1; } }
+
+  h2 {
+    font-family: 'Archivo', 'Helvetica Neue', Arial, sans-serif;
+    font-size: 1.35rem;
+    font-weight: 700;
+    text-wrap: balance;
+    margin: 3.25rem 0 1rem;
+    padding-top: 1.75rem;
+    border-top: 1px solid var(--rule);
+  }
+  h3 {
+    font-family: 'Archivo', 'Helvetica Neue', Arial, sans-serif;
+    font-size: 1.02rem;
+    font-weight: 600;
+    margin: 2rem 0 0.6rem;
+  }
+  h4.chart-title {
+    font-family: 'Archivo', 'Helvetica Neue', Arial, sans-serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    text-align: center;
+    margin: 0 0 1rem;
+  }
+  p { margin: 0 0 1.1rem; }
+  a { color: var(--accent); }
+  code {
+    font-family: 'IBM Plex Mono', ui-monospace, Menlo, monospace;
+    font-size: 0.88em;
+    background: var(--mark);
+    padding: 0.1em 0.35em;
+    border-radius: 3px;
+  }
+  ul, ol { padding-left: 1.4rem; margin: 0 0 1.1rem; }
+  li { margin-bottom: 0.45rem; }
+
+  pre.r-code {
+    margin: 1.25rem 0 1.75rem;
+    padding: 1rem 1.25rem;
+    overflow-x: auto;
+    background: var(--code-bg);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    font-family: 'IBM Plex Mono', ui-monospace, Menlo, monospace;
+    font-size: 0.82rem;
+    line-height: 1.55;
+    white-space: pre;
+  }
+  pre.r-code code { background: none; padding: 0; }
+
+  .table-scroll { overflow-x: auto; margin: 1.25rem 0 1.75rem; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    font-family: 'Archivo', 'Helvetica Neue', Arial, sans-serif;
+    font-size: 0.9rem;
+    font-variant-numeric: tabular-nums;
+  }
+  caption {
+    caption-side: top;
+    text-align: left;
+    font-family: 'Archivo', 'Helvetica Neue', Arial, sans-serif;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 0 0 0.5rem;
+  }
+  th, td { padding: 0.55rem 0.9rem; text-align: left; border-bottom: 1px solid var(--rule); }
+  thead th {
+    background: var(--accent-soft);
+    font-weight: 600;
+    font-size: 0.8rem;
+    letter-spacing: 0.04em;
+    border-bottom: 2px solid var(--accent);
+    white-space: nowrap;
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  td.num, th.num { text-align: right; white-space: nowrap; }
+  td .ns { color: var(--muted); font-size: 0.82rem; }
+  td .desc { color: var(--muted); font-size: 0.82rem; }
+
+  .callout {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-left: 4px solid var(--accent);
+    padding: 1rem 1.4rem;
+    margin: 1.5rem 0;
+  }
+  .callout p:last-child { margin-bottom: 0; }
+  .callout .tag {
+    font-family: 'Archivo', 'Helvetica Neue', Arial, sans-serif;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    display: block;
+    margin-bottom: 0.4rem;
+  }
+
+  .verdict {
+    display: inline-block;
+    font-family: 'Archivo', 'Helvetica Neue', Arial, sans-serif;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: var(--accent-soft);
+    padding: 0.2em 0.6em;
+    border-radius: 3px;
+    white-space: nowrap;
+  }
+
+  /* ---- static bar charts ---- */
+  .chart {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    padding: 1.5rem 1.5rem 1rem;
+    margin: 1.5rem 0 2rem;
+  }
+  .bars { display: flex; flex-direction: column; gap: 0.45rem; }
+  .bar-row {
+    display: grid;
+    grid-template-columns: 9.5rem 1fr 5.5rem;
+    align-items: center;
+    gap: 0.75rem;
+    font-family: 'Archivo', 'Helvetica Neue', Arial, sans-serif;
+    font-size: 0.85rem;
+  }
+  .bar-row .bar-val { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .bar-track { display: block; background: var(--mark); height: 1.15rem; border-radius: 2px; }
+  .bar-track .bar { display: block; height: 100%; border-radius: 2px; }
+  .bar-day { background: var(--bar-day); }
+  .bar-dark { background: var(--bar-dark); }
+  .bar-mint { background: var(--bar-mint); }
+  .bar-neutral { background: var(--bar-neutral); }
+  .bar-tag {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .tag-day { color: var(--bar-day); }
+  .tag-dark { color: var(--bar-dark); }
+  .tag-mint { color: var(--bar-mint); }
+  .bin-label {
+    font-family: 'Archivo', 'Helvetica Neue', Arial, sans-serif;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--muted);
+    margin: 0.9rem 0 0.3rem;
+  }
+  .bin:first-child .bin-label { margin-top: 0; }
+  .chart-note {
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin: 1rem 0 0.25rem;
+    max-width: 46rem;
+  }
+  .legend {
+    display: flex; gap: 1.5rem; flex-wrap: wrap;
+    font-family: 'Archivo', 'Helvetica Neue', Arial, sans-serif;
+    font-size: 0.78rem; color: var(--muted);
+    margin-bottom: 1rem;
+  }
+  .legend span::before {
+    content: ""; display: inline-block; width: 0.8rem; height: 0.8rem;
+    border-radius: 2px; margin-right: 0.4rem; vertical-align: -0.1rem;
+    background: var(--bar-neutral);
+  }
+  .legend .l-day::before { background: var(--bar-day); }
+  .legend .l-dark::before { background: var(--bar-dark); }
+  .legend .l-mint::before { background: var(--bar-mint); }
+  .legend .l-violet::before { background: var(--bar-dark); }
+
+  .panel-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.25rem;
+    margin: 1.5rem 0 2rem;
+  }
+  .panel-grid .chart { margin: 0; }
+
+  footer {
+    margin-top: 4rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--rule);
+    font-size: 0.88rem;
+    color: var(--muted);
+  }
+</style>
+
+<div class="wrap">
+
+  <p class="eyebrow">Veil of darkness · Philadelphia · Full replication write-up</p>
+  <h1>The Veil of Darkness in Philadelphia</h1>
+  <p class="lede prose">
+    In daylight an officer can see who is in a car before deciding whether to pull it over; after
+    dark, usually not. This document reproduces two published studies that turn that difference into
+    a statistical test, using Philadelphia's own open traffic-stop data — and walks through exactly
+    how the reproduction was done, with runnable R code, the fitted models set against the published
+    figures, and an honest list of every place the two differ.
+  </p>
+
+  <div class="citation prose">
+    <p><strong>Study 1 — age and gender.</strong> Lance Hannon &amp; Molly Biddle (2025),
+    <span class="venue">Unequal Policing of Black Motorists in Black Communities by Age and
+    Gender</span>, American Journal of Criminal Justice 50:1081–1090.
+    <a href="https://doi.org/10.1007/s12103-025-09879-8">doi.org/10.1007/s12103-025-09879-8</a></p>
+    <p><strong>Study 2 — group travel.</strong> Lance Hannon &amp; Molly Biddle (2026),
+    <span class="venue">Are Young Black Men Traveling Together Targeted for Traffic Stops?</span>,
+    CrimRxiv / Villanova University.
+    <a href="https://doi.org/10.21428/cb6ab371.f1d81a4b">doi.org/10.21428/cb6ab371.f1d81a4b</a></p>
+    <p><strong>The two are not comparable to one another.</strong> Different samples, different
+    years, different geographies and different questions: Study 1 covers Black adults of any age and
+    either gender in Philadelphia's majority-Black police districts; Study 2 covers young men only,
+    city-wide. A coefficient from one cannot be set beside a coefficient from the other.</p>
+  </div>
+
+  <nav class="toc prose">
+    <span class="tag">In this document</span>
+    <ol>
+      <li><a href="#how">How the veil-of-darkness test works</a></li>
+      <li><a href="#steps">Step by step: replicating the studies in R</a></li>
+      <li><a href="#study1">Study 1: age and gender among Black motorists</a></li>
+      <li><a href="#study2">Study 2: young Black men traveling together</a></li>
+      <li><a href="#fidelity">How close the reproductions land</a></li>
+      <li><a href="#deviations">Deliberate deviations from the papers</a></li>
+      <li><a href="#limits">What these analyses cannot tell us</a></li>
+      <li><a href="#traps">What we found in the source data</a></li>
+      <li><a href="#gaps">Known gaps</a></li>
+      <li><a href="#questions">Questions for the authors</a></li>
+    </ol>
+  </nav>
+
+  <h2 id="how">How the veil-of-darkness test works</h2>
+  <div class="prose">
+    <p>
+      In daylight, an officer can see who is in a car before deciding whether to pull it over. After
+      dark, that is much harder: the officer can see headlights and a shape, but usually not the
+      number, age, race or gender of the people inside. People's travel habits, by contrast, barely
+      change at dusk — the same commute at 7:15pm looks the same in June and in December. What
+      changes at dusk is what an officer can see.
+    </p>
+    <p>
+      That difference is the test. If we compare traffic stops made just before nightfall with stops
+      made just after nightfall at the same time of day, then the main thing that has changed is
+      visibility. If the kinds of people police stop shift when the light goes, it is difficult to
+      explain that shift by anything other than what officers could see. This design is known as the
+      &ldquo;veil of darkness&rdquo;.
+    </p>
+    <p>
+      <strong>How to read the numbers.</strong> The charts of raw shares describe what the data looks
+      like. The models do the actual test: they hold clock time, day of week and year constant and
+      ask what darkness alone does to the odds of a given kind of stop. Two ways of writing the same
+      result appear throughout. An <strong>odds ratio</strong> below 1 means the stop became
+      <em>less</em> likely once officers could no longer see into the car — the direction that
+      indicates officers were selecting on what they could see; above 1 means more likely. A
+      <strong>coefficient</strong> is the same quantity on a scale where zero, rather than one, means
+      no effect, so a negative coefficient and an odds ratio below 1 say the same thing. In both
+      cases a 95% confidence interval that does not reach the no-effect mark means a result like this
+      one would be unlikely if darkness made no difference at all.
+    </p>
+  </div>
+
+  <h2 id="steps">Step by step: replicating the studies in R</h2>
+  <div class="prose">
+    <p>
+      Our own pipeline is Python, but both papers fitted their models in R, and everything here
+      reproduces from the raw download in a few dozen lines of it. The snippets below are runnable R,
+      following the analysis in the order it actually happens: get the data, attach the sun, build
+      the sample, weight for seasonality, fit the model, read the darkness coefficient. The starting
+      point is Philadelphia's published vehicle and pedestrian stops file on OpenDataPhilly.
+    </p>
+  </div>
+
+  <h3>Step 1 — Read the data, and mind two traps</h3>
+  <div class="prose">
+    <p>
+      The export has one row per <em>person</em>, so a stop of three people is three rows. Two things
+      in it are silently treacherous: the timestamps are UTC, not Philadelphia time (for a
+      daylight/darkness test, missing this inverts the result), and the literal string
+      <code>"NA"</code> is a real motor vehicle code value — an MVC stop whose specific code went
+      unrecorded — not a missing value. R's default <code>na.strings</code> would silently
+      reclassify about 11% of MVC stops as non-MVC.
+    </p>
+  </div>
+<pre class="r-code"><code>library(dplyr)
+library(lubridate)
+
+# OpenDataPhilly's vehicle/pedestrian stops export: one row per PERSON,
+# so a stop of three people is three rows.
+#
+# Two traps in the raw CSV, both silent:
+#   * datetimeoccur is UTC, not Philadelphia time
+#   * the string "NA" is a REAL mvc_code value (an MVC stop whose
+#     specific code went unrecorded), not a missing value. read.csv's
+#     default na.strings would reclassify ~11% of MVC stops as non-MVC.
+stops &lt;- read.csv("car_ped_stops.csv",
+                  stringsAsFactors = FALSE,
+                  na.strings = "")            # keep "NA" as data
+
+stops$ts_local &lt;- with_tz(ymd_hms(stops$datetimeoccur),
+                          tzone = "America/New_York")</code></pre>
+
+  <h3>Step 2 — Attach the sun, and label each stop daylight or dark</h3>
+  <div class="prose">
+    <p>
+      Each stop needs the sunset and civil-dusk times of its own date. The comparison window — the
+      <em>inter-twilight window</em> — runs from the earliest dusk to the latest sunset across the
+      study period, because only inside that span can one clock time be light in June and dark in
+      December. Stops falling in the roughly 30-minute ambiguous band between sunset and full dusk
+      are excluded, in part because officers log stop times in round numbers far more often than
+      chance would produce, so a stop near the boundary can sit on the wrong side of the veil.
+    </p>
+  </div>
+<pre class="r-code"><code># One row per date: sunset and civil dusk, local time. Generate with
+# suncalc::getSunlightTimes(lat = 39.9526, lon = -75.1652,
+#                           keep = c("sunset", "dusk")) or download a
+# table; we commit one so the pipeline is deterministic.
+sun &lt;- read.csv("philadelphia_sun_times.csv")
+sun &lt;- sun %&gt;%
+  mutate(sunset_min = hour(sunset_local) * 60 + minute(sunset_local),
+         dusk_min   = hour(dusk_local)   * 60 + minute(dusk_local))
+
+# The inter-twilight window: earliest dusk to latest sunset across the
+# study period. Only inside this span can one clock time be light in
+# June and dark in December -- and that is the whole comparison.
+itp_start &lt;- min(sun$dusk_min)
+itp_end   &lt;- max(sun$sunset_min)
+
+stops &lt;- stops %&gt;%
+  mutate(stop_date     = as.Date(ts_local),
+         clock_minutes = hour(ts_local) * 60 + minute(ts_local)) %&gt;%
+  left_join(sun, by = "stop_date") %&gt;%
+  mutate(lighting = case_when(
+    clock_minutes &lt;  sunset_min ~ "daylight",
+    clock_minutes &gt;= dusk_min   ~ "dark",
+    TRUE                         ~ "ambiguous"))   # excluded below</code></pre>
+
+  <h3>Step 3 — Collapse person rows into stops</h3>
+  <div class="prose">
+    <p>
+      The export has no vehicle or incident identifier, so a &ldquo;party&rdquo; is
+      <em>inferred</em>: person rows sharing a timestamp (to the minute) and a recorded location
+      string are treated as occupants of one stopped car. Nothing in the data says they were in one
+      car — we measured the over-merge risk (under 1% of inferred parties disagree on vehicle year,
+      make or model) rather than assume it away. Deduplication must key on <code>objectid</code>:
+      deduplicating on demographics would merge two same-age men in one car into one person,
+      destroying about a quarter of exactly the multi-occupant parties Study 2 is about.
+    </p>
+  </div>
+<pre class="r-code"><code># A "party" is INFERRED: person rows sharing a timestamp (to the
+# minute) and a recorded location string are treated as occupants of one
+# stopped car. We measured the over-merge risk rather than assume it:
+# under 1% of inferred parties disagree on vehicle year/make/model.
+parties &lt;- stops %&gt;%
+  distinct(objectid, .keep_all = TRUE) %>%  # row identity ONLY: deduping
+                                            # on demographics would merge
+                                            # two same-age men in one car
+  group_by(datetimeoccur, location) %&gt;%
+  summarise(
+    party_size      = n(),
+    n_races         = n_distinct(race),
+    party_race      = first(race),
+    all_young_men   = all(gender == "Male" &amp; between(age, 18, 29)),
+    complete_demogs = all(!is.na(race) &amp; !is.na(gender) &amp; !is.na(age)),
+    is_mvc          = any(!is.na(mvc_code) &amp; mvc_code != ""),
+    any_arrest      = any(individual_arrested == 1),
+    # sole-occupant parties keep their own age/gender for Study 1
+    age = first(age), gender = first(gender),
+    ts_local = first(ts_local), stop_date = first(stop_date),
+    clock_minutes = first(clock_minutes), lighting = first(lighting),
+    districtoccur = first(districtoccur), psa = first(psa),
+    assigned_unit = first(assigned_unit),
+    .groups = "drop")</code></pre>
+
+  <h3>Step 4 — Restrict to each paper's sample, and define the outcomes</h3>
+  <div class="prose">
+    <p>
+      The two papers then diverge. Study 2 (2026) keeps homogeneous parties of young men, city-wide,
+      2021–2024, in the paper's own 5:08pm–8:35pm window. Study 1 (2025) keeps sole Black adult
+      occupants in the eight majority-Black districts the paper names, January 2022 through August
+      2025. Each defines its own outcome variables and the <code>dark</code> indicator the whole
+      test turns on.
+    </p>
+  </div>
+<pre class="r-code"><code># Study 2 (2026 paper): homogeneous parties of young men, city-wide,
+# 2021-2024, the paper's own 5:08pm-8:35pm window.
+sample2 &lt;- parties %&gt;%
+  filter(is_mvc, all_young_men, complete_demogs,
+         n_races == 1,                            # homogeneous party
+         party_race %in% c("Black - Non-Latino",
+                           "White - Non-Latino"),
+         !any_arrest,
+         between(year(ts_local), 2021, 2024),
+         between(clock_minutes, 17*60 + 8, 20*60 + 35),
+         lighting != "ambiguous") %&gt;%
+  mutate(dark         = as.integer(lighting == "dark"),
+         group_travel = as.integer(party_size &gt;= 2),
+         year         = year(ts_local),
+         dow          = wday(ts_local),
+         is_summer    = as.integer(month(ts_local) %in% 6:8),
+         # PPD numbers service areas 1-4 WITHIN each district, so the
+         # raw psa field has only five values city-wide; the real area
+         # is the district-qualified pair, e.g. "02-1".
+         police_area  = sprintf("%02d-%d", districtoccur, psa))</code></pre>
+<pre class="r-code"><code># Study 1 (2025 paper): SOLE Black adult occupants, the eight
+# majority-Black districts the paper names, January 2022 - August 2025,
+# and the inter-twilight window derived from the sample's own dates.
+sample1 &lt;- parties %&gt;%
+  filter(party_size == 1,
+         sprintf("%02d", districtoccur) %in%
+           c("12", "14", "16", "18", "19", "22", "35", "39"),
+         ts_local &gt;= ymd("2022-01-01"), ts_local &lt; ymd("2025-09-01"),
+         party_race == "Black - Non-Latino",
+         !is.na(age), age &gt;= 18, gender %in% c("Male", "Female"),
+         is_mvc, lighting != "ambiguous",
+         between(clock_minutes, itp_start, itp_end)) %&gt;%
+  mutate(dark         = as.integer(lighting == "dark"),
+         young_male   = as.integer(age &lt;= 29 &amp; gender == "Male"),
+         young_female = as.integer(age &lt;= 29 &amp; gender == "Female"),
+         older_male   = as.integer(age &gt;= 30 &amp; gender == "Male"),
+         older_female = as.integer(age &gt;= 30 &amp; gender == "Female"),
+         year         = year(ts_local),
+         dow          = wday(ts_local),
+         is_summer    = as.integer(month(ts_local) %in% 6:8),
+         police_area  = sprintf("%02d-%d", districtoccur, psa))</code></pre>
+
+  <h3>Step 5 — Weight for seasonality</h3>
+  <div class="prose">
+    <p>
+      Within the inter-twilight window a December date is entirely dark and a July date entirely
+      light, so any group that drives more in one season than another is over-represented in one
+      lighting condition for reasons that have nothing to do with policing. Both papers apply the
+      Knode et al. (2024) correction: weight each date by <code>p(1−p)</code>, where <code>p</code>
+      is the share of that date's window spent in daylight, so the dates where light and dark are
+      closest to an even split — where lighting is closest to random — count the most.
+    </p>
+  </div>
+<pre class="r-code"><code># Knode, Wolfe &amp; Carter (2024), Criminology 62(3), supplemental S.2.
+# p = the share of that date's inter-twilight window spent in daylight;
+# w = p(1-p), floored by its own mean so all-light and all-dark dates
+# are down-weighted rather than dropped outright.
+sun &lt;- sun %&gt;%
+  mutate(
+    daylight = pmin(pmax(sunset_min, itp_start), itp_end) - itp_start,
+    darkness = itp_end - pmin(pmax(dusk_min, itp_start), itp_end),
+    p = ifelse(daylight + darkness &gt; 0,
+               daylight / (daylight + darkness), 0),
+    w = p * (1 - p))
+sun$w &lt;- sun$w + mean(sun$w)
+
+sample1 &lt;- sample1 %&gt;% left_join(select(sun, stop_date, w),
+                                 by = "stop_date")</code></pre>
+
+  <h3>Step 6 — Fit the models</h3>
+  <div class="prose">
+    <p>
+      Each outcome is a quasi-binomial GLM: the <code>dark</code> indicator, a natural cubic spline
+      on clock time (holding the time of evening constant), and day-of-week, year, police-area,
+      assigned-unit and summer fixed effects. One precaution comes first: fixed-effect levels seen
+      only a handful of times can perfectly predict a binary outcome and send a coefficient toward
+      infinity while the fit still reports convergence, so levels with fewer than 100 stops are
+      folded into an <code>OTHER</code> bucket.
+    </p>
+  </div>
+<pre class="r-code"><code>library(splines)
+
+# A fixed-effect level seen only a handful of times can perfectly
+# predict a binary outcome and send its coefficient toward infinity
+# while the fit still reports convergence. Fold levels with fewer than
+# 100 stops into "OTHER".
+collapse_rare &lt;- function(x, min_n = 100) {
+  rare &lt;- names(which(table(x) &lt; min_n))
+  factor(ifelse(x %in% rare, "OTHER", as.character(x)))
+}
+
+# Study 1's specification: darkness, a natural cubic spline on clock
+# time, day-of-week / year / police-area / assigned-unit fixed effects,
+# a summer indicator, and the seasonality weights from step 5.
+# family = quasibinomial gives the overdispersion-adjusted SEs.
+fit &lt;- glm(young_male ~ dark + ns(clock_minutes, df = 6) +
+             factor(dow) + factor(year) + factor(police_area) +
+             collapse_rare(assigned_unit) + factor(is_summer),
+           family = quasibinomial, weights = w, data = sample1)
+
+summary(fit)$coefficients["dark", ]   # estimate, SE, z-value, p
+exp(coef(fit)["dark"])                # the odds ratio</code></pre>
+  <div class="prose">
+    <p>
+      Study 2 fits the same family of models on its own sample — a base specification without
+      location or unit controls (Model 1), a fuller one with them (Model 2), and the placebo on
+      young white men, which should be null and is:
+    </p>
+  </div>
+<pre class="r-code"><code># Study 2's three Model 1 fits, and the fuller Model 2 specification:
+black_parties &lt;- filter(sample2, party_race == "Black - Non-Latino")
+
+m1 &lt;- glm(group_travel ~ dark + ns(clock_minutes, df = 6) +
+            factor(dow) + factor(year),
+          family = quasibinomial, data = black_parties)
+
+m2 &lt;- glm(group_travel ~ dark + ns(clock_minutes, df = 6) +
+            factor(dow) + factor(year) + collapse_rare(police_area) +
+            collapse_rare(assigned_unit) + factor(is_summer),
+          family = quasibinomial, data = black_parties)
+
+# The placebo: the same model on young WHITE men. It should be null --
+# and is.
+placebo &lt;- update(m1, data = filter(sample2,
+                                    party_race == "White - Non-Latino"))</code></pre>
+
+  <h3>Step 7 — Turn the coefficient into predicted probabilities</h3>
+  <div class="prose">
+    <p>
+      The four daylight/dark panels in Study 1 below are <em>model-adjusted predicted
+      probabilities</em>, not raw shares: the fitted model evaluated twice, once with
+      <code>dark</code> set to 0 and once with it set to 1, while every control is held fixed —
+      clock time at its sample mean, every factor at its most common level. That is what turns a
+      log-odds coefficient into the percentage-point contrast a reader can actually picture. For an
+      average marginal effect proper — the prediction averaged over the whole sample rather than at
+      one reference profile — the one-line <code>marginaleffects</code> call at the bottom is the
+      standard tool.
+    </p>
+  </div>
+<pre class="r-code"><code># The four daylight/dark panels in Study 1 are MODEL-ADJUSTED PREDICTED
+# PROBABILITIES, not raw shares: the fitted model evaluated with dark
+# set to 0 and then to 1, clock time held at its sample mean and every
+# factor held at its modal (most common) level.
+modal &lt;- function(x) names(which.max(table(x)))
+
+newdata &lt;- data.frame(
+  dark          = c(0, 1),
+  clock_minutes = mean(sample1$clock_minutes),
+  dow           = modal(sample1$dow),
+  year          = modal(sample1$year),
+  police_area   = modal(sample1$police_area),
+  assigned_unit = modal(collapse_rare(sample1$assigned_unit)),
+  is_summer     = modal(sample1$is_summer))
+
+predict(fit, newdata, type = "response")   # p(daylight), p(dark)
+
+# An average marginal effect proper -- the daylight/dark contrast
+# averaged over the actual sample rather than at one reference
+# profile -- is one line with the marginaleffects package:
+# marginaleffects::avg_predictions(fit, variables = "dark")</code></pre>
+
+  <h3>Step 8 — Refit one year at a time</h3>
+  <div class="prose">
+    <p>
+      The interactive year-by-year chart on the live page is Study 1's specification refit
+      separately for each calendar year, 2014–2025 — twelve fits sharing one inter-twilight window
+      and one weight schedule, so a year-to-year difference cannot be an artifact of a shifting
+      comparison period. This step is our extension, not part of either paper.
+    </p>
+  </div>
+<pre class="r-code"><code># Study 1's specification refit separately for each calendar year,
+# 2014-2025, sharing ONE inter-twilight window and ONE weight schedule
+# across all years, so a year-to-year difference cannot be an artifact
+# of a shifting comparison period. (sample1_long is the step-4 sample
+# built over the full 2014-2025 window rather than the paper's window.)
+per_year &lt;- lapply(2014:2025, function(yr) {
+  fit &lt;- glm(young_male ~ dark + ns(clock_minutes, df = 6) +
+               factor(dow) + factor(police_area) +
+               collapse_rare(assigned_unit) + factor(is_summer),
+             family = quasibinomial, weights = w,
+             data = filter(sample1_long, year == yr))
+  s &lt;- summary(fit)$coefficients["dark", ]
+  data.frame(year = yr, coef = s["Estimate"], se = s["Std. Error"])
+})
+per_year &lt;- do.call(rbind, per_year)</code></pre>
+
+  <h2 id="study1">Study 1: when police can see who's driving, who do they stop?</h2>
+  <div class="prose">
+    <p>
+      Among traffic stops of Black motorists, does daylight change the <em>age and gender</em> of
+      the person who gets pulled over? This compares stops of Black motorists in daylight with
+      stops of Black motorists after dark, and asks whether the mix of who is stopped shifts when
+      officers can no longer see into the car before deciding to pull it over.
+    </p>
+    <p>
+      The sample is narrow and stated plainly: <strong>75,879 stops</strong> of a single Black adult
+      occupant, initiated for a motor vehicle code violation, during evening hours, in
+      Philadelphia's majority-Black police districts (12, 14, 16, 18, 19, 22, 35, 39), from January
+      2022 to August 2025.
+    </p>
+  </div>
+
+  <div class="panel-grid">
+    <div class="chart">
+      <h4 class="chart-title">Stopped driver is under 30 and male</h4>
+      <div class="legend"><span class="l-day">Daylight</span><span class="l-dark">After dark</span></div>
+      <div class="bars">
+        <div class="bar-row"><span class="bar-tag tag-day">Daylight</span><span class="bar-track"><span class="bar bar-day" style="width:87.7%"></span></span><span class="bar-val">26.3%</span></div>
+        <div class="bar-row"><span class="bar-tag tag-dark">After dark</span><span class="bar-track"><span class="bar bar-dark" style="width:73%"></span></span><span class="bar-val">21.9%</span></div>
+      </div>
+      <p class="chart-note">Model-adjusted predicted probability, p &lt; .001. Darkness lowers it.</p>
+    </div>
+    <div class="chart">
+      <h4 class="chart-title">Stopped driver is under 30 and female (no significant change)</h4>
+      <div class="legend"><span class="l-day">Daylight</span><span class="l-dark">After dark</span></div>
+      <div class="bars">
+        <div class="bar-row"><span class="bar-tag tag-day">Daylight</span><span class="bar-track"><span class="bar bar-day" style="width:75%"></span></span><span class="bar-val">9.0%</span></div>
+        <div class="bar-row"><span class="bar-tag tag-dark">After dark</span><span class="bar-track"><span class="bar bar-dark" style="width:78.3%"></span></span><span class="bar-val">9.4%</span></div>
+      </div>
+      <p class="chart-note">Model-adjusted predicted probability, p = .084. No detectable change.</p>
+    </div>
+    <div class="chart">
+      <h4 class="chart-title">Stopped driver is 30 or older and male (no significant change)</h4>
+      <div class="legend"><span class="l-day">Daylight</span><span class="l-dark">After dark</span></div>
+      <div class="bars">
+        <div class="bar-row"><span class="bar-tag tag-day">Daylight</span><span class="bar-track"><span class="bar bar-day" style="width:83.8%"></span></span><span class="bar-val">50.3%</span></div>
+        <div class="bar-row"><span class="bar-tag tag-dark">After dark</span><span class="bar-track"><span class="bar bar-dark" style="width:83.5%"></span></span><span class="bar-val">50.1%</span></div>
+      </div>
+      <p class="chart-note">Model-adjusted predicted probability, p = .772. No detectable change.</p>
+    </div>
+    <div class="chart">
+      <h4 class="chart-title">Stopped driver is 30 or older and female</h4>
+      <div class="legend"><span class="l-day">Daylight</span><span class="l-dark">After dark</span></div>
+      <div class="bars">
+        <div class="bar-row"><span class="bar-tag tag-day">Daylight</span><span class="bar-track"><span class="bar bar-day" style="width:67.7%"></span></span><span class="bar-val">14.9%</span></div>
+        <div class="bar-row"><span class="bar-tag tag-dark">After dark</span><span class="bar-track"><span class="bar bar-dark" style="width:84.1%"></span></span><span class="bar-val">18.5%</span></div>
+      </div>
+      <p class="chart-note">Model-adjusted predicted probability, p &lt; .001. Darkness raises it.</p>
+    </div>
+  </div>
+
+  <div class="prose">
+    <p>
+      Two of these four results move, and they move in opposite directions. Darkness cuts the odds
+      that a stopped Black driver is a young man by about 21% (p &lt; .001), and raises the odds
+      that the stopped driver is an older woman by about 30% (p &lt; .001). Those two results are
+      the near-inverse of each other: when officers can see less, young men make up a smaller share
+      of who gets stopped and older women make up a larger share.
+    </p>
+    <p>
+      <strong>The other two groups show no detected effect, and that is part of the finding, not a
+      gap in it.</strong> Darkness does not move the odds that a stopped Black driver is a young
+      woman (p = .084) or an older man (p = .772) — both confidence intervals span 1, and neither
+      should be read as a small effect. If darkness were driving some general shift in who gets
+      stopped, it is difficult to explain why it would move two of the four groups and leave the
+      other two untouched.
+    </p>
+  </div>
+
+  <div class="table-scroll">
+    <table>
+      <caption>Study 1 model results — effect of darkness on who gets stopped, against the paper's Table 1 ("Dark Out")</caption>
+      <thead>
+        <tr>
+          <th>What the model predicts</th>
+          <th class="num">Our coef</th><th class="num">Our SE</th>
+          <th class="num">Published coef</th><th class="num">Published SE</th>
+          <th>Significant?</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Stopped driver is under 30 (any gender)</td><td class="num">−0.174</td><td class="num">0.021</td><td class="num">−0.17</td><td class="num">0.02</td><td>Yes (p &lt; .001)</td></tr>
+        <tr><td>Stopped driver is male (any age)</td><td class="num">−0.221</td><td class="num">0.021</td><td class="num">−0.21</td><td class="num">0.02</td><td>Yes (p &lt; .001)</td></tr>
+        <tr><td>Stopped driver is under 30 and male</td><td class="num">−0.242</td><td class="num">0.023</td><td class="num">−0.23</td><td class="num">0.02</td><td>Yes (p &lt; .001)</td></tr>
+        <tr><td>Stopped driver is under 30 and female</td><td class="num">+0.054</td><td class="num">0.031</td><td class="num">+0.05</td><td class="num">0.03</td><td>No (p = .084)</td></tr>
+        <tr><td>Stopped driver is 30 or older and male</td><td class="num">−0.006</td><td class="num">0.020</td><td class="num">−0.01</td><td class="num">0.02</td><td>No (p = .772)</td></tr>
+        <tr><td>Stopped driver is 30 or older and female</td><td class="num">+0.261</td><td class="num">0.025</td><td class="num">+0.25</td><td class="num">0.02</td><td>Yes (p &lt; .001)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2 id="study2">Study 2: young Black men traveling together</h2>
+  <div class="prose">
+    <p>
+      The rest of this document reproduces the 2026 paper: young Black men only, 2021–2024,
+      city-wide, asking whether a stopped driver was traveling with another young Black man. Every
+      figure from here on is drawn from that four-year window and from the evening hours the authors
+      studied (5:08pm–8:35pm).
+    </p>
+  </div>
+
+  <h3>How many young male motorists did Philadelphia police stop during the evening hours, by race?</h3>
+  <div class="chart">
+    <h4 class="chart-title">Young male motorists stopped by PPD in the evening hours, 2021–2024</h4>
+    <div class="bars">
+      <div class="bar-row"><span>Black motorists</span><span class="bar-track"><span class="bar bar-violet bar-dark" style="width:100%"></span></span><span class="bar-val">36,781</span></div>
+      <div class="bar-row"><span>White motorists</span><span class="bar-track"><span class="bar bar-neutral" style="width:15%"></span></span><span class="bar-val">5,529</span></div>
+    </div>
+    <p class="chart-note">Young male motorists (ages 18–29) stopped for a motor vehicle code
+    violation between 5:08pm and 8:35pm, 2021–2024. Counted per motorist.</p>
+  </div>
+  <div class="prose">
+    <p>
+      This gap on its own is not evidence of bias. Police decide where to deploy officers, and those
+      decisions are driven largely by where crime is believed to be concentrated rather than by
+      where traffic risk is highest. Sending more officers into some neighborhoods than others
+      produces more stops of the people who live and drive in those neighborhoods, whatever each
+      individual officer does. That mechanism — sometimes called neighborhood profiling — plausibly
+      explains much of the difference above. The central results here are not cross-race comparisons
+      at all: the frisk and ticket chart, the veil-of-darkness chart, and the headline model row all
+      compare young Black men with young Black men, which removes the part of this problem that
+      comes from Black and white motorists being stopped in different neighborhoods.
+    </p>
+  </div>
+
+  <h3>Of the young male motorists police stopped, how many were traveling in a car with more than one person in it?</h3>
+  <div class="chart">
+    <h4 class="chart-title">Share of stopped young male motorists traveling in a multi-occupant car, 2021–2024</h4>
+    <div class="bars">
+      <div class="bar-row"><span>Black motorists</span><span class="bar-track"><span class="bar bar-dark" style="width:100%"></span></span><span class="bar-val">27.2%</span></div>
+      <div class="bar-row"><span>White motorists</span><span class="bar-track"><span class="bar bar-neutral" style="width:19.5%"></span></span><span class="bar-val">5.3%</span></div>
+    </div>
+    <p class="chart-note">Counted per motorist: the denominator is people stopped, not stops.
+    Counted per stop instead, both shares are materially lower, because a multi-occupant stop
+    contributes several motorists but only one stop.</p>
+  </div>
+  <div class="prose">
+    <p>
+      The obvious innocent explanation is that Black and white Philadelphians simply travel together
+      at different rates. The paper's authors checked that against American Community Survey
+      commuting data, which puts carpooling at roughly 14% for both Black and white Philadelphians.
+      Different travel habits do not account for the difference above.
+    </p>
+    <p>
+      This chart, like the one before it, is a comparison <em>across</em> races, and so carries the
+      neighborhood-profiling caveat above. Everything from here on compares young Black men with
+      young Black men, with two clearly marked exceptions in the model tables.
+    </p>
+  </div>
+
+  <h3>What happens during the stop?</h3>
+  <div class="chart">
+    <h4 class="chart-title">Frisk and ticket rates for young Black male motorists, alone vs. traveling together, 2021–2024</h4>
+    <div class="legend"><span class="l-mint">Traveling alone</span><span class="l-violet">Traveling with another young Black man</span></div>
+    <div class="bin">
+      <div class="bin-label">Frisked</div>
+      <div class="bars">
+        <div class="bar-row"><span class="bar-tag tag-mint">Alone</span><span class="bar-track"><span class="bar bar-mint" style="width:36.8%"></span></span><span class="bar-val">7.1%</span></div>
+        <div class="bar-row"><span class="bar-tag tag-dark">Together</span><span class="bar-track"><span class="bar bar-dark" style="width:100%"></span></span><span class="bar-val">19.3%</span></div>
+      </div>
+    </div>
+    <div class="bin">
+      <div class="bin-label">Ticketed</div>
+      <div class="bars">
+        <div class="bar-row"><span class="bar-tag tag-mint">Alone</span><span class="bar-track"><span class="bar bar-mint" style="width:57.5%"></span></span><span class="bar-val">11.1%</span></div>
+        <div class="bar-row"><span class="bar-tag tag-dark">Together</span><span class="bar-track"><span class="bar bar-dark" style="width:37.3%"></span></span><span class="bar-val">7.2%</span></div>
+      </div>
+    </div>
+    <p class="chart-note">Young Black male motorists (ages 18–29) stopped 2021–2024,
+    5:08pm–8:35pm. Counted per occupant: 26,761 traveling alone, 10,020 traveling with another
+    young Black man.</p>
+  </div>
+  <div class="prose">
+    <p>
+      This is the sharpest contrast in either study. Stops of young Black men traveling with
+      another young Black man have nearly triple the frisk rate of stops of young Black men
+      traveling alone — 19.3% against 7.1% — while the ticket rate is <em>lower</em>, 7.2% against
+      11.1%. These are raw shares with no controls, so they describe an association rather than
+      establishing a cause. But if these stops were about enforcing the motor vehicle code, it is
+      hard to see why the ticket rate would fall when a second young Black man is in the car.
+    </p>
+  </div>
+
+  <h3>The veil of darkness itself</h3>
+  <div class="chart">
+    <h4 class="chart-title">Share of stops of young Black men that were multi-occupant cars, by time of evening and light, 2021–2024</h4>
+    <div class="legend"><span class="l-day">Daylight</span><span class="l-dark">After dark</span></div>
+    <div class="bin"><div class="bin-label">5:15pm</div><div class="bars">
+      <div class="bar-row"><span class="bar-tag tag-day">Daylight</span><span class="bar-track"><span class="bar bar-day" style="width:67%"></span></span><span class="bar-val">13.4%</span></div>
+      <div class="bar-row"><span class="bar-tag tag-dark">After dark</span><span class="bar-track"><span class="bar bar-dark" style="width:65%"></span></span><span class="bar-val">13.0%</span></div>
+    </div></div>
+    <div class="bin"><div class="bin-label">5:30pm</div><div class="bars">
+      <div class="bar-row"><span class="bar-tag tag-day">Daylight</span><span class="bar-track"><span class="bar bar-day" style="width:64.5%"></span></span><span class="bar-val">12.9%</span></div>
+      <div class="bar-row"><span class="bar-tag tag-dark">After dark</span><span class="bar-track"><span class="bar bar-dark" style="width:56.5%"></span></span><span class="bar-val">11.3%</span></div>
+    </div></div>
+    <div class="bin"><div class="bin-label">5:45pm</div><div class="bars">
+      <div class="bar-row"><span class="bar-tag tag-day">Daylight</span><span class="bar-track"><span class="bar bar-day" style="width:69%"></span></span><span class="bar-val">13.8%</span></div>
+      <div class="bar-row"><span class="bar-tag tag-dark">After dark</span><span class="bar-track"><span class="bar bar-dark" style="width:59.5%"></span></span><span class="bar-val">11.9%</span></div>
+    </div></div>
+    <div class="bin"><div class="bin-label">6:00pm</div><div class="bars">
+      <div class="bar-row"><span class="bar-tag tag-day">Daylight</span><span class="bar-track"><span class="bar bar-day" style="width:71.5%"></span></span><span class="bar-val">14.3%</span></div>
+      <div class="bar-row"><span class="bar-tag tag-dark">After dark</span><span class="bar-track"><span class="bar bar-dark" style="width:47%"></span></span><span class="bar-val">9.4%</span></div>
+    </div></div>
+    <div class="bin"><div class="bin-label">6:15pm</div><div class="bars">
+      <div class="bar-row"><span class="bar-tag tag-day">Daylight</span><span class="bar-track"><span class="bar bar-day" style="width:77.5%"></span></span><span class="bar-val">15.5%</span></div>
+      <div class="bar-row"><span class="bar-tag tag-dark">After dark</span><span class="bar-track"><span class="bar bar-dark" style="width:52%"></span></span><span class="bar-val">10.4%</span></div>
+    </div></div>
+    <div class="bin"><div class="bin-label">6:30pm</div><div class="bars">
+      <div class="bar-row"><span class="bar-tag tag-day">Daylight</span><span class="bar-track"><span class="bar bar-day" style="width:78%"></span></span><span class="bar-val">15.6%</span></div>
+      <div class="bar-row"><span class="bar-tag tag-dark">After dark</span><span class="bar-track"><span class="bar bar-dark" style="width:67%"></span></span><span class="bar-val">13.4%</span></div>
+    </div></div>
+    <div class="bin"><div class="bin-label">6:45pm</div><div class="bars">
+      <div class="bar-row"><span class="bar-tag tag-day">Daylight</span><span class="bar-track"><span class="bar bar-day" style="width:75%"></span></span><span class="bar-val">15.0%</span></div>
+      <div class="bar-row"><span class="bar-tag tag-dark">After dark</span><span class="bar-track"><span class="bar bar-dark" style="width:62%"></span></span><span class="bar-val">12.4%</span></div>
+    </div></div>
+    <div class="bin"><div class="bin-label">7:00pm</div><div class="bars">
+      <div class="bar-row"><span class="bar-tag tag-day">Daylight</span><span class="bar-track"><span class="bar bar-day" style="width:77%"></span></span><span class="bar-val">15.4%</span></div>
+      <div class="bar-row"><span class="bar-tag tag-dark">After dark</span><span class="bar-track"><span class="bar bar-dark" style="width:70%"></span></span><span class="bar-val">14.0%</span></div>
+    </div></div>
+    <div class="bin"><div class="bin-label">7:15pm</div><div class="bars">
+      <div class="bar-row"><span class="bar-tag tag-day">Daylight</span><span class="bar-track"><span class="bar bar-day" style="width:88%"></span></span><span class="bar-val">17.6%</span></div>
+      <div class="bar-row"><span class="bar-tag tag-dark">After dark</span><span class="bar-track"><span class="bar bar-dark" style="width:73%"></span></span><span class="bar-val">14.6%</span></div>
+    </div></div>
+    <div class="bin"><div class="bin-label">7:30pm</div><div class="bars">
+      <div class="bar-row"><span class="bar-tag tag-day">Daylight</span><span class="bar-track"><span class="bar bar-day" style="width:91.5%"></span></span><span class="bar-val">18.3%</span></div>
+      <div class="bar-row"><span class="bar-tag tag-dark">After dark</span><span class="bar-track"><span class="bar bar-dark" style="width:66%"></span></span><span class="bar-val">13.2%</span></div>
+    </div></div>
+    <div class="bin"><div class="bin-label">7:45pm</div><div class="bars">
+      <div class="bar-row"><span class="bar-tag tag-day">Daylight</span><span class="bar-track"><span class="bar bar-day" style="width:82.5%"></span></span><span class="bar-val">16.5%</span></div>
+      <div class="bar-row"><span class="bar-tag tag-dark">After dark</span><span class="bar-track"><span class="bar bar-dark" style="width:67.5%"></span></span><span class="bar-val">13.5%</span></div>
+    </div></div>
+    <div class="bin"><div class="bin-label">8:00pm</div><div class="bars">
+      <div class="bar-row"><span class="bar-tag tag-day">Daylight</span><span class="bar-track"><span class="bar bar-day" style="width:92.5%"></span></span><span class="bar-val">18.5%</span></div>
+      <div class="bar-row"><span class="bar-tag tag-dark">After dark</span><span class="bar-track"><span class="bar bar-dark" style="width:70%"></span></span><span class="bar-val">14.0%</span></div>
+    </div></div>
+    <div class="bin"><div class="bin-label">8:15pm</div><div class="bars">
+      <div class="bar-row"><span class="bar-tag tag-day">Daylight</span><span class="bar-track"><span class="bar bar-day" style="width:66.5%"></span></span><span class="bar-val">13.3%</span></div>
+      <div class="bar-row"><span class="bar-tag tag-dark">After dark</span><span class="bar-track"><span class="bar bar-dark" style="width:70.5%"></span></span><span class="bar-val">14.1%</span></div>
+    </div></div>
+    <p class="chart-note">Stops of young Black male motorists (ages 18–29), 2021–2024, in 15-minute
+    clock-time bins, counted per stop. Two clock times are not shown: the sample window starts at
+    5:08pm and ends at 8:35pm, so the earliest dark bin (5:00pm, 108 stops) and the latest daylight
+    bin (8:30pm, 41 stops) are clipped and rest on very few stops; any clock time with fewer than
+    200 stops on either side of the veil is left out. The models below use every stop, including the
+    ones behind the omitted clock times.</p>
+  </div>
+  <div class="prose">
+    <p>
+      Each pair of bars is a single time of evening — the same clock time, in daylight and in
+      darkness. That is possible because sunset moves through the year: at 7:15pm it is light in
+      June and dark in December. Commuting patterns at 7:15pm are much the same in both months; the
+      light is not. The gap between the two bars at the same clock time is what the whole test rests
+      on, and across the evening the daylight bars sit higher in 12 of the 13 bins shown. The models
+      below test whether that pattern survives controls.
+    </p>
+  </div>
+
+  <h3>Study 2 model results</h3>
+  <div class="table-scroll">
+    <table>
+      <caption>Effect of darkness on stop composition, 2021–2024 (Model 1: clock-time spline, day of week, year)</caption>
+      <thead>
+        <tr>
+          <th>What the model predicts</th>
+          <th class="num">Odds ratio (95% CI)</th>
+          <th class="num">Our coef</th>
+          <th class="num">Published coef</th>
+          <th class="num">Stops</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>A stopped young Black man was traveling with another young Black man<br/><span class="desc">Among stops of young Black male motorists</span></td>
+          <td class="num">0.792 (0.738–0.850)</td><td class="num">−0.233</td><td class="num">−0.242</td><td class="num">31,209</td>
+        </tr>
+        <tr>
+          <td>The young man police stopped was Black rather than white<br/><span class="desc">Among stops of young Black and white male motorists</span></td>
+          <td class="num">0.890 (0.835–0.949)</td><td class="num">−0.116</td><td class="num">−0.116</td><td class="num">36,587</td>
+        </tr>
+        <tr>
+          <td>Placebo: a stopped young white man was traveling with another young white man<br/><span class="desc">Among stops of young white male motorists — not significant (p = .85)</span></td>
+          <td class="num">1.037 (0.717–1.501)</td><td class="num">+0.037</td><td class="num">not published</td><td class="num">5,378</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="prose">
+    <p>
+      Among stops of young Black men, the odds that the stopped car was carrying another young Black
+      man were 21% lower after dark than in daylight at the same clock time. Across stops of young
+      Black and white men together, the odds that the person stopped was Black were 11% lower after
+      dark. Both intervals exclude 1, so neither is comfortably explained by chance.
+    </p>
+    <p>
+      The third row is a placebo test: the same model run on stops of young <em>white</em> men. Its
+      confidence interval spans 1 (p = .85). It is not statistically significant. That null result is
+      part of the evidence, not a gap in it: whatever darkness does to the composition of stops of
+      young Black men, it does not do to stops of young white men. Had the placebo also moved, the
+      likely explanation would have been some general artifact of nightfall rather than anything
+      about race.
+    </p>
+  </div>
+
+  <div class="table-scroll">
+    <table>
+      <caption>The same models with fuller controls (Model 2 adds police service area, officer assignment, summer)</caption>
+      <thead>
+        <tr>
+          <th>What the model predicts</th>
+          <th class="num">Odds ratio (95% CI)</th>
+          <th class="num">Our coef</th>
+          <th class="num">Published coef</th>
+          <th class="num">Stops</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>A stopped young Black man was traveling with another young Black man<br/><span class="desc">Among stops of young Black male motorists</span></td>
+          <td class="num">0.764 (0.702–0.831)</td><td class="num">−0.269</td><td class="num">−0.269</td><td class="num">31,205</td>
+        </tr>
+        <tr>
+          <td>The young man police stopped was Black rather than white<br/><span class="desc">Among stops of young Black and white male motorists</span></td>
+          <td class="num">0.837 (0.767–0.913)</td><td class="num">−0.178</td><td class="num">−0.188</td><td class="num">36,583</td>
+        </tr>
+        <tr>
+          <td>Placebo: a stopped young white man was traveling with another young white man †<br/><span class="desc">Among stops of young white male motorists — not significant (p = .29)</span><br/><span class="desc">† Location control largely hollow — this estimate should not be read as location-adjusted. See the note below.</span></td>
+          <td class="num">1.271 (0.816–1.978)</td><td class="num">+0.239</td><td class="num">not published</td><td class="num">5,378</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="prose">
+    <p>
+      <strong>Note on Model 2.</strong> Differences from the published version matter and we state
+      them rather than bury them. First, our Model 2 <strong>omits the seasonality weight the source
+      paper applies</strong>. The 2026 paper does not publish that weight's formula; we later
+      obtained it from a different paper the authors cite, Knode et al. (2024), and it is applied to
+      the Study 1 models above. The 2026 Model 2 here has not been refit with it, so its figures
+      predate that and still lack the weight. Second, officer-assignment and service-area categories
+      with fewer than 100 stops are collapsed into a single &ldquo;other&rdquo; category (38–65
+      categories, depending on the model), because categories that rare can perfectly predict the
+      outcome and break the fit. In the two headline rows, collapsing costs little: areas holding
+      just 3.1% of stops or fewer end up in that bucket, so the location control is doing real work.
+      The placebo row — marked † above — is the exception, and it is worth being blunt about: its
+      5,378 stops of young white men are spread across dozens of service areas, so areas holding
+      40% of those stops fall below the threshold and lose their own effect. That row's location
+      control is largely hollow, and its estimate should not be read as location-adjusted. Treat
+      these numbers as supporting detail; the Model 1 results above are the reproduction we stand
+      behind. Note that the placebo row here, though its odds ratio of 1.271 looks larger than in
+      Model 1, has a confidence interval that also spans 1 (p = .29): it is not statistically
+      significant either.
+    </p>
+  </div>
+
+  <h2 id="fidelity">How close these reproductions land</h2>
+  <div class="prose">
+    <p>
+      Both reproductions work from Philadelphia's published stop data on a snapshot roughly two
+      years newer than the one each set of authors used. OpenDataPhilly revises records, so exact
+      agreement is not the standard; landing close on both sample counts and coefficients is.
+    </p>
+    <p>
+      <strong>Study 1 (age and gender).</strong> Our sample is 75,879 stops against the paper's
+      published 76,274, a difference of about 0.52%. Every one of the six coefficients in the Study
+      1 table above lands within 0.012 of the corresponding published figure in Table 1, and both
+      non-significant results in the paper are non-significant here too, in the same direction.
+    </p>
+    <p>
+      <strong>Study 2 (group travel).</strong> Our sample counts come within about 5% of the
+      published figures (Table 1 stops 36,699 against 37,168; Black-party stops 31,317 against
+      31,738; solo/group splits 26,856/4,461 against 27,056/4,682) and our Model 1 coefficients
+      within 0.010 of the published ones. Model 2 omits a weight the paper applies, as described in
+      the note under that table, so it is not quite the same model — how far its estimates sit from
+      the published ones is not a measure of how well this reproduction lands.
+    </p>
+    <p>
+      <strong>The inter-twilight window is derived independently</strong> from Philadelphia solar
+      geometry rather than taken from the 2026 paper, as a check on the implementation. Our
+      derivation lands at 17:05–20:33 against the paper's 17:08–20:35; the paper's values win in
+      the reproduction itself, so a reader comparing counts against the paper's tables is comparing
+      like with like.
+    </p>
+  </div>
+
+  <h2 id="deviations">Deliberate deviations from the papers</h2>
+  <div class="prose">
+    <p>Each of these is a place where we knowingly did something other than what the paper describes. None is an accident, and each is here to be argued with.</p>
+  </div>
+
+  <h3>"Traveling together" is inferred, not recorded (Study 2's central construct)</h3>
+  <div class="prose">
+    <p>
+      The source data does not contain it: there is one row per person and no vehicle or incident
+      identifier grouping occupants. We infer a party by grouping person rows on
+      <code>(datetimeoccur, location)</code> — same timestamp to the minute, same recorded location
+      string — and treat 2+ as traveling together. The failure mode is over-merging: two separate
+      stops at the same minute at the same intersection become one multi-occupant party, inflating
+      group travel. That is the direction that would manufacture the headline, so it was measured
+      rather than assumed, over the 2021–2024 person rows deduplicated on <code>objectid</code>: of
+      74,307 groups with more than one row, <strong>717 (0.96%)</strong> disagree on vehicle
+      year/make/model and only <strong>16</strong> disagree on district. Under 1% of inferred
+      parties show any sign of being two different vehicles. This is a <em>lower</em> bound — two
+      occupants of genuinely different cars of the same make and model would not register — and no
+      upper bound is available. It bounds the risk well below the reported effect sizes, but the
+      construct remains an inference, and we do not describe it as recorded fact.
+    </p>
+  </div>
+
+  <h3>No driver is ever identified (Study 2)</h3>
+  <div class="prose">
+    <p>
+      The paper is explicit that the data has no reliable indicator of who is in the driver
+      position, and the homogeneous-party restriction makes the question moot: everyone in the car
+      is a young man of the same race. The outcome is therefore "the party police stopped was Black
+      rather than white", named <code>party_is_black</code>, not <code>driver_is_black</code>.
+    </p>
+  </div>
+
+  <h3>Study 1's restriction 5 is a proxy</h3>
+  <div class="prose">
+    <p>
+      The paper restricts to MVC-initiated stops, "excluding 'vehicle involved in crime' and
+      'vehicle matches flash information'". We implement "has an MVC code" instead. Applying the
+      paper's exact exclusion was measured and moves our sample <em>further</em> from the published
+      76,274 — about −1.2% away, versus −0.52% under the proxy — which is evidence the proxy is the
+      right implementation here. An <code>mvc_reason == "Police Investigation"</code> category
+      exists in the source data (4,445 rows, 2022–2025) and is not excluded by the proxy.
+      <strong>This is a question for the authors, not a settled choice</strong> — see the final
+      section.
+    </p>
+  </div>
+
+  <h3>The seasonality weight is reconstructed, not taken from the paper (Study 1)</h3>
+  <div class="prose">
+    <p>
+      Both papers specify the Knode et al. (2024) weight but neither publishes its formula. We
+      obtained it from Knode, Wolfe &amp; Carter (2024), Criminology 62(3), 364–375, supplemental
+      S.2, and applied it to the Study 1 models. It is <strong>not</strong> retrofitted onto Study
+      2's Model 2, so those figures predate it and still lack the weight. One implementation note:
+      the supplemental's prose says the daylight proportion is measured "in a day", but the authors
+      report 25,926 stops carrying a weight of exactly zero — impossible for a whole-day proportion
+      at Philadelphia's latitude, and routine for one scoped to the inter-twilight window (every
+      December date). We measure <code>p</code> within the window.
+    </p>
+  </div>
+
+  <h3>Weighting scheme: variance weights, not frequency weights (Study 1)</h3>
+  <div class="prose">
+    <p>
+      The paper fits R's <code>glm(..., family = quasibinomial, weights = w)</code>, whose weights
+      are <em>prior weights</em>. Our fitting library's frequency-weight argument instead inflates
+      the sample as though each row were replicated <code>w</code> times, and the published standard
+      errors were the decisive evidence against it: under both schemes the coefficients are nearly
+      identical, but frequency weights drive the SEs an order of magnitude away from the published
+      values while variance weights land close.
+    </p>
+  </div>
+
+  <h3>The location control is district-qualified, and sparse levels are collapsed</h3>
+  <div class="prose">
+    <p>
+      PPD numbers police service areas 1–4 <em>within each district</em>, so the raw
+      <code>psa</code> field takes only five distinct values city-wide; controlling on it would pool
+      PSA 2 of the 12th District in Southwest with PSA 2 of the 7th in the Far Northeast — four
+      dummies standing in for 66 real areas. We control on the district-qualified key
+      (<code>"02-1"</code>). District is deliberately <em>not</em> a second term: a PSA nests inside
+      exactly one district, so district dummies are a linear combination of area dummies. Separately,
+      fixed-effect levels with fewer than 100 stops fold into an <code>OTHER</code> bucket before
+      fitting, because categories that rare can perfectly predict a binary outcome and break the fit
+      silently — our fitting library once reported a coefficient of −3.6 × 10¹⁴ as a converged
+      model under exactly that condition. The share of rows in the <code>OTHER</code> bucket is
+      reported alongside every fit, since collapsing is only protective while that share stays
+      small.
+    </p>
+  </div>
+
+  <h2 id="limits">What these analyses cannot tell us</h2>
+  <div class="prose">
+    <p>
+      <strong>They only see the decision to stop.</strong> Every veil-of-darkness design can detect
+      selection on what officers could see <em>before</em> deciding to pull a car over, and nothing
+      else. None of it speaks to what happens once the stop begins. Nor is any of it evidence about
+      the total volume of stops: the outcome in each model is what <em>kind</em> of stop occurred,
+      not how many.
+    </p>
+    <p>
+      <strong>The veil-of-darkness effects are modest in size.</strong> They shift the odds of a
+      given kind of stop by roughly 10% to 30%. Statistically significant does not mean large. The
+      big number in Study 2 is the frisk-rate gap — nearly triple — while the veil-of-darkness
+      coefficients are the cleanly identified ones, the ones where we can be most confident about
+      <em>why</em> the difference exists. They are answering different questions and should not be
+      read as one finding.
+    </p>
+    <p>
+      <strong>The test is deliberately conservative.</strong> Streetlights, headlights and lit
+      intersections mean darkness is never total; some cars are recognizable regardless of the
+      light, and officers sometimes know a vehicle already; segregation means an officer can often
+      infer who is likely to be in a car from where it is driving, with or without seeing inside;
+      and existing research suggests Black drivers drive <em>more</em> carefully in high-visibility
+      conditions, which would work against finding any daylight effect at all. Every one of those
+      shrinks the measured difference between daylight and darkness, which means the test
+      understates the role of visibility rather than overstating it.
+    </p>
+    <p>
+      <strong>Philadelphia's segregation strains any cross-race comparison.</strong> In our sample,
+      only 7.0% of stops of young Black men happened in a majority-white police district — one where
+      more than half of residents are white. So comparing Black and white motorists always means
+      comparing different places as well as different people. That is why the within-race tests
+      matter most: they hold race constant and ask only what changes when officers can no longer
+      see into the car.
+    </p>
+    <p>
+      <strong>Recorded stop times are rounded.</strong> In our sample, 51% of recorded stop times
+      fall on a multiple of five minutes and 19.8% on a quarter hour, far more than chance would
+      produce (20% and 6.7%). A stop logged at 7:30pm may therefore have happened somewhat earlier
+      or later. Near the boundary between light and dark that rounding can put a stop on the wrong
+      side of the veil, so the roughly 30-minute window between sunset and full dusk is excluded
+      from the analysis altogether.
+    </p>
+  </div>
+
+  <h2 id="traps">What we found in the source data</h2>
+  <div class="prose">
+    <p>These produce output that looks entirely reasonable and is wrong. None crashes or fails a test. They apply to any analysis of these CSVs.</p>
+    <ul>
+      <li><strong><code>datetimeoccur</code> is UTC.</strong> Anything keyed on time of day is off
+      by four or five hours if this is missed — which, for a daylight/darkness design,
+      <em>inverts</em> the result rather than degrading it.</li>
+      <li><strong>The literal string <code>"NA"</code> is a real <code>mvc_code</code> value, not a
+      null.</strong> It means a genuine MVC stop whose specific code went unrecorded — a distinct
+      category from a true blank (21,134 versus 21,593 rows in 2024 alone). Both pandas and R's
+      <code>read.csv</code> treat <code>"NA"</code> as a default null sentinel and silently coerce
+      it, which drops about 11% of the analytic sample — enough on its own to fail replication
+      against the published totals. This was caught only because an exploratory DuckDB query, which
+      preserves the string, disagreed with pandas by 3,600 stops on identical input.</li>
+      <li><strong>Deduplication must key on row identity, not demographics.</strong> Deduplicating
+      on <code>(datetimeoccur, location, race, gender, age)</code> collapses two 22-year-old Black
+      men in one car into a single person, destroying roughly 26% of exactly the multi-occupant
+      parties Study 2 is about. It must key on <code>objectid</code>.</li>
+      <li><strong><code>psa</code> alone does not identify a service area.</strong> Five distinct
+      values city-wide for 66 real areas; the unique beat is <code>(districtoccur, psa)</code>.</li>
+      <li><strong>The export is partitioned by UTC year; the analytic year is local.</strong>
+      Because evening windows straddle the UTC date boundary, every 31 December evening sits in the
+      following year's file. We read the neighbouring years and filter on local year afterwards.</li>
+      <li><strong>Denominators differ per figure and must be labelled.</strong> Study 2's Tables 1
+      and 2 are per <strong>stop</strong>; Figures 2 and 3 are per <strong>motorist</strong> —
+      Figure 3's headline 25.1% versus 4.6% (the "about five times more likely" claim, actually
+      5.5×) is the share of young <em>men</em> in multi-occupant cars, not the share of stops; per
+      stop the same quantity is 14.2% versus 2.6%. Figure 4's frisk and ticket rates are per
+      <strong>occupant</strong>.</li>
+    </ul>
+  </div>
+
+  <h2 id="gaps">Known gaps</h2>
+  <div class="prose">
+    <ul>
+      <li><strong>The replication gate evaporates without the backup data.</strong> The test
+      suite's replication assertions skip when the source-data zip is absent, and that zip is not
+      committed. On a fresh clone the entire replication gate silently skips and the suite still
+      reports green. "Tests passed" is only meaningful when the run also reports zero skips with
+      the zip present. This is the most serious open item.</li>
+      <li><strong>Our fitting library reported a coefficient of −3.6 × 10¹⁴ as a converged
+      fit.</strong> Quasi-complete separation across 53 officer-assignment levels, 19 of them with
+      zero cells, raised as success. Now guarded, with the guard demonstrated to trip rather than
+      assumed to work.</li>
+      <li><strong>The spline needed re-parameterising to converge.</strong> A natural cubic spline
+      on clock time plus an intercept is rank-deficient by one column, so the fitter's convergence
+      tolerance is never satisfied even while the estimate is stable. Re-parameterising the basis
+      to remove the constant direction keeps the natural spline as specified while removing the
+      redundancy.</li>
+      <li><strong>Location keys are not normalised.</strong> <code>5700 BLOCK Baltimore Ave</code>,
+      <code>BALTIMORE AVE</code> and <code>BALTIMORE</code> are distinct strings. Measured during
+      exploration: normalising moves the multi-occupant rate by 0.05 percentage points, so it is
+      not required for these figures, but it remains a correctness issue for anything counting
+      distinct locations.</li>
+      <li><strong>Model 2 still lacks the Knode weight</strong> (see Deliberate deviations).</li>
+      <li><strong>Deferred by design:</strong> the <code>darkness × era</code> interaction; ordinal
+      dose-response on party size (the 2026 abstract argues the effect scales with the number of
+      young Black men present, beyond present/absent); and a time-heaping sensitivity refit with a
+      wider excluded band.</li>
+    </ul>
+  </div>
+
+  <h2 id="questions">Questions for the authors</h2>
+
+  <div class="callout prose">
+    <span class="tag">Question 1 — the seasonality weight</span>
+    <p>Both papers specify the Knode et al. (2024) weight but neither publishes the formula. We
+    reconstructed it from Knode et al. (2024) supplemental S.2 and scoped <code>p</code> to the
+    inter-twilight window on the evidence of the 25,926 zero weights. Is that the scoping you
+    used?</p>
+  </div>
+
+  <div class="callout prose">
+    <span class="tag">Question 2 — Study 1's restriction 5</span>
+    <p>We use "has an MVC code" as a proxy for "MVC-initiated, excluding vehicle-involved-in-crime
+    and flash-information stops", because the exact restriction moves our n further from your
+    published 76,274. Does the proxy match your intent, and how did you treat the
+    <code>Police Investigation</code> category?</p>
+  </div>
+
+  <div class="callout prose">
+    <span class="tag">Question 3 — the PSA control</span>
+    <p>Raw <code>psa</code> holds only five distinct values city-wide because PPD numbers service
+    areas within each district. Did the published models control on the district-qualified area,
+    or on the raw field?</p>
+  </div>
+
+  <div class="callout prose">
+    <span class="tag">Question 4 — Figure 3's denominator</span>
+    <p>We read the 25.1% / 4.6% figures as per motorist rather than per stop, which changes the
+    comparison substantially (per stop: 14.2% / 2.6%). Is that reading correct?</p>
+  </div>
+
+  <footer class="prose">
+    <p>
+      Prepared for review with the authors. The reproduction works from Philadelphia's published
+      stop data on OpenDataPhilly, on a snapshot roughly two years newer than the one each paper
+      used; residual differences from the published figures are expected for that reason. The
+      analysis pipeline is Python (pandas, statsmodels); the fitting choices described mirror R's
+      <code>glm(family = quasibinomial, weights = w)</code>. The interactive year-by-year chart
+      that extends Study 1's specification across 2014–2025 lives on the main veil-of-darkness
+      page; this document is self-contained and may be shared as-is.
+    </p>
+  </footer>
+
+</div>

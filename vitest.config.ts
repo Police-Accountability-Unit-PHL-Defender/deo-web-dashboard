@@ -1,11 +1,13 @@
 import { defineConfig, defaultExclude } from 'vitest/config'
 import vue from '@vitejs/plugin-vue'
+import { fileURLToPath } from 'node:url'
 
 // Component tests need a DOM and the Vue SFC compiler. Pure util tests keep
 // running in the default node environment — only *.test.ts files that mount a
 // component opt into happy-dom, via a `@vitest-environment happy-dom` docblock.
 export default defineConfig({
   plugins: [vue()],
+  resolve: { alias: { '~': fileURLToPath(new URL('.', import.meta.url)) } },
   test: {
     environment: 'node',
     // .claude/worktrees/** holds OTHER sessions' git worktree checkouts of

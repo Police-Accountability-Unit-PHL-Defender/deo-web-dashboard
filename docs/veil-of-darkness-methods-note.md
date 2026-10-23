@@ -17,8 +17,37 @@ Everything below refers to the page at `/veil-of-darkness`, built by
 
 ## 1. What is being reproduced
 
-Two separate papers, two separate questions, two separate samples. The page presents
-them in this order, and they must not be read as one analysis.
+The pipeline reproduces two separate papers with separate questions and samples.
+The public page now leads with an exploratory citywide racial-composition analysis:
+the Black share of non-Latino Black and White adult stops after dark versus daylight.
+Its headline is a genuine pooled fit over 2014–2019 and 2021–2025 (467,617 stops;
+80.44% versus 79.41%; change −1.02 points, 95% interval −1.29 to −0.75). The annual
+charts fit that same race outcome for all adults and for men ages 18–29, separately
+for each full year. They show 2020 in gray for context, while the headline excludes
+it because pandemic disruptions make the travel-pattern assumption especially weak.
+The district breakdowns and continuous moderation test are available in an expandable
+section. The published-model reproductions below remain in the cube and test suite;
+their different outcomes must not be confused with the public racial comparison.
+
+Two pooled comparisons sit beside the headline, over the same 467,617 stops and years,
+each fitted as one model with an `obscured_view * group` interaction
+(`fit_group_darkness_difference`), so the difference is tested directly instead of
+inferred from overlapping intervals:
+
+- **Young men versus other adults.** Men 18–29 alone: 81.72% versus 80.02%, change
+  −1.71 points (95% interval −2.24 to −1.17; n = 117,268). In the interaction model
+  the young-men drop is 1.29 points larger than other adults' (−1.75 to −0.83;
+  p = 3.8e−8). The comparison group is other adults, not all adults, because all
+  adults include the young men.
+- **Before versus after Driving Equality**, split on the stop's local date at
+  2022-03-03. Before −1.11 points (−1.41 to −0.80), after −0.83 (−1.24 to −0.42);
+  difference +0.28 (−0.16 to +0.71; p = .22). The gap persists after the law and the
+  change is not distinguishable from zero. Even a clear change would not be
+  attributable to the law alone: violation-code coverage falls from 2023 and changes
+  the sample.
+
+Group estimates from the interaction models share controls across both groups, so
+they differ slightly from the separately fitted figures and do not subtract exactly.
 
 **Study 1 — intraracial (leads the page).** Hannon & Biddle (2025), *Unequal Policing
 of Black Motorists in Black Communities by Age and Gender*, American Journal of

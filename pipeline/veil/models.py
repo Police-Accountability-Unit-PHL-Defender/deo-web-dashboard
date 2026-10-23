@@ -85,6 +85,22 @@ _POOLED_RACE_INTERACTION = (
     ' + C(dow) + C(year) + C(police_area) + C(assigned_unit) + C(is_summer)'
 )
 
+# District traits do not enter as main effects: C(police_area) already absorbs
+# every time-invariant district characteristic. Their interactions with
+# darkness remain identified and answer whether the veil effect changes with
+# neighborhood composition or enforcement intensity.
+_DISTRICT_CONTEXT_MODERATION = (
+    _FULL
+    + " + obscured_view:district_whiteness_10"
+    + " + obscured_view:stops_per_1000_10"
+)
+
+# The main effect of district Black population is absorbed by police-area
+# fixed effects. Its interaction with darkness remains identified and tests
+# whether the racial composition change after dark varies with district
+# Black population, without imposing display-driven bins on the estimate.
+_DISTRICT_BLACKNESS_MODERATION = _FULL + " + obscured_view:district_blackness_10"
+
 # Sparse fixed-effect levels (e.g. a specialist unit with a handful of stops)
 # can perfectly separate a binary outcome: GLM then drives that level's
 # coefficient toward +/-infinity while still reporting converged=True. 100
@@ -416,6 +432,315 @@ def fit_pooled_race_interaction(df: pd.DataFrame, outcome: str) -> dict:
             result["converged"] = False
             result["degenerate"] = True
             result["error"] = "Degenerate pooled race-interaction fit."
+    except Exception as exc:
+        result["error"] = f"{type(exc).__name__}: {exc}"
+    return result
+
+
+_GROUP_DARKNESS_DIFFERENCE = (
+    'obscured_view * {group} + cr(clock_minutes, df=6, constraints="center")'
+    ' + C(dow) + C(year) + C(police_area) + C(assigned_unit) + C(is_summer)'
+)
+
+
+def fit_group_darkness_difference(df: pd.DataFrame, outcome: str, group: str) -> dict:
+    """Test whether the after-dark change in ``outcome`` differs between two groups.
+
+    The generalisation of ``fit_pooled_race_interaction`` to any 0/1 ``group``
+    column: young men versus other adults, or stops before versus after a
+    policy date. Both groups are fitted together with an
+    ``obscured_view * group`` interaction, and every row is predicted under all
+    four group/lighting scenarios, so the reported contrast is a
+    difference-in-differences over one common covariate distribution rather
+    than a subtraction of two separately fitted effects.
+
+    ``effects["reference"]`` is group == 0, ``effects["group"]`` is group == 1.
+    Positive ``difference_pp`` means the after-dark change is more positive (or
+    less negative) for group == 1.
+    """
+    formula = f"{outcome} ~ {_GROUP_DARKNESS_DIFFERENCE.format(group=group)}"
+    interaction = f"obscured_view:{group}"
+    result = {
+        "group": group,
+        "interaction_coef": float("nan"), "interaction_se": float("nan"),
+        "interaction_p_value": float("nan"),
+        "n": int(len(df)), "n_group": int(df[group].sum()) if group in df else 0,
+        "converged": False, "collapsed_units": 0, "min_unit_count": _MIN_UNIT_COUNT,
+        "other_row_share": {},
+    }
+    try:
+        df = df.copy()
+        collapsed = 0
+        for col in _SPARSE_COLUMNS:
+            if col in df.columns:
+                counts = df[col].value_counts()
+                collapsed += int((counts < _MIN_UNIT_COUNT).sum())
+                df[col] = _collapse_sparse_levels(df[col], _MIN_UNIT_COUNT)
+                result["other_row_share"][col] = (
+                    float((df[col] == "OTHER").mean()) if len(df) else 0.0
+                )
+        result["collapsed_units"] = collapsed
+
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            model = smf.glm(
+                formula, data=df, family=sm.families.Binomial(), var_weights=df["weight"]
+            )
+            fit = model.fit(scale="X2")
+
+        result.update(
+            interaction_coef=float(fit.params[interaction]),
+            interaction_se=float(fit.bse[interaction]),
+            interaction_p_value=float(fit.pvalues[interaction]),
+            n=int(fit.nobs),
+            converged=bool(fit.converged),
+        )
+
+        design_info = fit.model.data.design_info
+        scenarios = {}
+        for label, value in (("reference", 0), ("group", 1)):
+            for lighting, obscured in (("daylight", 0), ("dark", 1)):
+                counterfactual = df.copy()
+                counterfactual[group] = value
+                counterfactual["obscured_view"] = obscured
+                x = np.asarray(build_design_matrices([design_info], counterfactual)[0])
+                p = np.asarray(fit.predict(counterfactual))
+                scenarios[(label, lighting)] = {
+                    "pct": float(100 * p.mean()),
+                    "gradient": np.mean(p[:, None] * (1 - p[:, None]) * x, axis=0),
+                }
+
+        covariance = np.asarray(fit.cov_params())
+        effects = {}
+        for label in ("reference", "group"):
+            daylight = scenarios[(label, "daylight")]
+            dark = scenarios[(label, "dark")]
+            gradient = dark["gradient"] - daylight["gradient"]
+            effect = (dark["pct"] - daylight["pct"]) / 100
+            se = float(np.sqrt(gradient @ covariance @ gradient))
+            lo, hi = confidence_interval(effect, se)
+            effects[label] = {
+                "daylight_pct": daylight["pct"],
+                "dark_pct": dark["pct"],
+                "effect_pp": float(100 * effect),
+                "effect_se_pp": float(100 * se),
+                "effect_ci_lo_pp": float(100 * lo),
+                "effect_ci_hi_pp": float(100 * hi),
+            }
+
+        difference_gradient = (
+            scenarios[("group", "dark")]["gradient"]
+            - scenarios[("group", "daylight")]["gradient"]
+            - scenarios[("reference", "dark")]["gradient"]
+            + scenarios[("reference", "daylight")]["gradient"]
+        )
+        difference = (effects["group"]["effect_pp"] - effects["reference"]["effect_pp"]) / 100
+        difference_se = float(np.sqrt(difference_gradient @ covariance @ difference_gradient))
+        difference_lo, difference_hi = confidence_interval(difference, difference_se)
+        z = difference / difference_se if difference_se else float("nan")
+        result.update(
+            effects=effects,
+            difference_pp=float(100 * difference),
+            difference_se_pp=float(100 * difference_se),
+            difference_ci_lo_pp=float(100 * difference_lo),
+            difference_ci_hi_pp=float(100 * difference_hi),
+            difference_p_value=float(2 * norm.sf(abs(z))),
+        )
+
+        if abs(result["interaction_coef"]) > _DEGENERATE_BOUND or result["interaction_se"] > _DEGENERATE_BOUND:
+            result["converged"] = False
+            result["degenerate"] = True
+            result["error"] = "Degenerate group darkness-difference fit."
+    except Exception as exc:
+        result["error"] = f"{type(exc).__name__}: {exc}"
+    return result
+
+
+def fit_district_context_moderation(
+    df: pd.DataFrame,
+    outcome: str,
+    moderator_ranges: dict[str, tuple[float, float]],
+) -> dict:
+    """Estimate how continuous district context changes a darkness effect.
+
+    ``district_whiteness_10`` is district percent white divided by ten;
+    ``stops_per_1000_10`` is average annual recorded stops per 1,000 district
+    residents divided by ten. The latter is an enforcement-intensity marker,
+    not driving exposure or an individual stop probability.
+
+    Each moderator is evaluated at its population-weighted 25th and 75th
+    percentiles while the other is held at its population-weighted median.
+    Predictions are standardized over the same pooled rows. Covariance is
+    clustered by district, the level at which both moderators vary.
+    """
+    formula = f"{outcome} ~ {_DISTRICT_CONTEXT_MODERATION}"
+    result = {"n": int(len(df)), "converged": False, "moderators": {}}
+    try:
+        df = df.copy()
+        for col in _SPARSE_COLUMNS:
+            if col in df.columns:
+                df[col] = _collapse_sparse_levels(df[col], _MIN_UNIT_COUNT)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            model = smf.glm(
+                formula, data=df, family=sm.families.Binomial(), var_weights=df["weight"]
+            )
+            fit = model.fit(
+                scale="X2",
+                cov_type="cluster",
+                cov_kwds={"groups": df["_district"], "use_correction": True},
+            )
+        result.update(n=int(fit.nobs), converged=bool(fit.converged))
+        covariance = np.asarray(fit.cov_params())
+        design_info = fit.model.data.design_info
+
+        def scenario(whiteness: float, intensity: float, obscured: int) -> dict:
+            counterfactual = df.copy()
+            counterfactual["district_whiteness_10"] = whiteness / 10
+            counterfactual["stops_per_1000_10"] = intensity / 10
+            counterfactual["obscured_view"] = obscured
+            x = np.asarray(build_design_matrices([design_info], counterfactual)[0])
+            p = np.asarray(fit.predict(counterfactual))
+            return {
+                "pct": float(100 * p.mean()),
+                "gradient": np.mean(p[:, None] * (1 - p[:, None]) * x, axis=0),
+            }
+
+        white_lo, white_mid, white_hi = moderator_ranges["district_whiteness"]
+        stop_lo, stop_mid, stop_hi = moderator_ranges["stops_per_1000"]
+        settings = {
+            "district_whiteness": ((white_lo, stop_mid), (white_hi, stop_mid)),
+            "stops_per_1000": ((white_mid, stop_lo), (white_mid, stop_hi)),
+        }
+        coef_names = {
+            "district_whiteness": "obscured_view:district_whiteness_10",
+            "stops_per_1000": "obscured_view:stops_per_1000_10",
+        }
+        for moderator, (low_values, high_values) in settings.items():
+            effects = []
+            effect_gradients = []
+            for label, (whiteness, intensity) in (("low", low_values), ("high", high_values)):
+                daylight = scenario(whiteness, intensity, 0)
+                dark = scenario(whiteness, intensity, 1)
+                gradient = dark["gradient"] - daylight["gradient"]
+                effect = (dark["pct"] - daylight["pct"]) / 100
+                se = float(np.sqrt(max(0, gradient @ covariance @ gradient)))
+                lo, hi = confidence_interval(effect, se)
+                effects.append({
+                    "level": label,
+                    "value": whiteness if moderator == "district_whiteness" else intensity,
+                    "daylight_pct": daylight["pct"],
+                    "dark_pct": dark["pct"],
+                    "effect_pp": float(100 * effect),
+                    "effect_ci_lo_pp": float(100 * lo),
+                    "effect_ci_hi_pp": float(100 * hi),
+                })
+                effect_gradients.append(gradient)
+
+            contrast = (effects[1]["effect_pp"] - effects[0]["effect_pp"]) / 100
+            contrast_gradient = effect_gradients[1] - effect_gradients[0]
+            contrast_se = float(np.sqrt(max(0, contrast_gradient @ covariance @ contrast_gradient)))
+            contrast_lo, contrast_hi = confidence_interval(contrast, contrast_se)
+            z = contrast / contrast_se if contrast_se else float("nan")
+            coef_name = coef_names[moderator]
+            result["moderators"][moderator] = {
+                "effects": effects,
+                "contrast_pp": float(100 * contrast),
+                "contrast_ci_lo_pp": float(100 * contrast_lo),
+                "contrast_ci_hi_pp": float(100 * contrast_hi),
+                "contrast_p_value": float(2 * norm.sf(abs(z))),
+                "interaction_coef_per_10": float(fit.params[coef_name]),
+                "interaction_se_per_10": float(fit.bse[coef_name]),
+                "interaction_p_value": float(fit.pvalues[coef_name]),
+            }
+    except Exception as exc:
+        result["error"] = f"{type(exc).__name__}: {exc}"
+    return result
+
+
+def fit_district_blackness_moderation(
+    df: pd.DataFrame,
+    evaluation_pcts: list[float],
+) -> dict:
+    """Estimate the racial darkness effect across district Black population.
+
+    The binary outcome is supplied by the caller as ``is_black`` after the
+    sample has been restricted to one age/gender group. Standardized
+    daylight and dark predictions are evaluated across a grid of district
+    Black-population percentages. Standard errors are clustered by district,
+    the level at which the moderator varies.
+    """
+    formula = f"is_black ~ {_DISTRICT_BLACKNESS_MODERATION}"
+    result = {
+        "n": int(len(df)),
+        "converged": False,
+        "interaction_coef_per_10": float("nan"),
+        "interaction_se_per_10": float("nan"),
+        "interaction_p_value": float("nan"),
+        "effects": [],
+    }
+    try:
+        df = df.copy()
+        for col in _SPARSE_COLUMNS:
+            if col in df.columns:
+                df[col] = _collapse_sparse_levels(df[col], _MIN_UNIT_COUNT)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            model = smf.glm(
+                formula, data=df, family=sm.families.Binomial(), var_weights=df["weight"]
+            )
+            fit = model.fit(
+                scale="X2",
+                cov_type="cluster",
+                cov_kwds={"groups": df["_district"], "use_correction": True},
+            )
+
+        coef_name = "obscured_view:district_blackness_10"
+        result.update(
+            n=int(fit.nobs),
+            converged=bool(fit.converged),
+            interaction_coef_per_10=float(fit.params[coef_name]),
+            interaction_se_per_10=float(fit.bse[coef_name]),
+            interaction_p_value=float(fit.pvalues[coef_name]),
+        )
+        covariance = np.asarray(fit.cov_params())
+        design_info = fit.model.data.design_info
+
+        def scenario(black_pct: float, obscured: int) -> dict:
+            counterfactual = df.copy()
+            counterfactual["district_blackness_10"] = black_pct / 10
+            counterfactual["obscured_view"] = obscured
+            x = np.asarray(build_design_matrices([design_info], counterfactual)[0])
+            p = np.asarray(fit.predict(counterfactual))
+            return {
+                "pct": float(100 * p.mean()),
+                "gradient": np.mean(p[:, None] * (1 - p[:, None]) * x, axis=0),
+            }
+
+        effects = []
+        for black_pct in evaluation_pcts:
+            daylight = scenario(black_pct, 0)
+            dark = scenario(black_pct, 1)
+            gradient = dark["gradient"] - daylight["gradient"]
+            effect = (dark["pct"] - daylight["pct"]) / 100
+            se = float(np.sqrt(max(0, gradient @ covariance @ gradient)))
+            lo, hi = confidence_interval(effect, se)
+            effects.append({
+                "district_black_pct": float(black_pct),
+                "daylight_pct": daylight["pct"],
+                "dark_pct": dark["pct"],
+                "effect_pp": float(100 * effect),
+                "effect_ci_lo_pp": float(100 * lo),
+                "effect_ci_hi_pp": float(100 * hi),
+            })
+        result["effects"] = effects
+
+        if (
+            abs(result["interaction_coef_per_10"]) > _DEGENERATE_BOUND
+            or result["interaction_se_per_10"] > _DEGENERATE_BOUND
+        ):
+            result["converged"] = False
+            result["degenerate"] = True
     except Exception as exc:
         result["error"] = f"{type(exc).__name__}: {exc}"
     return result

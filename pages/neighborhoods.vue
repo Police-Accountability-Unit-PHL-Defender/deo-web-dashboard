@@ -124,6 +124,51 @@
               </div>
             </AnswerText>
           </Answer>
+          <QuestionHeader>
+            <h3 id="arrest-rate">When Philadelphia police intrude during traffic stops, how often do they arrest?</h3>
+          </QuestionHeader>
+          <Answer v-if="q2A" :arrow="true">
+            <Graph :graph-data="q2A.figures.barplot4.data" :axis-properties="{x: q2A.figures.barplot4.properties.xAxis, y: q2A.figures.barplot4.properties.yAxis}" bar-annotation-property="annotation">
+              <h4>{{ q2A.figures.barplot4.properties.title }}</h4>
+            </Graph>
+            <AnswerText>
+              <p class="result-text">In {{ q2A.arrestSummary.location }}, <span>{{ q2A.arrestSummary.rate }}%</span>
+                of traffic stops involving a frisk or search resulted in at least one arrest
+                from {{ q2A.arrestSummary.dateRange }}.</p>
+              <p class="text-body-4">Each stop counts once, whether police arrest the driver, a passenger, or both.
+                Arrests during stops without a recorded frisk or search are excluded.</p>
+            </AnswerText>
+          </Answer>
+          <QuestionHeader>
+            <h3 id="all-stops-arrest-rate">Of all traffic stops, what's the arrest rate?</h3>
+          </QuestionHeader>
+          <Answer v-if="q2A" :arrow="true">
+            <Graph :graph-data="q2A.figures.barplot5.data" :axis-properties="{x: q2A.figures.barplot5.properties.xAxis, y: q2A.figures.barplot5.properties.yAxis}" bar-annotation-property="annotation">
+              <h4>{{ q2A.figures.barplot5.properties.title }}</h4>
+            </Graph>
+            <AnswerText>
+              <p class="result-text">In {{ q2A.arrestSummary.location }}, <span>{{ q2A.arrestSummary.allStopsRate }}%</span>
+                of all traffic stops resulted in at least one arrest from {{ q2A.arrestSummary.dateRange }}.</p>
+              <p class="text-body-4">This includes arrests whether or not police recorded a frisk or search. Each stop counts once.</p>
+            </AnswerText>
+          </Answer>
+          <QuestionHeader>
+            <h3 id="hit-rates-over-time">How have contraband hit rates and arrest rates changed for Black and White drivers over time?</h3>
+          </QuestionHeader>
+          <Answer v-if="q2Annual" :arrow="true">
+            <LineGraph v-for="chart in q2Annual.charts" :key="chart.key" :graph-data="chart.data"
+              :axis-properties="{x: 'Year', y: chart.axis}" group-name="race"
+              :group-classes="annualRaceClasses" :chart-legend="{Black: 'Black drivers', White: 'White drivers'}">
+              <h4>{{ chart.title }}</h4>
+            </LineGraph>
+            <AnswerText>
+              <p>The contraband and intrusion arrest charts divide by stops involving a frisk or search.
+                The all-stops arrest chart divides by all traffic stops. All three follow the location and date selections above,
+                count each stop once, and use the driver's race.</p>
+              <p class="text-body-4">Dashed segments include partial years. Hover over a point for its rate and stop counts.
+                Years with no stops in a chart's denominator for a group have no point.</p>
+            </AnswerText>
+          </Answer>
         </section>
         <HorizontalLine class="my-12" :color="true"/>
         <section>
@@ -191,6 +236,7 @@
 
 <script setup>
 import Graph from '~/components/Graph.vue';
+import LineGraph from '~/components/LineGraph.vue';
 import IconsChevron from '~/components/icons/Chevron.vue';
 import QuestionHeader from '~/components/QuestionHeader.vue';
 import SelectLocation from '~/components/SelectLocation.vue';
@@ -208,7 +254,7 @@ import {
 } from '~/utils/cube';
 import { useStopsCube } from '~/composables/useStopsCube';
 import { useDistrictsDemographics } from '~/composables/useDistrictsDemographics';
-import { majorityWhiteDisparity } from '~/utils/neighborhoods';
+import { intrusionHitRatesByYear, majorityWhiteDisparity } from '~/utils/neighborhoods';
 
 useHead({
   title: 'Do police treat people and neighborhoods differently?',
@@ -541,6 +587,8 @@ const q2A = computed(() => {
   const stopsByGroup = new Map(groupSum(cube, dim, 'n_stopped', filterOpts).map(g => [g.key, g.value]))
   const intrByGroup = new Map(groupSum(cube, dim, 'n_intruded', filterOpts).map(g => [g.key, g.value]))
   const contrabandByGroup = new Map(groupSum(cube, dim, 'n_contraband', filterOpts).map(g => [g.key, g.value]))
+  const intrusionArrestsByGroup = new Map(groupSum(cube, dim, 'n_arrested_intruded', filterOpts).map(g => [g.key, g.value]))
+  const allArrestsByGroup = new Map(groupSum(cube, dim, 'n_arrested', filterOpts).map(g => [g.key, g.value]))
 
   const orderedKeys = order.length ? order : Array.from(stopsByGroup.keys()).sort()
 
@@ -619,7 +667,45 @@ const q2A = computed(() => {
     }
   })
 
+  const arrestRates = new Map(orderedKeys.map(k => [k, pct(intrusionArrestsByGroup.get(k) ?? 0, intrByGroup.get(k) ?? 0)]))
+  const baselineArrestRate = arrestRates.get(baseline) ?? 0
+  const data4 = orderedKeys.map(k => {
+    const arrests = intrusionArrestsByGroup.get(k) ?? 0
+    const intrusions = intrByGroup.get(k) ?? 0
+    const rate = arrestRates.get(k) ?? 0
+    return {
+      group: null,
+      [demoLabel]: k,
+      'Arrest Rate During Intrusions (%)': rate,
+      annotation: intrusions === 0 ? 'No intrusions' : multiplierLabel(baselineArrestRate === 0 ? Infinity : rate / baselineArrestRate, k === baseline),
+      hover_text: [k, intrusions === 0 ? 'No recorded intrusions' : `${rate}% of intrusions resulted in arrest`,
+        `${arrests.toLocaleString()} stops with an arrest out of ${intrusions.toLocaleString()} stops involving a frisk or search`],
+    }
+  })
+
+  const allStopsArrestRates = new Map(orderedKeys.map(k => [k, pct(allArrestsByGroup.get(k) ?? 0, stopsByGroup.get(k) ?? 0)]))
+  const baselineAllStopsArrestRate = allStopsArrestRates.get(baseline) ?? 0
+  const data5 = orderedKeys.map(k => {
+    const arrests = allArrestsByGroup.get(k) ?? 0
+    const stops = stopsByGroup.get(k) ?? 0
+    const rate = allStopsArrestRates.get(k) ?? 0
+    return {
+      group: null,
+      [demoLabel]: k,
+      'Arrest Rate of All Stops (%)': rate,
+      annotation: stops === 0 ? 'No stops' : multiplierLabel(baselineAllStopsArrestRate === 0 ? Infinity : rate / baselineAllStopsArrestRate, k === baseline),
+      hover_text: [k, stops === 0 ? 'No recorded stops' : `${rate}% of all stops resulted in arrest`,
+        `${arrests.toLocaleString()} stops with an arrest out of ${stops.toLocaleString()} traffic stops`],
+    }
+  })
+
   return {
+    arrestSummary: {
+      location: locStr,
+      dateRange: longDateRange,
+      rate: pct(sumMeasure(cube, 'n_arrested_intruded', filterOpts), totalIntr),
+      allStopsRate: pct(sumMeasure(cube, 'n_arrested', filterOpts), totalStop),
+    },
     text: [
       `In ${locStr}:`,
       `When making traffic stops, Philadelphia police intruded upon <span>${pctRate}%</span> of people and/or vehicles from ${longDateRange}.`,
@@ -653,6 +739,24 @@ const q2A = computed(() => {
         trendlines: [],
         data: data3,
       },
+      barplot4: {
+        properties: {
+          xAxis: demoLabel,
+          yAxis: 'Arrest Rate During Intrusions (%)',
+          title: `Arrest Rates During Intrusions by ${demoLabel} in ${locStr} from ${dateRangeStr}`,
+        },
+        trendlines: [],
+        data: data4,
+      },
+      barplot5: {
+        properties: {
+          xAxis: demoLabel,
+          yAxis: 'Arrest Rate of All Stops (%)',
+          title: `Arrest Rates of All Stops by ${demoLabel} in ${locStr} from ${dateRangeStr}`,
+        },
+        trendlines: [],
+        data: data5,
+      },
     },
     tables: {}, geojsons: [], data: {},
   }
@@ -662,6 +766,30 @@ const q2A = computed(() => {
 const q2AData1 = computed(() => q2A.value ? q2A.value.figures.barplot.data : null)
 const q2AData2 = computed(() => q2A.value ? q2A.value.figures.barplot2.data : null)
 const q2AData3 = computed(() => q2A.value ? q2A.value.figures.barplot3.data : null)
+
+const annualRaceClasses = { Black: 'stroke-purple fill-purple bg-purple', White: 'stroke-mint fill-mint bg-mint' }
+const q2Annual = computed(() => {
+  if (!stopsBundle.value) return null
+  const location = getLocationParam(selectedLocation.value)
+  const start = q2AQuarterStart.value.toParamString()
+  const end = q2AQuarterEnd.value.toParamString()
+  const points = intrusionHitRatesByYear(stopsBundle.value.cube, location, start, end)
+  const period = `${quarterStartStr(start)} through ${quarterEndStr(end)}`
+  const locStr = locationStringFor(location)
+  return { charts: [
+    { key: 'contraband', axis: 'Contraband Hit Rate (%)', field: 'contrabandRate', count: 'contraband', denominator: 'intrusions', denominatorLabel: 'stops involving a frisk or search', label: 'contraband found', title: `Contraband Hit Rates by Year for Black and White Drivers in ${locStr} from ${period}` },
+    { key: 'arrest', axis: 'Arrest Rate During Intrusions (%)', field: 'arrestRate', count: 'arrests', denominator: 'intrusions', denominatorLabel: 'stops involving a frisk or search', label: 'at least one arrest', title: `Arrest Rates During Intrusions by Year for Black and White Drivers in ${locStr} from ${period}` },
+    { key: 'all-arrests', axis: 'Arrest Rate of All Stops (%)', field: 'allStopsArrestRate', count: 'allArrests', denominator: 'stops', denominatorLabel: 'traffic stops', label: 'at least one arrest', title: `Arrest Rates of All Stops by Year for Black and White Drivers in ${locStr} from ${period}` },
+  ].map(chart => ({ ...chart, data: points.map(point => ({
+    Year: point.year,
+    race: point.race,
+    incomplete: point.incomplete,
+    [chart.axis]: point[chart.field],
+    hover_text: [`${point.year}${point.incomplete ? ' (partial year)' : ''} · ${point.race} drivers`,
+      `${point[chart.field]}% · ${point[chart.count].toLocaleString()} stops with ${chart.label}`,
+      `${point[chart.denominator].toLocaleString()} ${chart.denominatorLabel}`],
+  })) })) }
+})
 
 // =========================================================================
 // neighborhoods-by-neighborhood  (was q3A)

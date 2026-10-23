@@ -1,0 +1,299 @@
+{
+  "years": [
+    2014,
+    2015,
+    2016,
+    2017,
+    2018,
+    2019,
+    2021,
+    2022,
+    2023,
+    2024,
+    2025
+  ],
+  "results": [
+    {
+      "key": "all_races/sole/any_black/mvc",
+      "universe": "all_races",
+      "occupancy": "sole",
+      "rule": "any_black",
+      "require_mvc": true,
+      "multi_person_stops": 0,
+      "half_black_stops": 0,
+      "result": {
+        "group": "after_driving_equality",
+        "interaction_coef": 0.024057625272186835,
+        "interaction_se": 0.014673342490838143,
+        "interaction_p_value": 0.10109952382991443,
+        "n": 561259,
+        "n_group": 174713,
+        "converged": true,
+        "collapsed_units": 49,
+        "min_unit_count": 100,
+        "other_row_share": {
+          "assigned_unit": 0.0013327180499555463,
+          "police_area": 1.7817086229352224e-06
+        },
+        "effects": {
+          "reference": {
+            "daylight_pct": 67.42882325988886,
+            "dark_pct": 66.44092797422468,
+            "effect_pp": -0.9878952856641803,
+            "effect_se_pp": 0.16321279201907649,
+            "effect_ci_lo_pp": -1.3077864798377965,
+            "effect_ci_hi_pp": -0.668004091490564
+          },
+          "group": {
+            "daylight_pct": 66.50696244627967,
+            "dark_pct": 65.89044776547516,
+            "effect_pp": -0.6165146808045137,
+            "effect_se_pp": 0.21494208777924784,
+            "effect_ci_lo_pp": -1.0377934316136863,
+            "effect_ci_hi_pp": -0.195235929995341
+          }
+        },
+        "difference_pp": 0.3713806048596666,
+        "difference_se_pp": 0.23052362122570166,
+        "difference_ci_lo_pp": -0.08043739032846182,
+        "difference_ci_hi_pp": 0.8231986000477951,
+        "difference_p_value": 0.1071730558847108
+      }
+    },
+    {
+      "key": "all_races/sole/any_black/all_vehicle",
+      "universe": "all_races",
+      "occupancy": "sole",
+      "rule": "any_black",
+      "require_mvc": false,
+      "multi_person_stops": 0,
+      "half_black_stops": 0,
+      "result": {
+        "group": "after_driving_equality",
+        "interaction_coef": 0.019496789015476218,
+        "interaction_se": 0.014440276384349146,
+        "interaction_p_value": 0.1769623238214013,
+        "n": 579530,
+        "n_group": 180672,
+        "converged": true,
+        "collapsed_units": 49,
+        "min_unit_count": 100,
+        "other_row_share": {
+          "assigned_unit": 0.0013752523596707678,
+          "police_area": 1.7255362103773747e-06
+        },
+        "effects": {
+          "reference": {
+            "daylight_pct": 67.34627733393542,
+            "dark_pct": 66.40975900548047,
+            "effect_pp": -0.9365183284549516,
+            "effect_se_pp": 0.1606765380652569,
+            "effect_ci_lo_pp": -1.2514385562234343,
+            "effect_ci_hi_pp": -0.621598100686469
+          },
+          "group": {
+            "daylight_pct": 66.4431600276053,
+            "dark_pct": 65.80666924734312,
+            "effect_pp": -0.6364907802621786,
+            "effect_se_pp": 0.21170533912099931,
+            "effect_ci_lo_pp": -1.0514256202741756,
+            "effect_ci_hi_pp": -0.22155594025018147
+          }
+        },
+        "difference_pp": 0.300027548192773,
+        "difference_se_pp": 0.22697788274608036,
+        "difference_ci_lo_pp": -0.1448409272766998,
+        "difference_ci_hi_pp": 0.7448960236622458,
+        "difference_p_value": 0.18622275072852457
+      }
+    },
+    {
+      "key": "all_races/all_occupancies/any_black/mvc",
+      "universe": "all_races",
+      "occupancy": "all_occupancies",
+      "rule": "any_black",
+      "require_mvc": true,
+      "multi_person_stops": 84357,
+      "half_black_stops": 5271,
+      "result": {
+        "group": "after_driving_equality",
+        "interaction_coef": 0.016698126422480905,
+        "interaction_se": 0.013897820255387933,
+        "interaction_p_value": 0.2295602246668721,
+        "n": 645616,
+        "n_group": 203878,
+        "converged": true,
+        "collapsed_units": 50,
+        "min_unit_count": 100,
+        "other_row_share": {
+          "assigned_unit": 0.0012375777551981364,
+          "police_area": 1.5489083294094322e-06
+        },
+        "effects": {
+          "reference": {
+            "daylight_pct": 69.2857117279632,
+            "dark_pct": 68.18486825829925,
+            "effect_pp": -1.1008434696639569,
+            "effect_se_pp": 0.14932654314147484,
+            "effect_ci_lo_pp": -1.3935181161571142,
+            "effect_ci_hi_pp": -0.8081688231707995
+          },
+          "group": {
+            "daylight_pct": 68.33889829519578,
+            "dark_pct": 67.48097946486415,
+            "effect_pp": -0.8579188303316271,
+            "effect_se_pp": 0.19611212802057415,
+            "effect_ci_lo_pp": -1.242291538183461,
+            "effect_ci_hi_pp": -0.47354612247979333
+          }
+        },
+        "difference_pp": 0.2429246393323298,
+        "difference_se_pp": 0.21039318944917532,
+        "difference_ci_lo_pp": -0.1694384345805663,
+        "difference_ci_hi_pp": 0.6552877132452258,
+        "difference_p_value": 0.24824518702014864
+      }
+    },
+    {
+      "key": "all_races/all_occupancies/any_black/all_vehicle",
+      "universe": "all_races",
+      "occupancy": "all_occupancies",
+      "rule": "any_black",
+      "require_mvc": false,
+      "multi_person_stops": 89986,
+      "half_black_stops": 5718,
+      "result": {
+        "group": "after_driving_equality",
+        "interaction_coef": 0.013304346622044619,
+        "interaction_se": 0.013647925507748116,
+        "interaction_p_value": 0.329646796232802,
+        "n": 669516,
+        "n_group": 211746,
+        "converged": true,
+        "collapsed_units": 50,
+        "min_unit_count": 100,
+        "other_row_share": {
+          "assigned_unit": 0.0012815227716738659,
+          "police_area": 1.4936162840021747e-06
+        },
+        "effects": {
+          "reference": {
+            "daylight_pct": 69.21066292601988,
+            "dark_pct": 68.16501089918668,
+            "effect_pp": -1.0456520268331957,
+            "effect_se_pp": 0.146723765686822,
+            "effect_ci_lo_pp": -1.3332253232554607,
+            "effect_ci_hi_pp": -0.7580787304109309
+          },
+          "group": {
+            "daylight_pct": 68.29696231233434,
+            "dark_pct": 67.44354546027417,
+            "effect_pp": -0.8534168520601783,
+            "effect_se_pp": 0.1927389072107019,
+            "effect_ci_lo_pp": -1.2311781686127612,
+            "effect_ci_hi_pp": -0.4756555355075952
+          }
+        },
+        "difference_pp": 0.19223517477301744,
+        "difference_se_pp": 0.20671681513701204,
+        "difference_ci_lo_pp": -0.21292233789435042,
+        "difference_ci_hi_pp": 0.5973926874403852,
+        "difference_p_value": 0.35239979723004744
+      }
+    },
+    {
+      "key": "all_races/all_occupancies/majority_black/mvc",
+      "universe": "all_races",
+      "occupancy": "all_occupancies",
+      "rule": "majority_black",
+      "require_mvc": true,
+      "multi_person_stops": 84357,
+      "half_black_stops": 5271,
+      "result": {
+        "group": "after_driving_equality",
+        "interaction_coef": 0.023761569167190487,
+        "interaction_se": 0.013794666457388034,
+        "interaction_p_value": 0.08497562144178583,
+        "n": 645616,
+        "n_group": 203878,
+        "converged": true,
+        "collapsed_units": 50,
+        "min_unit_count": 100,
+        "other_row_share": {
+          "assigned_unit": 0.0012375777551981364,
+          "police_area": 1.5489083294094322e-06
+        },
+        "effects": {
+          "reference": {
+            "daylight_pct": 68.44630444978938,
+            "dark_pct": 67.42295228372855,
+            "effect_pp": -1.0233521660608318,
+            "effect_se_pp": 0.15038452126084942,
+            "effect_ci_lo_pp": -1.3181004115643946,
+            "effect_ci_hi_pp": -0.728603920557269
+          },
+          "group": {
+            "daylight_pct": 67.13368750086478,
+            "dark_pct": 66.46422257816795,
+            "effect_pp": -0.6694649226968323,
+            "effect_se_pp": 0.19796225255385522,
+            "effect_ci_lo_pp": -1.057463808000811,
+            "effect_ci_hi_pp": -0.2814660373928537
+          }
+        },
+        "difference_pp": 0.35388724336399946,
+        "difference_se_pp": 0.21221550569983202,
+        "difference_ci_lo_pp": -0.062047504768625826,
+        "difference_ci_hi_pp": 0.7698219914966248,
+        "difference_p_value": 0.0953982790508667
+      }
+    },
+    {
+      "key": "all_races/all_occupancies/majority_black/all_vehicle",
+      "universe": "all_races",
+      "occupancy": "all_occupancies",
+      "rule": "majority_black",
+      "require_mvc": false,
+      "multi_person_stops": 89986,
+      "half_black_stops": 5718,
+      "result": {
+        "group": "after_driving_equality",
+        "interaction_coef": 0.018616497188374537,
+        "interaction_se": 0.013545658205602563,
+        "interaction_p_value": 0.1693325505551192,
+        "n": 669516,
+        "n_group": 211746,
+        "converged": true,
+        "collapsed_units": 50,
+        "min_unit_count": 100,
+        "other_row_share": {
+          "assigned_unit": 0.0012815227716738659,
+          "police_area": 1.4936162840021747e-06
+        },
+        "effects": {
+          "reference": {
+            "daylight_pct": 68.31298302970569,
+            "dark_pct": 67.39280516312063,
+            "effect_pp": -0.920177866585064,
+            "effect_se_pp": 0.14777059039128512,
+            "effect_ci_lo_pp": -1.2098029017262033,
+            "effect_ci_hi_pp": -0.6305528314439245
+          },
+          "group": {
+            "daylight_pct": 67.02298386770396,
+            "dark_pct": 66.37877227231962,
+            "effect_pp": -0.6442115953843341,
+            "effect_se_pp": 0.19460562369932422,
+            "effect_ci_lo_pp": -1.025631609023964,
+            "effect_ci_hi_pp": -0.26279158174470424
+          }
+        },
+        "difference_pp": 0.2759662712007298,
+        "difference_se_pp": 0.20855204628559848,
+        "difference_ci_lo_pp": -0.13278822842117355,
+        "difference_ci_hi_pp": 0.6847207708226332,
+        "difference_p_value": 0.18575261045722857
+      }
+    }
+  ]
+}

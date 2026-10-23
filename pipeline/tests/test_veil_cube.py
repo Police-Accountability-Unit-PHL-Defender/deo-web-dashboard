@@ -364,6 +364,80 @@ def test_by_year_estimates_carry_average_marginal_probability_changes(cube_outpu
         assert e["marginal_effect_se_pp"] > 0, label
 
 
+def test_race_composition_trend_filters_by_age_gender_and_splits_blackness(cube_outputs):
+    by_year = cube_outputs[0]["intraracial"]["by_year"]
+    trends = by_year["race_composition_by_blackness"]
+    assert {trend["blackness_band"] for trend in trends} == {
+        "low_black", "moderate_black", "majority_black", "supermajority_black",
+    }
+    district_sets = [set(trend["districts"]) for trend in trends]
+    assert all(a.isdisjoint(b) for i, a in enumerate(district_sets) for b in district_sets[i + 1:])
+    assert set().union(*district_sets) == {
+        "01", "02", "03", "05", "06", "07", "08", "09", "12", "14", "15",
+        "16", "17", "18", "19", "22", "24", "25", "26", "35", "39",
+    }
+    expected = {
+        (year, group)
+        for year in by_year["years"]
+        for group in ("young_male", "young_female", "older_male", "older_female")
+    }
+    for trend in trends:
+        assert {(e["year"], e["group"]) for e in trend["estimates"]} == expected
+        for estimate in trend["estimates"]:
+            label = f"{trend['blackness_band']}/{estimate['year']}/{estimate['group']}"
+            assert estimate["converged"], label
+            assert 0 <= estimate["marginal_daylight_pct"] <= 100, label
+            assert 0 <= estimate["marginal_dark_pct"] <= 100, label
+            assert estimate["marginal_effect_pp"] == pytest.approx(
+                estimate["marginal_dark_pct"] - estimate["marginal_daylight_pct"]
+            ), label
+            assert estimate["marginal_ci_lo_pp"] < estimate["marginal_effect_pp"] < estimate["marginal_ci_hi_pp"], label
+
+
+def test_lead_race_composition_trends_cover_all_adults_and_young_men(cube_outputs):
+    by_year = cube_outputs[0]["intraracial"]["by_year"]
+    estimates = by_year["race_composition_overall"]
+    assert {(e["year"], e["sample"]) for e in estimates} == {
+        (year, sample)
+        for year in by_year["years"]
+        for sample in ("all_adults", "young_male")
+    }
+    by_key = {(e["year"], e["sample"]): e for e in estimates}
+    for year in by_year["years"]:
+        assert by_key[(year, "all_adults")]["n"] > by_key[(year, "young_male")]["n"]
+    for estimate in estimates:
+        label = f"{estimate['sample']}/{estimate['year']}"
+        assert estimate["converged"], label
+        assert 0 <= estimate["marginal_daylight_pct"] <= 100, label
+        assert 0 <= estimate["marginal_dark_pct"] <= 100, label
+        assert estimate["marginal_effect_pp"] == pytest.approx(
+            estimate["marginal_dark_pct"] - estimate["marginal_daylight_pct"]
+        ), label
+        assert estimate["marginal_ci_lo_pp"] < estimate["marginal_effect_pp"] < estimate["marginal_ci_hi_pp"], label
+
+
+def test_continuous_blackness_moderation_uses_all_groups_and_observed_support(cube_outputs):
+    moderation = cube_outputs[0]["intraracial"]["by_year"]["district_blackness_moderation"]
+    assert moderation["default_years"] == [
+        y for y in range(2014, 2026) if y != 2020
+    ]
+    assert moderation["observed_min_pct"] == pytest.approx(6.6, abs=0.1)
+    assert moderation["observed_max_pct"] == pytest.approx(81.4, abs=0.1)
+    assert {result["group"] for result in moderation["groups"]} == {
+        "young_male", "young_female", "older_male", "older_female",
+    }
+    for result in moderation["groups"]:
+        assert result["converged"], result.get("error")
+        assert result["n"] > 0
+        assert result["interaction_se_per_10"] > 0
+        assert [effect["district_black_pct"] for effect in result["effects"]] == list(range(10, 81, 10))
+        for effect in result["effects"]:
+            assert effect["effect_pp"] == pytest.approx(
+                effect["dark_pct"] - effect["daylight_pct"]
+            )
+            assert effect["effect_ci_lo_pp"] < effect["effect_pp"] < effect["effect_ci_hi_pp"]
+
+
 def test_by_year_does_not_disturb_the_paper_window_block(cube_outputs):
     """The trend block is a sibling, never a replacement.
 
