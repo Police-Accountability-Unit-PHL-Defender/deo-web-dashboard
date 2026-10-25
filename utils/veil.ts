@@ -234,6 +234,38 @@ export interface VeilIntraracialByYear {
   }
   pooled_race_interaction: VeilPooledRaceInteraction[]
   attribute_comparison: VeilAttributeComparison[]
+  district_context: VeilDistrictContextModeration
+}
+
+export interface VeilContextModerator {
+  range: { low: number; median: number; high: number }
+  interaction_coef_per_10: number
+  interaction_se_per_10: number
+  interaction_ci_lo_per_10: number
+  interaction_ci_hi_per_10: number
+  odds_ratio_multiplier_per_10: number
+  odds_ratio_ci_lo_per_10: number
+  odds_ratio_ci_hi_per_10: number
+  interaction_p_value: number
+}
+
+export interface VeilDistrictContextModeration {
+  years: number[]
+  ranges: {
+    district_whiteness: { low: number; median: number; high: number }
+    stops_per_1000: { low: number; median: number; high: number }
+  }
+  intensity_definition: string
+  effects: Array<{
+    attribute: VeilAttribute
+    outcome: 'is_black' | 'is_young' | 'is_male'
+    n: number
+    converged: boolean
+    moderators: {
+      district_whiteness: VeilContextModerator
+      stops_per_1000: VeilContextModerator
+    }
+  }>
 }
 
 export type VeilAttribute = 'race' | 'age' | 'gender'

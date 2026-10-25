@@ -12,6 +12,7 @@ reports the wrong number -- Figure 3's headline is 25.1% per motorist but
 
 import sqlite3
 
+import numpy as np
 import pandas as pd
 
 from build_districts import build as build_district_demographics
@@ -31,6 +32,7 @@ from veil.models import (
     INTRARACIAL_TARGETS,
     MODEL_TARGETS,
     confidence_interval,
+    fit_district_context_moderation,
     fit_district_blackness_moderation,
     fit_intraracial,
     fit_group_darkness_difference,
@@ -362,7 +364,92 @@ def _district_blackness_bands() -> dict[str, dict]:
     return bands
 
 
-def _by_year(stops: pd.DataFrame, sun: pd.DataFrame) -> dict:
+def _weighted_quantile(values, weights, quantile: float) -> float:
+    order = np.argsort(values)
+    values = np.asarray(values)[order]
+    weights = np.asarray(weights)[order]
+    return float(values[np.searchsorted(np.cumsum(weights), quantile * weights.sum())])
+
+
+def _district_context_analysis(
+    conn: sqlite3.Connection,
+    stops: pd.DataFrame,
+    sun: pd.DataFrame,
+) -> dict:
+    demographics = build_district_demographics()
+    districts = tuple(sorted(demographics))
+    sample = build_sample(
+        stops, sun, window=TREND_WINDOW, races=(BLACK, WHITE), districts=districts,
+    )
+    sample = sample[~sample.year.isin(TREND_DEFAULT_EXCLUDED_YEARS)].copy()
+    sample["is_black"] = (sample.race == BLACK).astype(int)
+
+    years = [y for y in TREND_YEARS if y not in TREND_DEFAULT_EXCLUDED_YEARS]
+    placeholders = ",".join("?" for _ in years)
+    counts = pd.read_sql(
+        f"""
+        SELECT districtoccur, SUM(n_stopped) AS n_stops
+        FROM car_ped_stops_quarterly
+        WHERE year IN ({placeholders})
+        GROUP BY districtoccur
+        """,
+        conn,
+        params=years,
+    )
+    stop_counts = {
+        _normalize_district(row.districtoccur): float(row.n_stops)
+        for row in counts.itertuples()
+    }
+    district_rows = []
+    for district in districts:
+        demo = demographics[district]
+        population = float(demo["total"])
+        annual_stops = stop_counts.get(district, 0.0) / len(years)
+        district_rows.append({
+            "district": district,
+            "population": int(population),
+            "whiteness": float(demo["whiteness"]),
+            "stops_per_1000": float(1000 * annual_stops / population),
+        })
+    context = {row["district"]: row for row in district_rows}
+    sample["district_whiteness_10"] = sample["_district"].map(
+        lambda d: context[d]["whiteness"] / 10
+    )
+    sample["stops_per_1000_10"] = sample["_district"].map(
+        lambda d: context[d]["stops_per_1000"] / 10
+    )
+
+    values = {
+        "district_whiteness": np.array([r["whiteness"] for r in district_rows]),
+        "stops_per_1000": np.array([r["stops_per_1000"] for r in district_rows]),
+    }
+    weights = np.array([r["population"] for r in district_rows])
+    ranges = {
+        key: tuple(_weighted_quantile(value, weights, q) for q in (0.25, 0.5, 0.75))
+        for key, value in values.items()
+    }
+    effects = []
+    for attribute, outcome in (
+        ("race", "is_black"), ("age", "is_young"), ("gender", "is_male"),
+    ):
+        effects.append({
+            "attribute": attribute,
+            "outcome": outcome,
+            **fit_district_context_moderation(sample, outcome, ranges),
+        })
+    return {
+        "years": years,
+        "districts": district_rows,
+        "ranges": {
+            key: {"low": vals[0], "median": vals[1], "high": vals[2]}
+            for key, vals in ranges.items()
+        },
+        "effects": effects,
+        "intensity_definition": "average annual recorded vehicle stops per 1,000 district residents",
+    }
+
+
+def _by_year(stops: pd.DataFrame, sun: pd.DataFrame, conn: sqlite3.Connection) -> dict:
     """Per-calendar-year fits, for the trend chart above the lead section.
 
     ONE `build_sample` call over the whole TREND_WINDOW, then split by year --
@@ -512,6 +599,7 @@ def _by_year(stops: pd.DataFrame, sun: pd.DataFrame) -> dict:
         },
         "pooled_race_interaction": pooled_race_interaction,
         "attribute_comparison": attribute_comparison,
+        "district_context": _district_context_analysis(conn, stops, sun),
     }
 
 
@@ -559,7 +647,7 @@ def _intraracial(conn: sqlite3.Connection) -> dict:
         # A second, wider sample over the same table: full calendar years
         # 2021-2025, fitted one year at a time. Sibling to the three keys
         # above, never merged into them.
-        "by_year": _by_year(stops, sun),
+        "by_year": _by_year(stops, sun, conn),
     }
 
 

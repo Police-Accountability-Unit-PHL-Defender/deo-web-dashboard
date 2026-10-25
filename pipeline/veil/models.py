@@ -568,10 +568,10 @@ def fit_district_context_moderation(
     residents divided by ten. The latter is an enforcement-intensity marker,
     not driving exposure or an individual stop probability.
 
-    Each moderator is evaluated at its population-weighted 25th and 75th
-    percentiles while the other is held at its population-weighted median.
-    Predictions are standardized over the same pooled rows. Covariance is
-    clustered by district, the level at which both moderators vary.
+    Coefficients report how the darkness odds ratio changes for each ten-point
+    increase in the moderator. Covariance is clustered by district, the level
+    at which both moderators vary. ``moderator_ranges`` is retained in the
+    output so the page can describe the observed low/median/high context.
     """
     formula = f"{outcome} ~ {_DISTRICT_CONTEXT_MODERATION}"
     result = {"n": int(len(df)), "converged": False, "moderators": {}}
@@ -591,66 +591,28 @@ def fit_district_context_moderation(
                 cov_kwds={"groups": df["_district"], "use_correction": True},
             )
         result.update(n=int(fit.nobs), converged=bool(fit.converged))
-        covariance = np.asarray(fit.cov_params())
-        design_info = fit.model.data.design_info
-
-        def scenario(whiteness: float, intensity: float, obscured: int) -> dict:
-            counterfactual = df.copy()
-            counterfactual["district_whiteness_10"] = whiteness / 10
-            counterfactual["stops_per_1000_10"] = intensity / 10
-            counterfactual["obscured_view"] = obscured
-            x = np.asarray(build_design_matrices([design_info], counterfactual)[0])
-            p = np.asarray(fit.predict(counterfactual))
-            return {
-                "pct": float(100 * p.mean()),
-                "gradient": np.mean(p[:, None] * (1 - p[:, None]) * x, axis=0),
-            }
-
-        white_lo, white_mid, white_hi = moderator_ranges["district_whiteness"]
-        stop_lo, stop_mid, stop_hi = moderator_ranges["stops_per_1000"]
-        settings = {
-            "district_whiteness": ((white_lo, stop_mid), (white_hi, stop_mid)),
-            "stops_per_1000": ((white_mid, stop_lo), (white_mid, stop_hi)),
-        }
         coef_names = {
             "district_whiteness": "obscured_view:district_whiteness_10",
             "stops_per_1000": "obscured_view:stops_per_1000_10",
         }
-        for moderator, (low_values, high_values) in settings.items():
-            effects = []
-            effect_gradients = []
-            for label, (whiteness, intensity) in (("low", low_values), ("high", high_values)):
-                daylight = scenario(whiteness, intensity, 0)
-                dark = scenario(whiteness, intensity, 1)
-                gradient = dark["gradient"] - daylight["gradient"]
-                effect = (dark["pct"] - daylight["pct"]) / 100
-                se = float(np.sqrt(max(0, gradient @ covariance @ gradient)))
-                lo, hi = confidence_interval(effect, se)
-                effects.append({
-                    "level": label,
-                    "value": whiteness if moderator == "district_whiteness" else intensity,
-                    "daylight_pct": daylight["pct"],
-                    "dark_pct": dark["pct"],
-                    "effect_pp": float(100 * effect),
-                    "effect_ci_lo_pp": float(100 * lo),
-                    "effect_ci_hi_pp": float(100 * hi),
-                })
-                effect_gradients.append(gradient)
-
-            contrast = (effects[1]["effect_pp"] - effects[0]["effect_pp"]) / 100
-            contrast_gradient = effect_gradients[1] - effect_gradients[0]
-            contrast_se = float(np.sqrt(max(0, contrast_gradient @ covariance @ contrast_gradient)))
-            contrast_lo, contrast_hi = confidence_interval(contrast, contrast_se)
-            z = contrast / contrast_se if contrast_se else float("nan")
+        for moderator, coef_name in coef_names.items():
+            coef = float(fit.params[coef_name])
+            se = float(fit.bse[coef_name])
+            lo, hi = confidence_interval(coef, se)
             coef_name = coef_names[moderator]
             result["moderators"][moderator] = {
-                "effects": effects,
-                "contrast_pp": float(100 * contrast),
-                "contrast_ci_lo_pp": float(100 * contrast_lo),
-                "contrast_ci_hi_pp": float(100 * contrast_hi),
-                "contrast_p_value": float(2 * norm.sf(abs(z))),
-                "interaction_coef_per_10": float(fit.params[coef_name]),
-                "interaction_se_per_10": float(fit.bse[coef_name]),
+                "range": {
+                    "low": moderator_ranges[moderator][0],
+                    "median": moderator_ranges[moderator][1],
+                    "high": moderator_ranges[moderator][2],
+                },
+                "interaction_coef_per_10": coef,
+                "interaction_se_per_10": se,
+                "interaction_ci_lo_per_10": lo,
+                "interaction_ci_hi_per_10": hi,
+                "odds_ratio_multiplier_per_10": float(np.exp(coef)),
+                "odds_ratio_ci_lo_per_10": float(np.exp(lo)),
+                "odds_ratio_ci_hi_per_10": float(np.exp(hi)),
                 "interaction_p_value": float(fit.pvalues[coef_name]),
             }
     except Exception as exc:

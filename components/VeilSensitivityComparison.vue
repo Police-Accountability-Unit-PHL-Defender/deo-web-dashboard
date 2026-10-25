@@ -1,8 +1,10 @@
 <template>
   <div v-if="cube">
-    <p class="text-body-4 mb-6">We vary the race comparison, whether a violation code was recorded, and how multiple
-      recorded occupants are classified. {{ clearChanges }} of {{ cube.sensitivity.length }} specifications show a
-      statistically significant pre/post difference. The main result uses Black/white sole-occupant stops without requiring a code.</p>
+    <p class="text-body-4 mb-6">We check whether the result changes when we include different racial groups,
+      require a recorded violation code, or count people recorded together differently.
+      {{ clearChanges }} of {{ cube.sensitivity.length }} versions show a statistically significant change in the
+      daylight–darkness difference after Driving Equality. These versions use overlapping records and are not independent tests.
+      The main result includes non-Latino Black and white motorists with one person recorded at the stop, whether or not a violation code was recorded.</p>
     <VeilComparisonPeriods :cube="cube"/>
     <div class="flex flex-wrap gap-6 my-6">
       <label class="flex flex-col gap-2 text-body-4">Race comparison
@@ -25,7 +27,7 @@
     </CoefficientGraph>
     <div class="overflow-x-auto my-6">
       <table class="w-full text-body-4 border-collapse">
-        <caption class="text-left font-semibold mb-4">Direct pre/post differences (percentage points)</caption>
+        <caption class="text-left font-semibold mb-4">Change in the daylight–darkness difference: after minus before (percentage points)</caption>
         <thead><tr><th scope="col">Occupant definition</th><th scope="col">Difference</th><th scope="col">95% confidence interval</th><th scope="col">Stops</th></tr></thead>
         <tbody><tr v-for="fit in selected" :key="fit.key">
           <th scope="row">{{ label(fit) }}</th><td>{{ signed(fit.result.difference_pp) }}</td>
@@ -34,6 +36,9 @@
         </tr></tbody>
       </table>
     </div>
+    <p class="text-body-4 mb-4">A negative value in this table means the daylight–darkness difference became more
+      negative after Driving Equality. An interval that includes zero means the analysis does not establish a change.
+      These comparisons alone cannot show whether the law caused a change.</p>
     <p class="text-body-4">Black means non-Latino Black in every version. With all races included, the comparison is with all
       other recorded racial categories, rather than white alone. “Anyone,” “majority,” and “everyone” describe people recorded at
       the stop; they do not identify the driver or establish who else was physically in the car.</p>

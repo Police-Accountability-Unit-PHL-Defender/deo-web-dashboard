@@ -47,14 +47,14 @@
           <Answer v-if="pooled" :arrow="true">
             <AnswerText>
               <p class="result-text">{{ pooled.marginal_effect_pp < 0 ? 'Yes.' : 'No.' }} This test compares Black and white drivers. {{ pooledPeriodLabel }},
-                <span class="font-bold text-purple">{{ pooled.marginal_daylight_pct.toFixed(1) }}%</span> of the drivers police
+                the model estimates that <span class="font-bold text-purple">{{ pooled.marginal_daylight_pct.toFixed(1) }}%</span> of the drivers police
                 stopped in daylight were Black. After dark, it was
                 <span class="font-bold text-purple">{{ pooled.marginal_dark_pct.toFixed(1) }}%</span> —
                 <span class="font-bold text-purple">{{ points(pooled.marginal_effect_pp) }}<Tooltip term="Percentage point"/>
                   {{ pooled.marginal_effect_pp < 0 ? 'lower' : 'higher' }}.</span>
                 <template v-if="pooled.marginal_effect_pp < 0 && pooled.marginal_ci_hi_pp < 0">
-                  The shift is small, but it should not be there if race played no part in who police stopped, and this test
-                  tends to understate it.</template>
+                  This pattern is consistent with race influencing some stop decisions. The test depends on assumptions
+                  about travel patterns and cannot rule out every other explanation.</template>
               </p>
             </AnswerText>
             <CoefficientGraph :estimates="sharesTrendData" :axis-properties="sharesAxes" :group-classes="sharesClasses"
@@ -68,27 +68,26 @@
               </template>
             </CoefficientGraph>
             <AnswerText>
-              <p class="text-body-4">Who is on the road at, say, 7 p.m. changes relatively little through the year, but
-                whether officers can see drivers does. If race played no part in who police stopped, Black drivers would
-                make up about the same share of stops at that hour in daylight and in darkness. A smaller share after dark
-                suggests race influenced some stops made when officers could see the driver. Researchers call this the
-                veil of darkness test.</p>
-              <p class="text-body-4 mt-4">Put another way, out of every 1,000 Black and white drivers stopped, about
+              <p class="text-body-4">At 7 p.m., for example, it can be light in summer and dark in winter.
+                The comparison assumes that, after the adjustments described below, differences in who is driving and
+                how they drive do not explain the daylight–darkness gap. If that assumption holds, a smaller Black share
+                after dark is evidence that seeing a driver's race influenced some stops. Researchers call this the veil of darkness test.</p>
+              <p class="text-body-4 mt-4">Expressed per 1,000 stops, the model estimates that about
                 {{ perThousand(pooled.marginal_daylight_pct) }} were Black in daylight and about
-                {{ perThousand(pooled.marginal_dark_pct) }} were Black after dark. This difference is
-                {{ crossesZero(pooled.marginal_ci_lo_pp, pooled.marginal_ci_hi_pp) ? 'not clearly distinguishable from' : 'very unlikely to be' }}
-                chance: the 95% confidence interval<Tooltip term="Confidence interval"/> runs from
+                {{ perThousand(pooled.marginal_dark_pct) }} were Black after dark. The estimated difference is
+                {{ crossesZero(pooled.marginal_ci_lo_pp, pooled.marginal_ci_hi_pp) ? 'not statistically significant' : 'statistically significant' }}:
+                the 95% confidence interval<Tooltip term="Confidence interval"/> runs from
                 {{ signed(pooled.marginal_ci_lo_pp) }} to {{ signed(pooled.marginal_ci_hi_pp) }} points. It is based on
                 {{ pooled.n.toLocaleString() }} evening stops, roughly 5 to 8:30 p.m., of adult non-Latino Black and white
                 drivers in Philadelphia's residential police districts. Latino, Asian, and other drivers are not part of this
-                comparison, so these percentages are higher than the Black share of all traffic stops. The stops are adjusted for time of day,
+                comparison, so these percentages should not be read as the Black share of all traffic stops. The estimates account for time of day,
                 day of the week, season, year, and location<Tooltip term="District"/>. A single year has far fewer stops, so in
                 {{ uncertainAdultYears }} of {{ defaultAdultYears.length }} comparable years the annual difference alone
                 cannot rule out no change; that is why the answer combines years.</p>
               <p class="text-body-4 mt-4">Darkness only partly hides who is driving. Streetlights, headlights, and stops
                 made after an officer has followed a car can all let an officer see a driver at night. For that reason,
-                researchers generally treat this test as conservative: it can show that race influenced stops, but it
-                likely understates how much. These estimates describe the racial makeup <em>of recorded stops</em>; they do
+                the test may miss some decisions influenced by race. It does not measure the full extent of racial bias.
+                These estimates describe the racial makeup <em>of recorded stops</em>; they do
                 not measure a driver's personal chance of being stopped, and they cannot identify any individual officer's
                 motives.</p>
             </AnswerText>
@@ -109,7 +108,7 @@
           </QuestionHeader>
           <Answer v-if="youngPooled" :arrow="true">
             <AnswerText>
-              <p class="result-text">{{ youngPooled.marginal_effect_pp < 0 ? 'Yes.' : 'No.' }} Among men ages 18–29,
+              <p class="result-text">{{ youngPooled.marginal_effect_pp < 0 ? 'Yes.' : 'No.' }} Among non-Latino Black and white men ages 18–29, the model estimates that
                 <span class="font-bold text-violet">{{ youngPooled.marginal_daylight_pct.toFixed(1) }}%</span> of those police stopped
                 in daylight were Black. After dark, it was
                 <span class="font-bold text-violet">{{ youngPooled.marginal_dark_pct.toFixed(1) }}%</span> —
@@ -135,7 +134,7 @@
             </CoefficientGraph>
             <AnswerText>
               <p class="text-body-4">{{ youngDifferenceIsClear
-                ? "The larger drop for young men is very unlikely to be chance."
+                ? "The difference between young men and other adults is statistically significant."
                 : "The data cannot tell young men's drop apart from other adults'." }} Comparing young men directly with
                 other adult drivers in one model, the after-dark drop was
                 {{ Math.abs(youngDifference.difference_pp).toFixed(1) }} points
@@ -192,6 +191,7 @@
               </AnswerText>
             </div>
           </details>
+          <VeilDistrictContext/>
         </section>
 
         <HorizontalLine class="my-12" :color="true"/>
@@ -222,7 +222,7 @@
                 {{ lastYear }} because later data covers only part of a year and cannot represent a full daylight cycle.
                 A smaller share of stops carries a recorded violation code from 2023 onward, changing which stops
                 enter the sample. This is another reason to avoid reading every annual fluctuation as a change in policing.</p>
-              <p class="mt-4">The veil-of-darkness test was first applied to Philadelphia traffic stops by
+              <p class="mt-4">Research applying the veil-of-darkness test to Philadelphia traffic stops includes
                 <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3628865" class="text-hyperlink" target="_blank" rel="noopener">Hannon,
                   Neal and Gustafson (2021), <em>Out-of-Place and In-Place Policing</em></a>. This page applies the same
                 test to the full set of residential districts and to each calendar year since 2014.</p>
@@ -241,6 +241,7 @@
 import { computed, ref } from 'vue'
 import stopsImage from '../assets/images/stops.jpg'
 import VeilSensitivityComparison from '../components/VeilSensitivityComparison.vue'
+import VeilDistrictContext from '../components/VeilDistrictContext.vue'
 import CoefficientGraph from '../components/CoefficientGraph.vue'
 import SelectVeilGroups from '../components/SelectVeilGroups.vue'
 import HorizontalLine from '../components/ui/HorizontalLine.vue'

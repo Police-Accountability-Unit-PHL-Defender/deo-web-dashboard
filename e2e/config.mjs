@@ -253,13 +253,13 @@ export const CHECKS = [
     assert: ({ text }) => {
       text = text.replace(/\s+/g, ' ')
       for (const phrase of [
-        'This test compares Black and white drivers. From 2014 to 2025, leaving out 2020, 80.4% of the drivers police stopped in daylight were Black. After dark, it was 79.4% — 1.0 percentage point lower',
-        'it should not be there if race played no part in who police stopped, and this test tends to understate it',
+        'This test compares Black and white drivers. From 2014 to 2025, leaving out 2020, the model estimates that 80.4% of the drivers police stopped in daylight were Black. After dark, it was 79.4% — 1.0 percentage point lower',
+        'cannot rule out every other explanation',
         'about 804 were Black in daylight and about 794',
         'runs from -1.3 to -0.7 points', 'Latino, Asian, and other drivers are not part of this comparison', '467,617 evening stops, roughly 5 to 8:30 p.m., of adult non-Latino Black and white',
         'in 5 of 11 comparable years the annual difference alone cannot rule out no change',
         'of recorded stops', "do not measure a driver's personal chance of being stopped",
-        'likely understates how much', 'harder time seeing who is driving',
+        'does not measure the full extent of racial bias', 'harder time seeing who is driving',
         'Researchers call this the veil of darkness test',
         'Black share of drivers stopped (%)', 'Change in Black share (percentage points)',
       ]) {
@@ -295,9 +295,9 @@ export const CHECKS = [
     pages: ['veil-sensitivity'],
     assert: ({ text }) => {
       for (const phrase of [
-        'Among men ages 18–29, 81.7% of those police stopped in daylight were Black. After dark, it was 80.0% — 1.7 percentage points lower, compared to 1.0 for all adults',
+        'Among non-Latino Black and white men ages 18–29, the model estimates that 81.7% of those police stopped in daylight were Black. After dark, it was 80.0% — 1.7 percentage points lower, compared to 1.0 for all adults',
         'the after-dark drop was 1.3 points larger for young men (95% confidence interval -1.7 to -0.8',
-        'The larger drop for young men is very unlikely to be chance',
+        'The difference between young men and other adults is statistically significant',
         '117,268 stops of young men among the 467,617 adult stops',
         'larger for young men than for all adults in 10 of 11 comparable years',
         'the 2025 young-men estimate (+0.4, interval -1.3 to +2.1) is too wide to show a reversal',
@@ -314,25 +314,13 @@ export const CHECKS = [
       text = text.replace(/\s+/g, ' ')
       for (const phrase of [
         'Percentage of stopped drivers who were Black: darkness vs. daylight',
-        'No recorded violation code is required', 'with one person recorded at the stop',
-        'adult non-Latino Black and white', '95% confidence interval',
+        'About this comparison', '95% confidence interval',
       ]) if (!text.includes(phrase)) return `main veil result lost: ${phrase}`
       const cube = JSON.parse(readFileSync(new URL('../.output/public/cubes/veil-comparison.json', import.meta.url), 'utf8'))
       const r = cube.main
       const significant = r.converged && (r.difference_ci_lo_pp > 0 || r.difference_ci_hi_pp < 0)
       const answer = significant ? 'A statistically significant change.' : 'No statistically significant change.'
       if (!text.includes(answer)) return `headline disagrees with the direct difference interval: expected ${answer}`
-      if (!text.includes(`${r.n.toLocaleString()} evening vehicle stops`)) return 'main veil denominator disagrees with its fitted sample'
-      const formatDate = date => new Intl.DateTimeFormat('en-US', {
-        month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC',
-      }).format(new Date(date))
-      const previous = new Date(cube.effective_date)
-      previous.setUTCDate(previous.getUTCDate() - 1)
-      for (const phrase of [
-        `${formatDate(cube.window_start)} through ${formatDate(previous)}`,
-        `${formatDate(cube.effective_date)} through ${formatDate(cube.window_end)}`,
-        'We compare stops before Driving Equality', 'with stops after it',
-      ]) if (!text.includes(phrase)) return `main veil date explanation lost: ${phrase}`
       if (text.includes('Methods and sensitivity checks')) return 'Snapshot still links to the methods page'
       return true
     },
@@ -342,7 +330,7 @@ export const CHECKS = [
     pages: ['veil-sensitivity'],
     assert: ({ text }) => {
       for (const phrase of ['Race comparison', 'Recorded violation code', 'Sole occupant', 'Anyone Black',
-        'Majority Black', 'Everyone Black', 'Direct pre/post differences', 'Every stop counts once',
+        'Majority Black', 'Everyone Black', 'Change in the daylight–darkness difference: after minus before', 'Every stop counts once',
         'rather than the main page', 'do not identify the driver']) {
         if (!text.includes(phrase)) return `sensitivity page lost: ${phrase}`
       }

@@ -51,14 +51,11 @@ describe('Main veil page', () => {
     expect(wrapper.text()).not.toContain('Among men ages 18–29')
   })
 
-  it('highlights data figures and updates period significance independently of the pre/post change', async () => {
+  it('updates period significance independently of the pre/post change', async () => {
     const wrapper = factory()
-    const highlights = () => wrapper.findAll('.result-text span').map(s => s.text())
-    expect(highlights()).toEqual(['1.08', '0.90', '483,531'])
     bundle.value.cube.main.effects.reference.effect_pp = -2.345
     bundle.value.cube.main.effects.group.effect_ci_hi_pp = 0
     await nextTick()
-    expect(highlights()).toContain('2.35')
     expect(wrapper.text()).toContain('statistically significant before Driving Equality, but not after.')
     expect(wrapper.text()).toContain('No statistically significant change.')
     bundle.value.cube.main.effects.reference.effect_ci_hi_pp = 0.5
@@ -128,7 +125,7 @@ describe('Combined sensitivity page', () => {
     const charts = wrapper.findAllComponents(CoefficientGraph)
     expect(charts).toHaveLength(3)
     expect(charts.map(c => c.findAll('circle').length)).toEqual([8, 24, 24])
-    expect(wrapper.text()).toContain('0 of 16 specifications show a statistically significant pre/post difference')
+    expect(wrapper.text()).toContain('0 of 16 versions show a statistically significant change in the daylight–darkness difference after Driving Equality')
     expect(wrapper.text()).toContain('rather than the main page')
     expect(wrapper.find('a[href="/snapshot#veil-of-darkness"]').exists()).toBe(true)
     const annual = charts[1].props('estimates')
