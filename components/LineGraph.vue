@@ -177,6 +177,7 @@ const drawGraph = (graphData) => {
   const groups = props.groupName ? d3.group(graphData, (d) => d[props.groupName]) : new Map([[undefined, graphData]])
 
   const line = d3.line()
+    .defined((d) => d[props.axisProperties.y] !== null && Number.isFinite(d[props.axisProperties.y]))
     .x((d) => x(d[props.axisProperties.x]))
     .y((d) => y(d[props.axisProperties.y]))
 
@@ -244,6 +245,19 @@ const drawGraph = (graphData) => {
             .attr('stroke-dasharray', '4 4')
             .attr('d', line)
         }
+      } else if (sorted.some((d) => d.incomplete)) {
+        // Selected ranges can leave either end of a year partial. Mark each
+        // affected segment rather than dashing every later, complete year.
+        for (let i = 1; i < sorted.length; i++) {
+          const segment = sorted.slice(i - 1, i + 1)
+          svg.append('path')
+            .datum(segment)
+            .attr('fill', 'none')
+            .attr('class', strokeClass)
+            .attr('stroke-width', 2)
+            .attr('stroke-dasharray', segment.some((d) => d.incomplete) ? '4 4' : null)
+            .attr('d', line)
+        }
       } else {
         svg.append('path')
           .datum(sorted)
@@ -256,7 +270,7 @@ const drawGraph = (graphData) => {
 
     svg.append('g')
       .selectAll('circle')
-      .data(sorted)
+      .data(sorted.filter((d) => d[props.axisProperties.y] !== null && Number.isFinite(d[props.axisProperties.y])))
       .join('circle')
       .attr('cx', (d) => x(d[props.axisProperties.x]))
       .attr('cy', (d) => y(d[props.axisProperties.y]))

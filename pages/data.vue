@@ -40,6 +40,23 @@
                 and <a href="https://opendataphilly.org/datasets/police-divisions/" target="_blank">Police Divisions</a> </li>
             </ul>
           </FaqQuestion>
+          <FaqQuestion id="veil-of-darkness" question="What data and research support the veil-of-darkness comparison?">
+            <p>The Snapshot analysis uses Philadelphia Police Department
+              <a href="https://opendataphilly.org/datasets/vehicle-pedestrian-investigations/" target="_blank" rel="noopener">vehicle-stop records from Open Data Philly</a>.
+              It compares adult non-Latino Black and white motorists with one person recorded at the stop,
+              in residential police districts. Stops do not need a recorded violation code to be included.
+              The dates and sample size appear under “About this comparison” on Snapshot.</p>
+            <p>The method comes from Jeffrey Grogger and Greg Ridgeway's
+              <a href="https://www.tandfonline.com/doi/abs/10.1198/016214506000000168" target="_blank" rel="noopener">2006 veil-of-darkness study</a>.
+              It compares the racial makeup of stops at the same evening hours when it is light and when it is dark.
+              Philadelphia research using this approach includes Hannon, Neal and Gustafson's
+              <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3628865" target="_blank" rel="noopener"><em>Out-of-Place and In-Place Policing</em> (2021)</a>.
+              The Snapshot results are this dashboard's analysis, not figures quoted from those studies.</p>
+            <p>The model accounts for time and location, among other factors, and tests whether the daylight–darkness
+              difference changed after Driving Equality. Its interpretation depends on assumptions about travel and enforcement:
+              other differences between daylight and darkness may affect who is stopped. It does not measure an individual's
+              chance of being stopped or establish that the law caused a change.</p>
+          </FaqQuestion>
           <FaqQuestion id="2" question="What does this dashboard mean by “traffic stops”?">
             <p>For ease of understanding, this dashboard uses the term “traffic stops” for all Philadelphia Police Department
               (PPD) vehicle stops. While the majority of PPD vehicle stops are for traffic violations, approximately 2% of vehicle

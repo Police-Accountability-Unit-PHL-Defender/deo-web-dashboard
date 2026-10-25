@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs'
+
 /**
  * What the parity harness checks. This is the file to edit over time.
  *
@@ -33,7 +35,7 @@ export const PAGES = [
   // parity.mjs to skip the live diff for it — a diff against a page that
   // doesn't exist in production would fail by construction, not signal a
   // regression.
-  { path: '/veil-of-darkness', name: 'veil', noParity: true },
+  { path: '/veil-sensitivity', name: 'veil-sensitivity', noParity: true },
 ]
 
 /**
@@ -50,6 +52,44 @@ export const NORMALIZERS = [
 
 export const CHECKS = [
   {
+    name: 'neighborhoods arrest rate uses arrests within intrusions',
+    pages: ['neighborhoods'],
+    assert: ({ text, quarter }) => {
+      text = text.replace(/\s+/g, ' ')
+      for (const phrase of [
+        'When Philadelphia police intrude during traffic stops, how often do they arrest?',
+        'Arrest Rates During Intrusions by Race',
+        'Arrest Rate During Intrusions (%)',
+        'Arrests during stops without a recorded frisk or search are excluded.',
+        "Of all traffic stops, what's the arrest rate?",
+        'Arrest Rates of All Stops by Race',
+        'Contraband Hit Rates by Year for Black and White Drivers',
+        'Arrest Rates During Intrusions by Year for Black and White Drivers',
+        'Arrest Rates of All Stops by Year for Black and White Drivers',
+        'Dashed segments include partial years.',
+      ]) if (!text.includes(phrase)) return `arrest graph lost: ${phrase}`
+      const cube = JSON.parse(readFileSync(new URL('../.output/public/cubes/stops.json', import.meta.url), 'utf8'))
+      const index = name => cube.dimensions.length + cube.measures.indexOf(name)
+      if (!cube.measures.includes('n_arrested_intruded')) return 'arrest graph lacks joint arrest/intrusion counts'
+      let intrusions = 0, arrests = 0, allArrests = 0, stops = 0
+      for (const row of cube.rows) {
+        const q = row[cube.dimensions.indexOf('quarter')]
+        if (q < '2014-Q1' || q > quarter) continue
+        intrusions += row[index('n_intruded')]
+        arrests += row[index('n_arrested_intruded')]
+        allArrests += row[index('n_arrested')]
+        stops += row[index('n_stopped')]
+      }
+      const rate = intrusions ? Math.round(1000 * arrests / intrusions) / 10 : 0
+      if (!text.includes(`${rate}% of traffic stops involving a frisk or search resulted in at least one arrest`)) {
+        return 'arrest summary disagrees with arrests within the selected intrusion denominator'
+      }
+      const allRate = stops ? Math.round(1000 * allArrests / stops) / 10 : 0
+      return text.includes(`${allRate}% of all traffic stops resulted in at least one arrest`)
+        || 'all-stops arrest summary disagrees with the selected stops denominator'
+    },
+  },
+  {
     name: 'no raw cube/column keys leaked into axis labels',
     // A rendered axis should never show an internal identifier. This is the
     // class of bug that shipped `x_label` as a visible axis title.
@@ -58,7 +98,7 @@ export const CHECKS = [
     // interpolates around thirty toFixed() results into its prose, and a
     // model or selector returning undefined would render the word straight
     // into a published statistical claim.
-    pages: ['stops', 'safety', 'neighborhoods', 'reasons', 'snapshot', 'veil'],
+    pages: ['stops', 'safety', 'neighborhoods', 'reasons', 'snapshot', 'veil-sensitivity'],
     assert: ({ text }) => {
       const leaked = ['x_label', 'y_label', 'n_stopped', 'age_range', 'districtoccur', 'undefined', 'NaN']
         .filter((k) => text.includes(k))
@@ -202,77 +242,105 @@ export const CHECKS = [
     },
   },
   {
-    name: 'veil-of-darkness page renders without console/page errors',
-    pages: ['veil'],
+    name: 'veil-of-darkness pages render without console/page errors',
+    pages: ['snapshot', 'veil-sensitivity'],
     assert: ({ errors }) =>
       !errors || errors.length === 0 || `console/page error(s): ${errors.join(' | ')}`,
   },
   {
-    name: 'veil trend is rendered on the average-marginal probability scale',
-    pages: ['veil'],
+    name: 'veil supporting overview keeps the pooled denominator and uncertainty explicit',
+    pages: ['veil-sensitivity'],
     assert: ({ text }) => {
-      if (!text.includes('Change after dark (percentage points)'))
-        return 'probability-scale y-axis is missing'
-      if (!text.includes('These are average marginal changes'))
-        return 'average-marginal explanation is missing'
-      if (text.includes('Effect of darkness (log-odds)'))
-        return 'the old log-odds axis is still rendered'
+      text = text.replace(/\s+/g, ' ')
+      for (const phrase of [
+        'This test compares Black and white drivers. From 2014 to 2025, leaving out 2020, the model estimates that 80.4% of the drivers police stopped in daylight were Black. After dark, it was 79.4% — 1.0 percentage point lower',
+        'cannot rule out every other explanation',
+        'about 804 were Black in daylight and about 794',
+        'runs from -1.3 to -0.7 points', 'Latino, Asian, and other drivers are not part of this comparison', '467,617 evening stops, roughly 5 to 8:30 p.m., of adult non-Latino Black and white',
+        'in 5 of 11 comparable years the annual difference alone cannot rule out no change',
+        'of recorded stops', "do not measure a driver's personal chance of being stopped",
+        'does not measure the full extent of racial bias', 'harder time seeing who is driving',
+        'Researchers call this the veil of darkness test',
+        'Black share of drivers stopped (%)', 'Change in Black share (percentage points)',
+      ]) {
+        if (!text.includes(phrase)) return `pooled race overview lost: ${phrase}`
+      }
       return true
     },
   },
   {
-    name: 'veil pooled view renders before and after sunset probabilities',
-    pages: ['veil'],
+    name: 'veil supporting page keeps sensitivity, annual, subgroup, and district analyses together',
+    pages: ['veil-sensitivity'],
     assert: ({ text }) => {
-      if (!text.includes('Model-adjusted share of stops before and after sunset'))
-        return 'aggregate probability chart title is missing'
-      if (!text.includes('Before sunset') || !text.includes('After sunset'))
-        return 'aggregate chart lighting endpoints are missing'
-      if (!text.includes('not a newly fitted pooled regression'))
-        return 'annual-estimate aggregation disclosure is missing'
+      const order = [
+        'Before and After Driving Equality Under Different Occupant Definitions',
+        'Black Share of Black and White Drivers Stopped by PPD in Daylight and After Dark, by Year',
+        'The after-dark line sits below the daylight line in every year from 2014 to 2025',
+        'Change in the Black Share of PPD Traffic Stops After Dark: Men Ages 18–29 Compared to All Adults',
+        'Is the after-dark change larger or smaller in districts',
+        'Explore the district breakdown by age and gender',
+        'Read the method, data limitations, and research source',
+      ].map(phrase => [phrase, text.indexOf(phrase)])
+      for (const [phrase, index] of order) if (index < 0) return `missing: ${phrase}`
+      for (let i = 1; i < order.length; i++) {
+        if (order[i][1] < order[i - 1][1]) return `out of order: "${order[i][0]}" before "${order[i - 1][0]}"`
+      }
+      if (!text.includes('gray 2020 point')) return 'the overview lost its 2020 comparability caveat'
+      if (!text.includes('dotted vertical line marks Driving Equality')) return 'the change chart lost its policy marker caption'
       return true
     },
   },
   {
-    name: 'veil pooled effect view renders one combined interval per identity',
-    pages: ['veil'],
+    name: 'veil young-men section leads with its pooled result and direct test',
+    pages: ['veil-sensitivity'],
     assert: ({ text }) => {
-      if (!text.includes('Combined model-adjusted change after dark across the selected years'))
-        return 'combined-years effect chart title is missing'
-      if (!text.includes('One point summarizes all selected years for each identity'))
-        return 'combined effect interval explanation is missing'
+      for (const phrase of [
+        'Among non-Latino Black and white men ages 18–29, the model estimates that 81.7% of those police stopped in daylight were Black. After dark, it was 80.0% — 1.7 percentage points lower, compared to 1.0 for all adults',
+        'the after-dark drop was 1.3 points larger for young men (95% confidence interval -1.7 to -0.8',
+        'The difference between young men and other adults is statistically significant',
+        '117,268 stops of young men among the 467,617 adult stops',
+        'larger for young men than for all adults in 10 of 11 comparable years',
+        'the 2025 young-men estimate (+0.4, interval -1.3 to +2.1) is too wide to show a reversal',
+      ]) {
+        if (!text.includes(phrase)) return `young-men section lost: ${phrase}`
+      }
       return true
     },
   },
   {
-    name: 'Hannon attribution survives on the veil-of-darkness page',
-    pages: ['veil'],
+    name: 'veil main result follows the fitted pre/post difference and selected definition',
+    pages: ['snapshot'],
+    assert: ({ text }) => {
+      text = text.replace(/\s+/g, ' ')
+      for (const phrase of [
+        'Percentage of stopped drivers who were Black: darkness vs. daylight',
+        'About this comparison', '95% confidence interval',
+      ]) if (!text.includes(phrase)) return `main veil result lost: ${phrase}`
+      const cube = JSON.parse(readFileSync(new URL('../.output/public/cubes/veil-comparison.json', import.meta.url), 'utf8'))
+      const r = cube.main
+      const significant = r.converged && (r.difference_ci_lo_pp > 0 || r.difference_ci_hi_pp < 0)
+      const answer = significant ? 'A statistically significant change.' : 'No statistically significant change.'
+      if (!text.includes(answer)) return `headline disagrees with the direct difference interval: expected ${answer}`
+      if (text.includes('Methods and sensitivity checks')) return 'Snapshot still links to the methods page'
+      return true
+    },
+  },
+  {
+    name: 'veil sensitivity controls and denominators are explicit',
+    pages: ['veil-sensitivity'],
+    assert: ({ text }) => {
+      for (const phrase of ['Race comparison', 'Recorded violation code', 'Sole occupant', 'Anyone Black',
+        'Majority Black', 'Everyone Black', 'Change in the daylight–darkness difference: after minus before', 'Every stop counts once',
+        'rather than the main page', 'do not identify the driver']) {
+        if (!text.includes(phrase)) return `sensitivity page lost: ${phrase}`
+      }
+      return true
+    },
+  },
+  {
+    name: 'Hannon attribution survives on the supporting analysis page',
+    pages: ['veil-sensitivity'],
     assert: ({ text }) => text.includes('Hannon') || 'the string "Hannon" is missing from the page',
-  },
-  {
-    name: 'veil trend defaults to young men and older women',
-    pages: ['veil'],
-    assert: ({ text }) => {
-      const selector = /Age and gender\s+([^\n]+)\s+([^\n]+)\s+Motorist race/.exec(text)
-      if (!selector) return 'could not find the age-and-gender selector'
-      const selected = [selector[1], selector[2]]
-      const expected = ['Young man (18–29)', 'Older woman (30+)']
-      return selected.join('|') === expected.join('|')
-        || `default groups were [${selected.join(', ')}], expected [${expected.join(', ')}]`
-    },
-  },
-  {
-    name: 'veil extension exposes race and district-context selectors',
-    pages: ['veil'],
-    assert: ({ text }) => {
-      if (!/Motorist race\s+Black\s+White/.test(text))
-        return 'Black and White motorist selections are not both visible'
-      if (!/District context\s+Majority non-White districts/.test(text))
-        return 'majority-non-White district context is not the default'
-      if (!text.includes('majority-White and majority-non-White district groups'))
-        return 'both district-context choices are not explained'
-      return true
-    },
   },
 ]
 
@@ -385,5 +453,5 @@ export const LOAD_BUDGETS = [
   { page: 'reasons', maxBlockingMs: 120 },
   { page: 'neighborhoods', maxBlockingMs: 280 },
   { page: 'safety', maxBlockingMs: 60 },
-  { page: 'veil', maxBlockingMs: 60 },
+  { page: 'veil-sensitivity', maxBlockingMs: 60 },
 ]

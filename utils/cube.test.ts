@@ -5,6 +5,7 @@ import {
   sumMeasure,
   groupSum,
   groupTupleSum,
+  groupTupleMeasures,
   locationDistrict,
   groupSumByDistrict,
   groupAllMeasuresByDistrict,
@@ -27,6 +28,18 @@ const fixture: Cube = {
     ['2020-Q1', '17-3', 'White', 'Female', '18-24', 2, 0],
   ],
 }
+
+describe('groupTupleMeasures', () => {
+  it.each([{}, { location: '22*', endQuarter: '2019-Q1' }, { race: ['Black'], startQuarter: '2019-Q2' }])('matches single-measure aggregation for %j', opts => {
+    const combined = groupTupleMeasures(fixture, ['quarter', 'race'], fixture.measures, opts)
+    for (const measure of fixture.measures) {
+      const normalize = rows => rows.sort((a, b) => JSON.stringify(a.keys).localeCompare(JSON.stringify(b.keys)))
+      expect(normalize(combined.map(row => ({ keys: row.keys, value: row.measures[measure] })))).toEqual(
+        normalize(groupTupleSum(fixture, ['quarter', 'race'], measure, opts)),
+      )
+    }
+  })
+})
 
 describe('locationPredicate', () => {
   it('matches everything for "*"', () => {

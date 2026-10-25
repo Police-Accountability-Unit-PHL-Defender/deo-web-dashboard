@@ -158,4 +158,26 @@ describe('LineGraph', () => {
   it('renders nothing rather than throwing on empty data', () => {
     expect(() => factory({ graphData: [] })).not.toThrow()
   })
+
+  it('dashes partial years at either end without dashing complete middle segments', () => {
+    const wrapper = factory({ graphData: [
+      { group: 'Operational', Year: 2022, 'Percentage (%)': 20, incomplete: true },
+      { group: 'Operational', Year: 2023, 'Percentage (%)': 30 },
+      { group: 'Operational', Year: 2024, 'Percentage (%)': 40 },
+      { group: 'Operational', Year: 2025, 'Percentage (%)': 50, incomplete: true },
+    ] })
+    expect(seriesPaths(wrapper).map(p => p.attributes('stroke-dasharray'))).toEqual(['4 4', undefined, '4 4'])
+  })
+
+  it('leaves a gap instead of drawing a zero-rate point when the denominator is absent', () => {
+    const wrapper = factory({ graphData: [
+      { group: 'Operational', Year: 2022, 'Percentage (%)': 20 },
+      { group: 'Operational', Year: 2023, 'Percentage (%)': null },
+      { group: 'Operational', Year: 2024, 'Percentage (%)': 40 },
+    ] })
+    expect(wrapper.findAll('circle')).toHaveLength(2)
+    const path = seriesPaths(wrapper)[0].attributes('d')!
+    expect(path).not.toContain('L')
+    expect(path).not.toContain('NaN')
+  })
 })

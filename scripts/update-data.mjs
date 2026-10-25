@@ -18,7 +18,7 @@ import { fileURLToPath } from 'node:url'
 const ROOT = resolve(fileURLToPath(new URL('.', import.meta.url)), '..')
 const PIPELINE = join(ROOT, 'pipeline')
 const CUBES = join(ROOT, 'public', 'cubes')
-const TOPICS = ['stops', 'reasons', 'safety', 'scalars']
+const TOPICS = ['stops', 'reasons', 'safety', 'scalars', 'veil', 'veil-comparison']
 
 const argv = process.argv.slice(2)
 const zipIdx = argv.indexOf('--zip')
@@ -27,6 +27,12 @@ if (zipIdx === -1 || !argv[zipIdx + 1]) {
   process.exit(2)
 }
 const zip = argv[zipIdx + 1]
+const referenceIdx = argv.indexOf('--row-order-reference-zip')
+const referenceZip = referenceIdx === -1 ? null : argv[referenceIdx + 1]
+if (referenceIdx !== -1 && (!referenceZip || !existsSync(join(PIPELINE, 'data', referenceZip)))) {
+  console.error('Pass --row-order-reference-zip <previous backup in pipeline/data/>')
+  process.exit(2)
+}
 if (!existsSync(join(PIPELINE, 'data', zip))) {
   console.error(`Not found: pipeline/data/${zip}`)
   process.exit(2)
@@ -47,9 +53,14 @@ const run = (cmd, args, cwd) =>
   execFileSync(cmd, args, { cwd, stdio: 'inherit', encoding: 'utf8' })
 
 console.log(`\n[1/4] Building SQLite from ${zip} (this takes ~25 minutes)`)
-run('uv', ['run', 'python', 'update_db.py', '--zip', zip], PIPELINE)
+run('uv', ['run', 'python', 'update_db.py', '--zip', zip,
+  ...(referenceZip ? ['--row-order-reference-zip', referenceZip] : [])], PIPELINE)
 
 const dbName = `open_data_philly_${zip.replace('car_ped_stops_', '').split('T')[0].replace(/-/g, '_')}.db`
+// The veil models require person-level evening tables, rebuilt from this archive.
+for (const module of ['veil.build', 'veil.build_intraracial', 'veil.sensitivity']) {
+  run('uv', ['run', 'python', '-m', module, '--zip', join('data', zip), '--db', join('data', dbName)], PIPELINE)
+}
 console.log(`\n[2/4] Building cubes from ${dbName}`)
 const staging = mkdtempSync(join(tmpdir(), 'deo-cubes-'))
 run('uv', ['run', 'python', 'build_cubes.py', '--db', join('data', dbName), '--out', staging], PIPELINE)

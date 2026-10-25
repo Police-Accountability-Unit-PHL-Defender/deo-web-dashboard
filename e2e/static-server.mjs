@@ -45,7 +45,14 @@ createServer((req, res) => {
     res.end('not found')
     return
   }
-  res.writeHead(200, { 'content-type': MIME[extname(path)] || 'application/octet-stream' })
+  // Routes keep a stable URL across rebuilds while their bundles are
+  // content-hashed, so a heuristically cached HTML page keeps loading the
+  // previous bundle. Forbid caching: this server only ever fronts a build
+  // that is about to be replaced.
+  res.writeHead(200, {
+    'content-type': MIME[extname(path)] || 'application/octet-stream',
+    'cache-control': 'no-store',
+  })
   createReadStream(path).pipe(res)
 }).listen(port, '127.0.0.1', () => {
   console.log(`ready ${port}`)

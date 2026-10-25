@@ -50,6 +50,7 @@ def test_cube_structure(cube_outputs):
         "n_arrested",
         "n_contraband",
         "n_people_in_stopped_vehicles",
+        "n_arrested_intruded",
     ]
 
 
@@ -78,3 +79,13 @@ def test_scalars_have_baselines(cube_outputs):
     for k in expected_keys:
         assert "*" in scalars[k], f"missing citywide ('*') in {k}"
         assert scalars[k]["*"] > 0, f"citywide value not positive in {k}: {scalars[k]['*']}"
+
+
+def test_intrusion_arrests_are_a_subset_of_both_measures(cube_outputs):
+    cube, _ = cube_outputs
+    offset = len(cube["dimensions"])
+    index = {m: offset + i for i, m in enumerate(cube["measures"])}
+    assert sum(row[index["n_arrested_intruded"]] for row in cube["rows"]) > 0
+    for row in cube["rows"]:
+        joint = row[index["n_arrested_intruded"]]
+        assert 0 <= joint <= min(row[index["n_arrested"]], row[index["n_intruded"]])

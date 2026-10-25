@@ -19,6 +19,24 @@ from tqdm import tqdm
 CSV_YEAR_RE = re.compile(r"_(\d{4})\.csv$")
 
 
+def order_like_reference(current, reference):
+    """Keep prior person ordering when Carto rebuilds its generated IDs.
+
+    The first person at a stop is used as its driver. IDs and export metadata
+    can change without any change to the person, so match on shared data
+    fields. Unmatched records retain their source order after matched rows.
+    """
+    volatile = {"cartodb_id", "objectid", "gdb_geomattr_data"}
+    columns = [c for c in reference.columns if c in current.columns and c not in volatile]
+    reference_keys = pd.util.hash_pandas_object(reference[columns], index=False)
+    current_keys = pd.util.hash_pandas_object(current[columns], index=False)
+    positions = pd.Series(range(len(reference)), index=reference_keys)
+    positions = positions[~positions.index.duplicated(keep="first")]
+    order = current_keys.map(positions)
+    order = order.fillna(pd.Series(range(len(reference), len(reference) + len(current))))
+    return current.iloc[order.sort_values(kind="stable").index].reset_index(drop=True)
+
+
 def csv_year(filename):
     """Pull the trailing year out of a per-year backup CSV name.
 
@@ -167,6 +185,7 @@ class TableFromZip:
         zip_filename_override,
         most_recent_quarter_start_dt,
         remap_districts: bool = True,
+        row_order_reference_zip=None,
     ):
         filename_raw = os.path.basename(filename)
         if zip_filename_override:
@@ -179,8 +198,15 @@ class TableFromZip:
                 this_df = pd.read_csv(
                     csv_file, dtype=self.dtype_dict, parse_dates=[self.dt_col]
                 )
+        if row_order_reference_zip and not zip_filename_override:
+            reference = self.get_single_csv_from_other_zip_file(row_order_reference_zip, filename)
+            this_df = order_like_reference(this_df, reference)
+        # Carto may export ISO dates as text without a timezone. Treat them
+        # as UTC, matching the older timezone-aware exports before converting.
         this_df[f"{self.dt_col}_local"] = (
-            this_df[self.dt_col].dt.tz_convert("America/New_York").dt.tz_localize(None)
+            pd.to_datetime(this_df[self.dt_col], utc=True)
+            .dt.tz_convert("America/New_York")
+            .dt.tz_localize(None)
         )
 
         # Dramatically improves speed for some reason.
@@ -305,7 +331,9 @@ CarPedStops = TableFromZip(
         sum(was_arrested) as n_arrested,
         sum(was_found_with_contraband) as n_contraband,
         sum(was_frisked) as n_frisked,
-        sum(was_intruded) as n_intruded
+        sum(was_intruded) as n_intruded,
+        -- Keep the joint count: total arrests include stops without a frisk/search.
+        sum(CASE WHEN was_intruded = 1 AND was_arrested = 1 THEN 1 ELSE 0 END) as n_arrested_intruded
         FROM (
             SELECT 
             stop.*, driver.race, driver.age_range, driver.gender,datetimeoccur_local, n_people_in_car,
@@ -589,6 +617,7 @@ class ProcessZip:
     most_recent_quarter_override: str | None = None
     zip_filename_override_dict: dict[str, str] = field(default_factory=dict)
     remap_districts: bool = True
+    row_order_reference_zip: str | None = None
 
     @property
     def zip_filepath(self):
@@ -697,6 +726,11 @@ class ProcessZip:
                         most_recent_quarter
                     ),
                     remap_districts=self.remap_districts,
+                    row_order_reference_zip=(
+                        os.path.join(self.data_dir, self.row_order_reference_zip)
+                        if self.row_order_reference_zip and table_from_zip is CarPedStops
+                        else None
+                    ),
                 )
                 dfs[table_from_zip.name] = (
                     pd.concat([dfs[table_from_zip.name], df])

@@ -3,7 +3,7 @@
 Reads ``car_ped_stops_quarterly`` and emits a cube grouped by
 ``[quarter, location, race, gender, age_range]`` with measures
 ``[n_stopped, n_searched, n_frisked, n_intruded, n_arrested,
-n_contraband, n_people_in_stopped_vehicles]``.
+n_contraband, n_people_in_stopped_vehicles, n_arrested_intruded]``.
 
 ``location`` is rendered at PSA granularity as ``"<districtoccur>-<psa>"``.
 
@@ -27,6 +27,7 @@ MEASURES = [
     "n_arrested",
     "n_contraband",
     "n_people_in_stopped_vehicles",
+    "n_arrested_intruded",
 ]
 
 DIVISION_MAP = {

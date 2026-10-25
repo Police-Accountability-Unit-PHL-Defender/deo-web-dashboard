@@ -71,6 +71,11 @@ export type VeilIntraracialGroup = 'young_male' | 'young_female' | 'older_male' 
 export type VeilIntraracialLighting = 'daylight' | 'dark'
 export type VeilComparisonRace = 'black' | 'white'
 export type VeilDistrictContext = 'majority_white' | 'majority_non_white'
+export type VeilDistrictBlacknessBand =
+  | 'low_black'
+  | 'moderate_black'
+  | 'majority_black'
+  | 'supermajority_black'
 
 export interface VeilIntraracialProbability {
   group: VeilIntraracialGroup
@@ -113,6 +118,46 @@ export interface VeilIntraracialYearEstimate {
   marginal_ci_hi_pp: number
 }
 
+/** Annual Black-share fit after restricting the sample to one age/gender group. */
+export interface VeilRaceCompositionYearEstimate {
+  year: number
+  group: VeilIntraracialGroup
+  coef: number
+  se: number
+  ci_lo: number
+  ci_hi: number
+  odds_ratio: number
+  p_value: number
+  n: number
+  converged: boolean
+  /** Model-adjusted Black share among Black and White stops. */
+  marginal_daylight_pct: number
+  marginal_dark_pct: number
+  marginal_effect_pp: number
+  marginal_effect_se_pp: number
+  marginal_ci_lo_pp: number
+  marginal_ci_hi_pp: number
+}
+
+export interface VeilDistrictBlacknessEffect {
+  district_black_pct: number
+  daylight_pct: number
+  dark_pct: number
+  effect_pp: number
+  effect_ci_lo_pp: number
+  effect_ci_hi_pp: number
+}
+
+export interface VeilDistrictBlacknessModeration {
+  group: VeilIntraracialGroup
+  n: number
+  converged: boolean
+  interaction_coef_per_10: number
+  interaction_se_per_10: number
+  interaction_p_value: number
+  effects: VeilDistrictBlacknessEffect[]
+}
+
 /**
  * Year-by-year fits, a SEPARATE sample from the reproduction above.
  *
@@ -136,6 +181,171 @@ export interface VeilIntraracialByYear {
     districts: string[]
     estimates: VeilIntraracialYearEstimate[]
   }>
+  race_composition_overall: Array<{
+    year: number
+    sample: 'all_adults' | 'young_male'
+    p_value: number
+    n: number
+    converged: boolean
+    marginal_daylight_pct: number
+    marginal_dark_pct: number
+    marginal_effect_pp: number
+    marginal_effect_se_pp: number
+    marginal_ci_lo_pp: number
+    marginal_ci_hi_pp: number
+  }>
+  /** Citywide adult race outcome fitted once over the default years. */
+  race_composition_pooled: {
+    years: number[]
+    districts: string[]
+    n: number
+    converged: boolean
+    p_value: number
+    marginal_daylight_pct: number
+    marginal_dark_pct: number
+    marginal_effect_pp: number
+    marginal_effect_se_pp: number
+    marginal_ci_lo_pp: number
+    marginal_ci_hi_pp: number
+  }
+  /** Men 18–29 alone over the headline years, plus a direct test against other adults. */
+  race_composition_young_men_pooled: {
+    years: number[]
+    pooled: VeilMarginalSummary
+    difference: VeilGroupDarknessDifference
+  }
+  /** One model with an after-dark × after-Driving-Equality interaction. */
+  race_composition_driving_equality: VeilGroupDarknessDifference & {
+    effective_date: string
+    years: number[]
+  }
+  race_composition_by_blackness: Array<{
+    blackness_band: VeilDistrictBlacknessBand
+    min_pct: number
+    max_pct: number
+    districts: string[]
+    estimates: VeilRaceCompositionYearEstimate[]
+  }>
+  district_blackness_moderation: {
+    default_years: number[]
+    observed_min_pct: number
+    observed_max_pct: number
+    groups: VeilDistrictBlacknessModeration[]
+  }
+  pooled_race_interaction: VeilPooledRaceInteraction[]
+  attribute_comparison: VeilAttributeComparison[]
+  district_context: VeilDistrictContextModeration
+}
+
+export interface VeilContextModerator {
+  range: { low: number; median: number; high: number }
+  interaction_coef_per_10: number
+  interaction_se_per_10: number
+  interaction_ci_lo_per_10: number
+  interaction_ci_hi_per_10: number
+  odds_ratio_multiplier_per_10: number
+  odds_ratio_ci_lo_per_10: number
+  odds_ratio_ci_hi_per_10: number
+  interaction_p_value: number
+}
+
+export interface VeilDistrictContextModeration {
+  years: number[]
+  ranges: {
+    district_whiteness: { low: number; median: number; high: number }
+    stops_per_1000: { low: number; median: number; high: number }
+  }
+  intensity_definition: string
+  effects: Array<{
+    attribute: VeilAttribute
+    outcome: 'is_black' | 'is_young' | 'is_male'
+    n: number
+    converged: boolean
+    moderators: {
+      district_whiteness: VeilContextModerator
+      stops_per_1000: VeilContextModerator
+    }
+  }>
+}
+
+export type VeilAttribute = 'race' | 'age' | 'gender'
+
+export interface VeilAttributeEffect {
+  attribute: VeilAttribute
+  outcome: 'is_black' | 'is_young' | 'is_male'
+  daylight_pct: number
+  dark_pct: number
+  effect_pp: number
+  effect_se_pp: number
+  effect_ci_lo_pp: number
+  effect_ci_hi_pp: number
+  p_value: number
+  n: number
+  converged: boolean
+}
+
+export interface VeilAttributeComparison {
+  district_context: VeilDistrictContext
+  districts: string[]
+  effects: VeilAttributeEffect[]
+}
+
+export interface VeilPooledRaceEffect {
+  daylight_pct: number
+  dark_pct: number
+  effect_pp: number
+  effect_se_pp: number
+  effect_ci_lo_pp: number
+  effect_ci_hi_pp: number
+}
+
+export interface VeilMarginalSummary {
+  n: number
+  converged: boolean
+  p_value: number
+  marginal_daylight_pct: number
+  marginal_dark_pct: number
+  marginal_effect_pp: number
+  marginal_effect_se_pp: number
+  marginal_ci_lo_pp: number
+  marginal_ci_hi_pp: number
+}
+
+/** `fit_group_darkness_difference`: `group` is the 0/1 column's 1 side. */
+export interface VeilGroupDarknessDifference {
+  group: string
+  n: number
+  n_group: number
+  converged: boolean
+  interaction_coef: number
+  interaction_se: number
+  interaction_p_value: number
+  effects: Record<'reference' | 'group', VeilPooledRaceEffect>
+  /** Group after-dark change minus reference after-dark change. */
+  difference_pp: number
+  difference_se_pp: number
+  difference_ci_lo_pp: number
+  difference_ci_hi_pp: number
+  difference_p_value: number
+}
+
+export interface VeilPooledRaceInteraction {
+  district_context: VeilDistrictContext
+  districts: string[]
+  outcome: 'young_male'
+  n: number
+  converged: boolean
+  interaction_coef: number
+  interaction_se: number
+  interaction_p_value: number
+  interaction_odds_ratio: number
+  effects: Record<VeilComparisonRace, VeilPooledRaceEffect>
+  /** Black after-dark change minus white after-dark change. */
+  difference_pp: number
+  difference_se_pp: number
+  difference_ci_lo_pp: number
+  difference_ci_hi_pp: number
+  difference_p_value: number
 }
 
 export interface VeilMarginalProbabilityAggregate {
@@ -484,4 +694,85 @@ export function selectClockBinPairs(
   }).length
 
   return { kept, suppressed, daylightHigherBins }
+}
+
+
+export interface VeilSensitivityFit {
+  key: string
+  universe: 'black_white' | 'all_races'
+  occupancy: 'sole' | 'all_occupancies'
+  rule: 'any_black' | 'majority_black' | 'all_black'
+  require_mvc: boolean
+  multi_person_stops: number
+  half_black_stops: number
+  result: VeilGroupDarknessDifference
+}
+
+export interface VeilComparisonCube {
+  version: number
+  main: VeilGroupDarknessDifference
+  sensitivity: VeilSensitivityFit[]
+  years: number[]
+  excluded_years: number[]
+  effective_date: string
+  window_start: string
+  window_end: string
+  black_definition: string
+  source_archive: string
+}
+
+/** A direct test of the pre/post difference, never the two period intervals. */
+export function hasSignificantVeilChange(result: VeilGroupDarknessDifference): boolean {
+  return result.converged && Number.isFinite(result.difference_ci_lo_pp)
+    && Number.isFinite(result.difference_ci_hi_pp)
+    && (result.difference_ci_lo_pp > 0 || result.difference_ci_hi_pp < 0)
+}
+
+export function veilYearsLabel(years: number[]): string {
+  const ranges: string[] = []
+  if (!years.length) return ''
+  let start = years[0], end = start
+  for (const year of years.slice(1)) {
+    if (year === end + 1) { end = year; continue }
+    ranges.push(start === end ? String(start) : `${start}–${end}`)
+    start = end = year
+  }
+  ranges.push(start === end ? String(start) : `${start}–${end}`)
+  return ranges.join(' and ')
+}
+
+/** Calendar labels use UTC solely to format date-only metadata without shifting a day. */
+export function veilComparisonPeriods(cube: VeilComparisonCube) {
+  const format = (date: string | Date) => new Intl.DateTimeFormat('en-US', {
+    month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC',
+  }).format(typeof date === 'string' ? new Date(date) : date)
+  const previous = new Date(cube.effective_date)
+  previous.setUTCDate(previous.getUTCDate() - 1)
+  return {
+    before: `${format(cube.window_start)} through ${format(previous)}`,
+    after: `${format(cube.effective_date)} through ${format(cube.window_end)}`,
+    cutoff: format(cube.effective_date),
+    excluded: veilYearsLabel(cube.excluded_years),
+  }
+}
+
+export function veilPeriodPoints(result: VeilGroupDarknessDifference, cube?: VeilComparisonCube) {
+  const dates = cube ? veilComparisonPeriods(cube) : null
+  return (['reference', 'group'] as const).map(period => {
+    const effect = result.effects[period]
+    const before = period === 'reference'
+    const n = before ? result.n - result.n_group : result.n_group
+    const signed = (v: number) => `${v > 0 ? '+' : ''}${v.toFixed(2)}`
+    return {
+      x: before ? 'Before' : 'After', group: 'Estimate',
+      value: effect.effect_pp, ciLo: effect.effect_ci_lo_pp, ciHi: effect.effect_ci_hi_pp,
+      hoverText: [before ? 'Before Driving Equality' : 'After Driving Equality',
+        ...(dates ? [before ? dates.before : dates.after,
+          ...(dates.excluded ? [`Excluded from the analysis: ${dates.excluded}`] : [])] : []),
+        `${signed(effect.effect_pp)} percentage points in darkness compared with daylight`,
+        `95% interval: ${signed(effect.effect_ci_lo_pp)} to ${signed(effect.effect_ci_hi_pp)}`,
+        `Stopped drivers who were Black: ${effect.daylight_pct.toFixed(1)}% in daylight; ${effect.dark_pct.toFixed(1)}% in darkness`,
+        `${n.toLocaleString()} stops`],
+    }
+  })
 }

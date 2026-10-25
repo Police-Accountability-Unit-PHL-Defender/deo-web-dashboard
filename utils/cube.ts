@@ -614,6 +614,45 @@ export function groupTupleSum(
   return out.sort((a, b) => b.value - a.value)
 }
 
+/** Sum several measures by the same tuple in one filtered pass. */
+export function groupTupleMeasures(cube: Cube, groupBy: string[], measures: string[], opts: CubeFilterOpts = {}) {
+  const dims = groupBy.map(name => {
+    const index = cube.dimensions.indexOf(name)
+    if (index < 0) throw new Error(`Unknown dimension: ${name}`)
+    return index
+  })
+  const indices = measures.map(name => {
+    const index = cube.measures.indexOf(name)
+    if (index < 0) throw new Error(`Unknown measure: ${name}`)
+    return index
+  })
+  const col = columnar(cube)
+  const filter = compileCodeFilter(cube, opts)
+  const sizes = dims.map(i => col.names[i].length)
+  const codes = dims.map(i => col.codes[i])
+  const values = indices.map(i => col.values[i])
+  const masks = indices.map(i => col.present[i])
+  const buckets = new Map<number, Float64Array>()
+  for (const row of filter.rows) {
+    if (!passes(col, filter, row)) continue
+    let key = 0
+    for (let d = 0; d < dims.length; d++) key = key * sizes[d] + codes[d][row]
+    let totals = buckets.get(key)
+    if (!totals) { totals = new Float64Array(measures.length); buckets.set(key, totals) }
+    for (let m = 0; m < measures.length; m++) {
+      if (masks[m] === null || masks[m]![row]) totals[m] += values[m][row]
+    }
+  }
+  return Array.from(buckets, ([key, totals]) => {
+    const keys = new Array<string>(dims.length)
+    for (let d = dims.length - 1; d >= 0; d--) {
+      keys[d] = String(col.names[dims[d]][key % sizes[d]] ?? '')
+      key = Math.floor(key / sizes[d])
+    }
+    return { keys, measures: Object.fromEntries(measures.map((name, m) => [name, totals[m]])) }
+  })
+}
+
 // -----------------------------------------------------------------
 // Shared figure-shape interfaces (used by downstream chart helpers).
 // These intentionally mirror the FastAPI response shape so existing

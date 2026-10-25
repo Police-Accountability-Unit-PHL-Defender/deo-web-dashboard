@@ -1,0 +1,41 @@
+{
+  "published_reference_reproduced": true,
+  "result": {
+    "group": "after_driving_equality",
+    "interaction_coef": 0.02334020905732664,
+    "interaction_se": 0.018765784784967196,
+    "interaction_p_value": 0.21358640386869776,
+    "n": 467617,
+    "n_group": 142404,
+    "converged": true,
+    "collapsed_units": 45,
+    "min_unit_count": 100,
+    "other_row_share": {
+      "assigned_unit": 0.001441350506931955,
+      "police_area": 2.1385022358040876e-06
+    },
+    "effects": {
+      "reference": {
+        "daylight_pct": 80.49951528570688,
+        "dark_pct": 79.39315204587474,
+        "effect_pp": -1.1063632398321346,
+        "effect_se_pp": 0.15450520012779861,
+        "effect_ci_lo_pp": -1.409187867506773,
+        "effect_ci_hi_pp": -0.8035386121574959
+      },
+      "group": {
+        "daylight_pct": 80.302771246239,
+        "dark_pct": 79.47155469440693,
+        "effect_pp": -0.8312165518320711,
+        "effect_se_pp": 0.20933345139007828,
+        "effect_ci_lo_pp": -1.2415025773160906,
+        "effect_ci_hi_pp": -0.4209305263480516
+      }
+    },
+    "difference_pp": 0.2751466880000635,
+    "difference_se_pp": 0.22331149428532118,
+    "difference_ci_lo_pp": -0.16253579813298816,
+    "difference_ci_hi_pp": 0.7128291741331151,
+    "difference_p_value": 0.21790404456911328
+  }
+}
