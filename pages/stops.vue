@@ -224,7 +224,7 @@ function seasonAndYear(qStr) {
 }
 
 const config = useRuntimeConfig()
-const mostRecentQuarter = Quarter.fromParamString(useState("mostRecentQuarter").value)
+const mostRecentQuarter = Quarter.fromParamString(useState("latestStopsQuarter").value)
 const defaultStartQuarter = mostRecentQuarter.getPreviousQuarter().getPreviousQuarter().getPreviousQuarter()
 
 const selectedLocation = ref('Philadelphia')

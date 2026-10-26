@@ -30,9 +30,11 @@
 </style>
 <script setup>
 import * as d3 from 'd3'
+import { reportingPeriods } from '~/utils/reportingPeriods'
 import { wrapLabel, buildYScale, drawYAxis, createTooltip } from '~/utils/chart'
 
 const props = defineProps({
+  quarterValues: { type: Array, required: false },
   graphData: {
     type: Array,
     required: true
@@ -98,10 +100,12 @@ const graphSvg = ref(null)
 const container = ref(null)
 let stackedColorMap = ref([])
 
-const isIncompleteTimeSeries = computed(() => {
-  // Figure out if we are in a yearly plot with a completed year
-  return props.axisProperties.x === 'Year' && !useState("mostRecentQuarter").value.endsWith('Q4');
-})
+const quarterCeiling = useState('mostRecentQuarter')
+const completeYears = computed(() => new Set(reportingPeriods(
+  props.quarterValues || config.public.cubeQuarters.stops,
+  quarterCeiling.value,
+).completeYears))
+const isIncompleteYear = year => props.axisProperties.x === 'Year' && !completeYears.value.has(Number(year))
 
 const isGrouped = computed(() => {
   return props.groupName !== undefined
@@ -281,7 +285,7 @@ const tickValues = averageTickLength > 4 && props.quarterlyXAxisTicks
       .join("g")
         .attr("transform", ([xAxisProperty]) => `translate(${x(xAxisProperty) - groupGapRatio * barWidth},0)`)
         .attr("opacity", (d, i) => {
-            if (isIncompleteTimeSeries.value && i === graphData.length/groups.size - 1) {
+            if (isIncompleteYear(d[0])) {
               return 0.5;  // Partially transparent
             }
             return 1;  // Fully opaque otherwise
@@ -309,7 +313,7 @@ const tickValues = averageTickLength > 4 && props.quarterlyXAxisTicks
         .attr("height", d => y(d[0]) - y(d[1]))
         .attr("width", x.bandwidth())
         .attr("opacity", (d, i, nodes) => {
-            if (isIncompleteTimeSeries.value && i === nodes.length - 1) {
+            if (isIncompleteYear(d.data[0])) {
               return 0.5;  // Partially transparent
             }
             return 1;  // Fully opaque otherwise
@@ -323,8 +327,8 @@ const tickValues = averageTickLength > 4 && props.quarterlyXAxisTicks
       .data(graphData)
       .join("g")
       .attr("opacity", (d, i) => {
-        // If it's a time series and this is the last element, make it partially transparent
-        if (isIncompleteTimeSeries.value && i === graphData.length - 1) {
+        // Keep any incomplete annual bucket visibly partial, even across New Year.
+        if (isIncompleteYear(d[props.axisProperties.x])) {
           return 0.5;  // Partially transparent
         }
         return 1;  // Fully opaque otherwise
@@ -410,7 +414,10 @@ function setStyle(selection) {
   selection.attr("opacity", "0.8");
 }
 function resetStyle(selection) {
-  selection.attr("opacity", "1");
+  const datum = selection.datum()
+  // Stacked bars carry the partial marker on the rect itself; preserve it
+  // after a hover, rather than restoring a misleading fully opaque bar.
+  selection.attr("opacity", isStacked.value && isIncompleteYear(datum.data[0]) ? "0.5" : "1");
 }
 </script>
 

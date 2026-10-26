@@ -1,3 +1,4 @@
+import { capCube } from '~/utils/reportingPeriods'
 import { markRaw } from 'vue'
 /**
  * Fetch the reasons cube (static JSON, shipped from `public/cubes`).
@@ -12,11 +13,12 @@ export interface ReasonsCubeBundle {
 }
 
 export function useReasonsCube() {
+  const ceiling = useState<string>('mostRecentQuarter').value
   return useAsyncData<ReasonsCubeBundle>(
     'reasons-cube',
     async () => {
       const cube = await $fetch<Cube>('/cubes/reasons.json')
-      return markRaw({ cube })
+      return markRaw({ cube: capCube(cube, ceiling) })
     },
     { server: false, lazy: true },
   )

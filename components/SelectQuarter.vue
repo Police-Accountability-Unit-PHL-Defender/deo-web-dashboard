@@ -10,15 +10,8 @@
 
 <script setup>
   import SelectOne from '~/components/ui/SelectOne.vue'
-  const config = useRuntimeConfig()
-  const firstQuarter = new Quarter(2014, 1)
-  const mostRecentQuarter = Quarter.fromParamString(useState('mostRecentQuarter').value);
-  let currentQuarter = firstQuarter
-  let availableQuarters = [currentQuarter]
-  while (!Quarter.isSameQuarter(currentQuarter, mostRecentQuarter)) {
-    currentQuarter = currentQuarter.getNextQuarter()
-    availableQuarters.push(currentQuarter)
-  }
+  // Options are actual published quarters, capped by the calendar/pin.
+  const availableQuarters = useState('stopsQuarters').value.map(q => Quarter.fromParamString(q))
   const props = defineProps(['modelValue', 'itemLabelEnd', 'minSelectable', 'maxSelectable'])
   const emit = defineEmits(['update:modelValue'])
   const selectableQuarters = computed(() => {

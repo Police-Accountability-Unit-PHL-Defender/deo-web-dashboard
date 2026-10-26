@@ -214,7 +214,7 @@ useHead({
   title: 'Do police treat people and neighborhoods differently?',
 })
 
-const mostRecentQuarter = Quarter.fromParamString(useState("mostRecentQuarter").value)
+const mostRecentQuarter = Quarter.fromParamString(useState("latestStopsQuarter").value)
 
 const selectedLocation = ref('Philadelphia')
 const selectedTimeGranularity = ref('year')

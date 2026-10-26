@@ -1,3 +1,4 @@
+import { capCube } from '~/utils/reportingPeriods'
 import { markRaw } from 'vue'
 /**
  * Fetch the safety cube (static JSON, shipped from `public/cubes`).
@@ -47,11 +48,12 @@ export interface SafetyCubeBundle {
 }
 
 export function useSafetyCube() {
+  const ceiling = useState<string>('mostRecentQuarter').value
   return useAsyncData<SafetyCubeBundle>(
     'safety-cube',
     async () => {
       const cube = await $fetch<SafetyCube>('/cubes/safety.json')
-      return markRaw({ cube })
+      return markRaw({ cube: { ...cube, hin: capCube(cube.hin, ceiling) } })
     },
     { server: false, lazy: true },
   )

@@ -103,13 +103,40 @@ export const CHECKS = [
     },
   },
   {
-    name: 'the most recent quarter appears on the stops page',
-    pages: ['stops'],
-    assert: ({ text, quarter }) => {
-      const [year, q] = quarter.split('-Q')
-      const endMonth = { 1: 'Mar', 2: 'Jun', 3: 'Sep', 4: 'Dec' }[q]
-      return text.includes(`${endMonth} ${year}`)
-        || `expected the range to end at ${endMonth} ${year} (quarter ${quarter})`
+    name: 'selected reporting ranges agree with published stops coverage',
+    pages: ['stops', 'neighborhoods'],
+    assert: ({ text, quarter, page }) => {
+      const cube = JSON.parse(readFileSync(new URL('../.output/public/cubes/stops.json', import.meta.url), 'utf8'))
+      const qi = cube.dimensions.indexOf('quarter')
+      const quarters = [...new Set(cube.rows.map(row => row[qi]).filter(q => q <= quarter))].sort()
+      const end = quarters.at(-1)
+      if (!end) return 'no stops data at or before the quarter ceiling'
+      const year = Number(end.slice(0, 4)), q = Number(end.slice(-1))
+      const endLabel = `${['Mar', 'Jun', 'Sep', 'Dec'][q - 1]} ${year}`
+      text = text.replace(/\s+/g, ' ')
+      if (!text.includes(`through the end of ${endLabel}`)) return `expected published range ending ${endLabel}`
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+      for (const match of text.matchAll(/through (?:the end of )?([A-Z][a-z]{2}) (20\d{2})/g)) {
+        if (Number(match[2]) * 12 + months.indexOf(match[1]) > year * 12 + q * 3 - 1)
+          return `range claims ${match[1]} ${match[2]} beyond published data ending ${endLabel}`
+      }
+      if (page === 'stops') {
+        const startIndex = year * 4 + q - 4
+        const start = `${Math.floor(startIndex / 4)}-Q${startIndex % 4 + 1}`
+        const startLabel = `${['Jan', 'Apr', 'Jul', 'Oct'][startIndex % 4]} ${Math.floor(startIndex / 4)}`
+        const si = cube.dimensions.length + cube.measures.indexOf('n_stopped')
+        const total = cube.rows.reduce((n, row) => row[qi] >= start && row[qi] <= end ? n + row[si] : n, 0)
+        const monthsPresent = quarters.filter(q => q >= start).length * 3
+        for (const phrase of [
+          `from the start of ${startLabel} through the end of ${endLabel}`,
+          `by Race from ${startLabel} through ${endLabel}`,
+          `Demographic Groups Stopped by PPD in Philadelphia from ${startLabel} through ${endLabel}`,
+          `Comparing Group 1 to Group 2, from ${startLabel} through ${endLabel}`,
+          `totaling ${total.toLocaleString('en-US')} traffic stops`,
+          `${Math.round(total / monthsPresent).toLocaleString('en-US')} traffic stops per month`,
+        ]) if (!text.includes(phrase)) return `stops missing expected default-period result: ${phrase}`
+      }
+      return true
     },
   },
   {
@@ -174,11 +201,13 @@ export const CHECKS = [
       const years = [...block[0].matchAll(/\b(20\d\d)\b/g)].map((m) => Number(m[1]))
       if (!years.includes(2022)) return 'trend chart does not start at 2022'
       if (years.includes(2021) || years.includes(2014)) return 'trend chart still shows years before 2022'
-      // The series runs to the pinned quarter's year, including it when it is
-      // only part-published — that trailing point is the dashed segment. If it
-      // stops short, the partial year has been dropped rather than dashed.
-      const pinnedYear = Number(String(quarter).slice(0, 4))
-      if (!years.includes(pinnedYear)) return `trend chart stops before ${pinnedYear}; the partial year is missing its dashed point`
+      // Keep the last published year, including a partial one. The clock/pin
+      // can run past the data; it must not manufacture a year with no rows.
+      const cube = JSON.parse(readFileSync(new URL('../.output/public/cubes/reasons.json', import.meta.url), 'utf8'))
+      const qi = cube.dimensions.indexOf('quarter')
+      const latest = cube.rows.reduce((end, row) => row[qi] <= quarter && row[qi] > end ? row[qi] : end, '')
+      const publishedYear = Number(latest.slice(0, 4))
+      if (!years.includes(publishedYear)) return `trend chart stops before ${publishedYear}; the available partial year is missing its dashed point`
       return true
     },
   },

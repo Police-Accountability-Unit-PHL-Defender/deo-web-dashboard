@@ -270,7 +270,7 @@ async function main() {
     sh('npm', ['run', 'generate'], {
       cwd: ROOT,
       stdio: ['ignore', 'ignore', 'inherit'],
-      env: { ...process.env, NUXT_PUBLIC_PINNED_MOST_RECENT_QUARTER: args.quarter || '' },
+      env: { ...process.env, NUXT_PUBLIC_PINNED_MOST_RECENT_QUARTER: args.quarter || '', DEO_CUBES_DIR: args.cubes || '' },
     })
   }
   if (!existsSync(OUT_DIR)) { console.error(`No build at ${OUT_DIR}. Drop --skip-build.`); process.exit(2) }
