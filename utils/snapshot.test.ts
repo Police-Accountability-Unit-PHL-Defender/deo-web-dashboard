@@ -15,6 +15,25 @@ describe('buildAnnualSummary', () => {
     expect(s.text[0]).toMatch(/<span>14,97[89]<\/span> traffic stops per month/)
   })
 
+  it('keeps the full trailing year when the clock runs past the available data', () => {
+    const quarterIndex = cube.dimensions.indexOf('quarter')
+    const q2Cube = { ...cube, rows: cube.rows.filter((row) => row[quarterIndex] <= '2026-Q2') }
+    const expected = buildAnnualSummary(q2Cube, Q2_2026)
+    for (const ceiling of ['2026-Q3', '2027-Q1']) {
+      expect(buildAnnualSummary(q2Cube, Quarter.fromParamString(ceiling))).toEqual(expected)
+    }
+  })
+
+  it('honors a pinned quarter even when later data is available', () => {
+    const pin = Quarter.fromParamString('2026-Q1')
+    const quarterIndex = cube.dimensions.indexOf('quarter')
+    const pinnedCube = { ...cube, rows: cube.rows.filter((row) => row[quarterIndex] <= '2026-Q1') }
+    const summary = buildAnnualSummary(cube, pin)
+    expect(summary).toEqual(buildAnnualSummary(pinnedCube, pin))
+    expect(summary.text[0]).toContain('From the start of Apr 2025 through the end of Mar 2026')
+    expect(summary.figures.barplot.properties.title).toContain('Apr 2025 through Mar 2026')
+  })
+
   it('reports the Driving Equality change', () => {
     expect(s.text[1]).toBe(
       'traffic stops decreased by <span>3.8%</span> from <span>112,281</span> stops to <span>108,013</span> stops',

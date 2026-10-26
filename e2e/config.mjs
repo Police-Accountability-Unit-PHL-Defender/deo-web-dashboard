@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs'
+
 /**
  * What the parity harness checks. This is the file to edit over time.
  *
@@ -43,6 +45,33 @@ export const NORMALIZERS = [
 ]
 
 export const CHECKS = [
+  {
+    name: 'snapshot trailing year ends at available data and respects the quarter ceiling',
+    pages: ['snapshot'],
+    assert: ({ text, quarter }) => {
+      const cube = JSON.parse(readFileSync(new URL('../.output/public/cubes/stops.json', import.meta.url), 'utf8'))
+      const qi = cube.dimensions.indexOf('quarter')
+      const si = cube.dimensions.length + cube.measures.indexOf('n_stopped')
+      const end = cube.rows.reduce((latest, row) =>
+        row[qi] <= quarter && row[qi] > latest ? row[qi] : latest, '')
+      if (!end) return 'snapshot has no data at or before the quarter ceiling'
+      const endIndex = Number(end.slice(0, 4)) * 4 + Number(end.slice(-1)) - 1
+      const startIndex = endIndex - 3
+      const start = `${Math.floor(startIndex / 4)}-Q${startIndex % 4 + 1}`
+      const startLabel = `${['Jan', 'Apr', 'Jul', 'Oct'][startIndex % 4]} ${Math.floor(startIndex / 4)}`
+      const endLabel = `${['Mar', 'Jun', 'Sep', 'Dec'][endIndex % 4]} ${Math.floor(endIndex / 4)}`
+      const total = cube.rows.reduce((n, row) =>
+        row[qi] >= start && row[qi] <= end ? n + row[si] : n, 0)
+      text = text.replace(/\s+/g, ' ')
+      for (const phrase of [
+        `From the start of ${startLabel} through the end of ${endLabel}`,
+        `Racial Demographics of Traffic Stops vs. City Population from ${startLabel} through ${endLabel}`,
+        total.toLocaleString('en-US'),
+        `${Math.round(total / 12).toLocaleString('en-US')} traffic stops per month`,
+      ]) if (!text.includes(phrase)) return `snapshot missing expected trailing-year result: ${phrase}`
+      return true
+    },
+  },
   {
     name: 'no raw cube/column keys leaked into axis labels',
     // A rendered axis should never show an internal identifier. This is the
