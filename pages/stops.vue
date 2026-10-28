@@ -48,7 +48,7 @@
             <AnswerText>
               <div v-html="q1A.text[0]" class="result-text"></div>
             </AnswerText>
-            <Graph :graph-data="q1A.figures.barplot.data" :axis-properties="{x: q1A.figures.barplot.properties.xAxis, y: q1A.figures.barplot.properties.yAxis}" :quarterlyXAxisTicks="selectedTimeGranularity === 'quarter'">
+            <Graph :graph-data="q1A.figures.barplot.data" :axis-properties="{x: q1A.figures.barplot.properties.xAxis, y: q1A.figures.barplot.properties.yAxis}" :quarterlyXAxisTicks="selectedTimeGranularity === 'quarter'" :wrap-x-axis-labels="true">
               <h4>{{ q1A.figures.barplot.properties.title }}</h4>
             </Graph>
             <AnswerText>
@@ -295,10 +295,10 @@ const q1A = computed(() => {
         trendlines: [],
         data: sorted.map(({ key, value }) => ({
           group: null,
-          [xAxisLabel]: key,
+          [xAxisLabel]: timeDim === 'quarter' ? seasonAndYear(key) : key,
           'Number of Traffic Stops': value,
           annotation: null,
-          hover_text: [`${key}`, `${value.toLocaleString()} traffic stops`],
+          hover_text: [timeDim === 'quarter' ? seasonAndYear(key) : key, `${value.toLocaleString()} traffic stops`],
         })),
       },
     },
@@ -349,20 +349,32 @@ const q1C = computed(() => {
   const locStr = formatLocationForSentence(selectedLocation.value)
   const wantedQuarters = new Set(q1CQuarters.value.map(q => getQuarterParam(q))) // ['Q1', 'Q3', ...]
 
-  const seasonStr = q1CQuarters.value.join(', ')
+  const seasons = Object.keys(SEASON_LABEL).filter(q => wantedQuarters.has(q))
+  const seasonStr = seasons.map(q => SEASON_LABEL[q]).join(', ')
   // Graph.vue reads each row's x value by `axisProperties.x`, so the data key
   // has to be the display label itself.
   const xAxisLabel = `Times of Year: ${seasonStr}`
 
   const groups = groupSum(cube, 'quarter', 'n_stopped', { location: loc })
-  const filtered = groups
-    .filter(g => wantedQuarters.has(g.key.slice(-2))) // 'YYYY-QN' → 'QN'
-    .map(({ key, value }) => ({
-      group: key.slice(-2),
-      [xAxisLabel]: key.slice(0, 4),
+  // One bar per year: separate quarter rows at the same x coordinate overlap
+  // and expose different counts depending on which part of the bar is hovered.
+  const years = new Map()
+  for (const { key, value } of groups) {
+    const quarter = key.slice(-2)
+    if (!wantedQuarters.has(quarter)) continue
+    const year = key.slice(0, 4)
+    const total = years.get(year) ?? { value: 0, quarters: new Set() }
+    total.value += value
+    total.quarters.add(quarter)
+    years.set(year, total)
+  }
+  const filtered = Array.from(years).sort(([a], [b]) => a.localeCompare(b))
+    .map(([year, { value, quarters }]) => ({
+      group: null,
+      [xAxisLabel]: year,
       'Number of Traffic Stops': value,
       annotation: null,
-      hover_text: [key, `${value.toLocaleString()} traffic stops`],
+      hover_text: [`${seasons.filter(q => quarters.has(q)).map(q => SEASON_LABEL[q]).join(', ')} ${year}`, `${value.toLocaleString()} traffic stops`],
     }))
 
   const startYear = filtered.length ? filtered[0][xAxisLabel] : '2014'
