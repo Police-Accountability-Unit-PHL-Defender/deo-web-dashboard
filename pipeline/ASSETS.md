@@ -51,6 +51,17 @@ reverse-engineer provenance from code comments.
 - Source: `censusify-philly`'s `seed.py`, joining the ODP PSA and district files.
 - Read by: nothing after the 2026-08 prune. Retained as provenance.
 
+## data/philadelphia_sun_times.csv — daily sunset / civil dusk, 2014-2030 (6209 rows)
+- Source: computed with the `astral` library (dev dependency) for
+  Philadelphia (39.9526, -75.1652, America/New_York), not vendored from an
+  external download.
+- Refresh: `python scripts/generate_sun_times.py` (regenerate when extending
+  the year range; commit the resulting CSV).
+- Read by: `veil/sun.py` (`load_sun_times`), and later the veil-of-darkness
+  sample construction that classifies each stop as daylight or dark.
+- Civil dusk (6° depression) is `astral`'s default `dusk`, matching the
+  paper's `suncalc` usage.
+
 ## Retired
 Removed in the 2026-08 prune; recorded here so their origin survives.
 - `hin_2020.geojson` — 241 segments, Carto `high_injury_network_2020`. Refresh:

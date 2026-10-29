@@ -28,6 +28,12 @@ export const PAGES = [
   { path: '/data', name: 'data' },
   { path: '/glossary', name: 'glossary' },
   { path: '/contact', name: 'contact' },
+  // Not on the live site yet (unlinked from nav on purpose), so it is rendered
+  // and run through CHECKS like every other page, but `noParity: true` tells
+  // parity.mjs to skip the live diff for it — a diff against a page that
+  // doesn't exist in production would fail by construction, not signal a
+  // regression.
+  { path: '/veil-of-darkness', name: 'veil', noParity: true },
 ]
 
 /**
@@ -47,7 +53,12 @@ export const CHECKS = [
     name: 'no raw cube/column keys leaked into axis labels',
     // A rendered axis should never show an internal identifier. This is the
     // class of bug that shipped `x_label` as a visible axis title.
-    pages: ['stops', 'safety', 'neighborhoods', 'reasons', 'snapshot'],
+    //
+    // `veil` is in scope for the `undefined`/`NaN` half above all: that page
+    // interpolates around thirty toFixed() results into its prose, and a
+    // model or selector returning undefined would render the word straight
+    // into a published statistical claim.
+    pages: ['stops', 'safety', 'neighborhoods', 'reasons', 'snapshot', 'veil'],
     assert: ({ text }) => {
       const leaked = ['x_label', 'y_label', 'n_stopped', 'age_range', 'districtoccur', 'undefined', 'NaN']
         .filter((k) => text.includes(k))
@@ -190,6 +201,79 @@ export const CHECKS = [
       return true
     },
   },
+  {
+    name: 'veil-of-darkness page renders without console/page errors',
+    pages: ['veil'],
+    assert: ({ errors }) =>
+      !errors || errors.length === 0 || `console/page error(s): ${errors.join(' | ')}`,
+  },
+  {
+    name: 'veil trend is rendered on the average-marginal probability scale',
+    pages: ['veil'],
+    assert: ({ text }) => {
+      if (!text.includes('Change after dark (percentage points)'))
+        return 'probability-scale y-axis is missing'
+      if (!text.includes('These are average marginal changes'))
+        return 'average-marginal explanation is missing'
+      if (text.includes('Effect of darkness (log-odds)'))
+        return 'the old log-odds axis is still rendered'
+      return true
+    },
+  },
+  {
+    name: 'veil pooled view renders before and after sunset probabilities',
+    pages: ['veil'],
+    assert: ({ text }) => {
+      if (!text.includes('Model-adjusted share of stops before and after sunset'))
+        return 'aggregate probability chart title is missing'
+      if (!text.includes('Before sunset') || !text.includes('After sunset'))
+        return 'aggregate chart lighting endpoints are missing'
+      if (!text.includes('not a newly fitted pooled regression'))
+        return 'annual-estimate aggregation disclosure is missing'
+      return true
+    },
+  },
+  {
+    name: 'veil pooled effect view renders one combined interval per identity',
+    pages: ['veil'],
+    assert: ({ text }) => {
+      if (!text.includes('Combined model-adjusted change after dark across the selected years'))
+        return 'combined-years effect chart title is missing'
+      if (!text.includes('One point summarizes all selected years for each identity'))
+        return 'combined effect interval explanation is missing'
+      return true
+    },
+  },
+  {
+    name: 'Hannon attribution survives on the veil-of-darkness page',
+    pages: ['veil'],
+    assert: ({ text }) => text.includes('Hannon') || 'the string "Hannon" is missing from the page',
+  },
+  {
+    name: 'veil trend defaults to young men and older women',
+    pages: ['veil'],
+    assert: ({ text }) => {
+      const selector = /Age and gender\s+([^\n]+)\s+([^\n]+)\s+Motorist race/.exec(text)
+      if (!selector) return 'could not find the age-and-gender selector'
+      const selected = [selector[1], selector[2]]
+      const expected = ['Young man (18–29)', 'Older woman (30+)']
+      return selected.join('|') === expected.join('|')
+        || `default groups were [${selected.join(', ')}], expected [${expected.join(', ')}]`
+    },
+  },
+  {
+    name: 'veil extension exposes race and district-context selectors',
+    pages: ['veil'],
+    assert: ({ text }) => {
+      if (!/Motorist race\s+Black\s+White/.test(text))
+        return 'Black and White motorist selections are not both visible'
+      if (!/District context\s+Majority non-White districts/.test(text))
+        return 'majority-non-White district context is not the default'
+      if (!text.includes('majority-White and majority-non-White district groups'))
+        return 'both district-context choices are not explained'
+      return true
+    },
+  },
 ]
 
 /**
@@ -280,13 +364,15 @@ export const INTERACTIONS = [
  *
  *     snapshot        90-98ms      neighborhoods   155-187ms
  *     stops           88-93ms      safety          0ms
- *     reasons         0-58ms
+ *     reasons         0-58ms       veil            0ms
  *
  * The budgets below are those maxima with roughly half again as headroom, so
  * an ordinary slow run does not cry wolf. That is loose enough to be quiet and
  * still tight enough for the regression it exists to catch: dropping markRaw
  * from one cube composable costs 128ms on the veil page, which puts every one
- * of these pages over its budget.
+ * of these pages over its budget. Veil is the page that prompted all of this and
+ * it measures 0ms, because it is the one that has its markRaw -- take it away
+ * and the same page blocks for 128ms, well past the 60ms it is held to here.
  *
  * Set these from measurement, never from a round number that looks tidy. If a
  * page legitimately gets slower, move its budget in the same commit that makes
@@ -299,4 +385,5 @@ export const LOAD_BUDGETS = [
   { page: 'reasons', maxBlockingMs: 120 },
   { page: 'neighborhoods', maxBlockingMs: 280 },
   { page: 'safety', maxBlockingMs: 60 },
+  { page: 'veil', maxBlockingMs: 60 },
 ]

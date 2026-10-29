@@ -84,11 +84,13 @@ def main(argv: list[str] | None = None) -> int:
     from cube_builders import stops as stops_builder
     from cube_builders import reasons as reasons_builder
     from cube_builders import safety as safety_builder
+    from cube_builders import veil as veil_builder
 
     BUILDERS = {
         "stops": stops_builder.build,
         "reasons": reasons_builder.build,
         "safety": safety_builder.build,
+        "veil": veil_builder.build,
     }
 
     requested = (

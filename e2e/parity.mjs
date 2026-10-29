@@ -117,17 +117,77 @@ function renderText(session, url, { tries = 12, settleMs = 1200 } = {}) {
     })
     return r.stdout || ''
   }
+  // The session is reused across pages, so clear both buffers before
+  // navigating — otherwise a later page's checks would see an earlier page's
+  // console noise.
+  ab('console', '--clear')
+  ab('errors', '--clear')
   ab('open', url)
   ab('wait', '--load', 'networkidle')
 
   let previous = null
+  let text = previous
   for (let i = 0; i < tries; i += 1) {
     const current = ab('get', 'text', 'body')
-    if (previous !== null && current === previous && current.trim().length > 0) return current
+    if (previous !== null && current === previous && current.trim().length > 0) { text = current; break }
     previous = current
+    text = current
     ab('wait', String(settleMs))
   }
-  return previous ?? ''
+
+  const consoleLogs = ab('console', '--json')
+  const pageErrors = ab('errors', '--json')
+  const errors = [
+    ...parseErrorEntries(consoleLogs, ['messages', 'entries', 'logs'], 'error'),
+    ...parseErrorEntries(pageErrors, ['errors', 'entries', 'logs']),
+  ]
+
+  return { text: text ?? '', errors }
+}
+
+/**
+ * Parse agent-browser's `--json` console/errors output into short strings.
+ *
+ * agent-browser 0.27.2 wraps its payload as
+ * `{ success, data: { messages: [...] } }` for `console --json` and
+ * `{ success, data: { errors: [...] } }` for `errors --json` — not a bare
+ * array, and not `entries`/`logs`. `expectedKeys` lists the array key(s) to
+ * look for on `data` (or on the top-level object, for robustness), in
+ * preference order.
+ *
+ * If the shape doesn't match anything expected, that means the CLI's output
+ * contract moved, not that there were no errors — returning `[]` in that case
+ * would make the check pass unconditionally, which is worse than no check at
+ * all. So an unrecognized shape or a JSON parse failure produces a
+ * *synthetic* error entry describing the problem, which fails the "no
+ * console/page errors" check loudly instead of silently.
+ */
+function parseErrorEntries(json, expectedKeys, onlyType) {
+  let parsed
+  try {
+    parsed = JSON.parse(json)
+  } catch (err) {
+    return [`could not parse agent-browser --json output: ${err.message}`]
+  }
+
+  let items
+  if (Array.isArray(parsed)) {
+    items = parsed
+  } else {
+    const data = (parsed && typeof parsed === 'object' && parsed.data && typeof parsed.data === 'object')
+      ? parsed.data
+      : parsed
+    const key = data && typeof data === 'object' ? expectedKeys.find((k) => Array.isArray(data[k])) : null
+    if (!key) {
+      const gotKeys = data && typeof data === 'object' ? Object.keys(data).join(', ') : typeof data
+      return [`unrecognized agent-browser --json payload shape (expected one of [${expectedKeys.join(', ')}], got keys: ${gotKeys})`]
+    }
+    items = data[key]
+  }
+
+  return items
+    .filter((e) => !onlyType || e.type === onlyType)
+    .map((e) => String(e.text ?? e.message ?? e).slice(0, 200))
 }
 
 
@@ -295,26 +355,29 @@ async function main() {
   try {
     for (const page of pages) {
       const notes = []
-      const localText = renderText('e2e-local', `${localBase}${page.path}`)
+      const local = renderText('e2e-local', `${localBase}${page.path}`)
+      const localText = local.text
       writeFileSync(join(ARTIFACT_DIR, `local_${page.name}.txt`), localText)
 
-      if (!args.checksOnly) {
-        const liveText = renderText('e2e-live', `${args.liveUrl}${page.path}`)
-        writeFileSync(join(ARTIFACT_DIR, `live_${page.name}.txt`), liveText)
-        const d = diffLines(liveText, localText)
+      if (!args.checksOnly && !page.noParity) {
+        const live = renderText('e2e-live', `${args.liveUrl}${page.path}`)
+        writeFileSync(join(ARTIFACT_DIR, `live_${page.name}.txt`), live.text)
+        const d = diffLines(live.text, localText)
         if (d.length) {
           failures.push({ page: page.name, kind: 'diff', detail: d })
           notes.push(`differs from live (${d.length} lines)`)
         } else {
           notes.push('matches live')
         }
+      } else if (!args.checksOnly && page.noParity) {
+        notes.push('no live parity (not on production)')
       }
 
       for (const check of CHECKS) {
         if (check.pages && !check.pages.includes(page.name)) continue
         let result
         try {
-          result = check.assert({ text: localText, page: page.name, quarter })
+          result = check.assert({ text: localText, page: page.name, quarter, errors: local.errors })
         } catch (err) {
           result = `threw: ${err.message}`
         }
@@ -414,7 +477,11 @@ async function main() {
 
   console.log('\n')
   if (failures.length === 0) {
-    console.log(`PASS — ${pages.length} page(s) checked${args.checksOnly ? '' : `, identical to ${args.liveUrl}`}`)
+    const parityPages = pages.filter((p) => !p.noParity)
+    const parityNote = args.checksOnly
+      ? ''
+      : `, ${parityPages.length} identical to ${args.liveUrl}${parityPages.length < pages.length ? ` (${pages.length - parityPages.length} skipped, not on production)` : ''}`
+    console.log(`PASS — ${pages.length} page(s) checked${parityNote}`)
     return 0
   }
 
