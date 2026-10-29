@@ -113,7 +113,8 @@ def make_db(df_tables, sqlite_file, most_recent_quarter):
     show_default=True,
 )
 @click.option("--zip", "zip_filename", default=None, help="Backup zip in pipeline/data/")
-def cli(debug, remap_districts, most_recent_quarter_override, zip_filename):
+@click.option("--row-order-reference-zip", default=None, help="Previous backup in pipeline/data/ to preserve driver selection after source IDs change.")
+def cli(debug, remap_districts, most_recent_quarter_override, zip_filename, row_order_reference_zip):
     zip_filename = zip_filename or ZIP_FILENAME
     if not zip_filename:
         raise SystemExit("Pass --zip <file>")
@@ -129,6 +130,7 @@ def cli(debug, remap_districts, most_recent_quarter_override, zip_filename):
                 "car_ped_stops/2022": "car_ped_stops_2024-10-24T01_17_41.zip"
             },
             remap_districts=remap_districts,
+            row_order_reference_zip=row_order_reference_zip,
         )
         sqlite_file = os.path.join(DATA_DIR, f"open_data_philly_{run.db_name}.db")
         df_tables, most_recent_quarter = run.get_df_quarterly_reason_from_zipfiles()
