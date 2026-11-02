@@ -45,7 +45,7 @@
             <h3>How often did Philadelphia police make traffic stops<Tooltip term="Traffic Stop"/> on High Injury Network<Tooltip term="High Injury Network"/> (HIN) roads in <SelectLocation v-model="selectedLocation" :allowOnlyCityOrDivision="true"/> by <span class="whitespace-nowrap"><SelectTimeGranularity v-model="selectedTimeGranularity"/>?</span></h3>
           </QuestionHeader>
           <Answer v-if="q1A" :arrow="true">
-            <Graph :graph-data="q1A.figures.barplot.data" :axis-properties="{x: q1A.figures.barplot.properties.xAxis, y: q1A.figures.barplot.properties.yAxis}" :yScaleDomainMax="100" :quarterlyXAxisTicks="true">
+            <Graph :quarter-values="quarterValues" :graph-data="q1A.figures.barplot.data" :axis-properties="{x: q1A.figures.barplot.properties.xAxis, y: q1A.figures.barplot.properties.yAxis}" :yScaleDomainMax="100" :quarterlyXAxisTicks="true">
               <h4>{{ q1A.figures.barplot.properties.title }}</h4>
             </Graph>
             <AnswerText>
@@ -102,6 +102,8 @@ import HorizontalLine from '~/components/ui/HorizontalLine.vue';
 import Tooltip from '~/components/ui/Tooltip.vue';
 import { getLocationParam } from '~/utils';
 import { sumMeasure } from '~/utils/cube';
+
+const quarterValues = useRuntimeConfig().public.cubeQuarters.safety
 
 useHead({
   title: 'Do traffic stops promote safety?',

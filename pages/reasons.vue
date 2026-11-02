@@ -43,7 +43,7 @@
             <h3>Do Philadelphia police stop Black and white drivers for different reasons? When Philadelphia police gave a reason, what were the primary reasons why police stopped <SelectWhiteBlackDriver v-model="q1Race" /> in Philadelphia in <span class="whitespace-nowrap"><SelectYear v-model="q1Year"/>?</span></h3>
           </QuestionHeader>
           <Answer v-if="q1" :arrow="true">
-            <Graph :graph-data="q1.figures.barplot.data" :axis-properties="{x: q1.figures.barplot.properties.xAxis, y: q1.figures.barplot.properties.yAxis}" group-name="group" :group-classes="{'Black drivers': 'fill-purple bg-purple', 'White drivers': 'fill-mint bg-mint'}" :chart-legend="{'Black drivers': 'Black drivers', 'White drivers': 'White drivers'}" :wrap-x-axis-labels="true" :minimum-container-width="1080" :margin="{bottom: 110}">
+            <Graph :quarter-values="quarterValues" :graph-data="q1.figures.barplot.data" :axis-properties="{x: q1.figures.barplot.properties.xAxis, y: q1.figures.barplot.properties.yAxis}" group-name="group" :group-classes="{'Black drivers': 'fill-purple bg-purple', 'White drivers': 'fill-mint bg-mint'}" :chart-legend="{'Black drivers': 'Black drivers', 'White drivers': 'White drivers'}" :wrap-x-axis-labels="true" :minimum-container-width="1080" :margin="{bottom: 110}">
               <h4>{{ q1.figures.barplot.properties.title }}</h4>
             </Graph>
             <AnswerText>
@@ -59,7 +59,7 @@
             <h3>Do Philadelphia police make traffic stops for different reasons in districts<Tooltip term="District" /> where most residents are white, compared to districts where most residents are people of color? When Philadelphia police gave a reason, what were the primary reasons why police stopped drivers in majority <SelectWhiteMajorityNeighborhood v-model="selectedNeighborhoodMajority"/> in Philadelphia in <span class="whitespace-nowrap"><SelectYear v-model="q1Year"/>?</span></h3>
           </QuestionHeader>
           <Answer v-if="q2" :arrow="true">
-            <Graph :graph-data="q2.figures.barplot.data" :axis-properties="{x: q2.figures.barplot.properties.xAxis, y: q2.figures.barplot.properties.yAxis}" group-name="group" :group-classes="{'Majority non-white districts': 'fill-purple bg-purple', 'Majority white districts': 'fill-mint bg-mint'}" :chart-legend="{'Majority non-white districts': 'Majority non-white districts', 'Majority white districts': 'Majority white districts'}" :wrap-x-axis-labels="true" :minimum-container-width="1080" :margin="{bottom: 110}">
+            <Graph :quarter-values="quarterValues" :graph-data="q2.figures.barplot.data" :axis-properties="{x: q2.figures.barplot.properties.xAxis, y: q2.figures.barplot.properties.yAxis}" group-name="group" :group-classes="{'Majority non-white districts': 'fill-purple bg-purple', 'Majority white districts': 'fill-mint bg-mint'}" :chart-legend="{'Majority non-white districts': 'Majority non-white districts', 'Majority white districts': 'Majority white districts'}" :wrap-x-axis-labels="true" :minimum-container-width="1080" :margin="{bottom: 110}">
               <h4>{{ q2.figures.barplot.properties.title }}</h4>
             </Graph>
             <AnswerText>
@@ -76,7 +76,7 @@
             <h3>Driving Equality came into effect on March 3, 2022. After Driving Equality, how many traffic stops did Philadelphia police make for the 8 reasons covered by the law? Show primary reasons for traffic stops by <span class="whitespace-nowrap"><SelectTimeGranularity v-model="selectedTimeGranularity"/>.</span></h3>
           </QuestionHeader>
           <Answer v-if="q3" :arrow="true">
-            <Graph :graph-data="q3.figures.barplot.data" :axis-properties="{x: q3.figures.barplot.properties.xAxis, y: q3.figures.barplot.properties.yAxis}" stack-name="group" :quarterlyXAxisTicks="true">
+            <Graph :quarter-values="quarterValues" :graph-data="q3.figures.barplot.data" :axis-properties="{x: q3.figures.barplot.properties.xAxis, y: q3.figures.barplot.properties.yAxis}" stack-name="group" :quarterlyXAxisTicks="true">
               <h4>{{ q3.figures.barplot.properties.title }}</h4>
             </Graph>
             <AnswerText>
@@ -109,7 +109,7 @@
             <h3>Are there racial disparities<Tooltip term="Disparity"/> in Philadelphia police traffic stops for operational<Tooltip term="Operational"/> violations? When Philadelphia police gave a reason, how often did police stop people of different races for operational violations in <span class="whitespace-nowrap"><SelectYear v-model="q1Year"/>?</span></h3>
           </QuestionHeader>
           <Answer v-if="q4" :arrow="true">
-            <Graph :graph-data="q4.figures.barplot.data" :axis-properties="{x: q4.figures.barplot.properties.xAxis, y: q4.figures.barplot.properties.yAxis}" :y-scale-domain-max="100">
+            <Graph :quarter-values="quarterValues" :graph-data="q4.figures.barplot.data" :axis-properties="{x: q4.figures.barplot.properties.xAxis, y: q4.figures.barplot.properties.yAxis}" :y-scale-domain-max="100">
               <h4>{{ q4.figures.barplot.properties.title }}</h4>
             </Graph>
           </Answer>
@@ -135,6 +135,8 @@ import {
 import { CATEGORIES_WITHOUT_A_REASON, operationalShareByRace, operationalShareByYear } from '~/utils/reasons';
 import { useReasonsCube } from '~/composables/useReasonsCube';
 import { useDistrictsDemographics } from '~/composables/useDistrictsDemographics';
+
+const quarterValues = useRuntimeConfig().public.cubeQuarters.reasons
 
 useHead({
   title: 'What reasons do police give for making traffic stops?',

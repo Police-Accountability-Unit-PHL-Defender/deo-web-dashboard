@@ -7,7 +7,7 @@
  * population, which is static census data (see POPULATION_BY_RACE).
  */
 import { groupSum, sumMeasure, type Cube } from './cube'
-import type { Quarter } from './index'
+import { Quarter } from './index'
 
 // Order mirrors deo_backend/models.py RacialGroup.
 const RACE_ORDER = ['Asian', 'Black', 'Latino', 'White', 'All Other Races'] as const
@@ -59,12 +59,25 @@ const totalOf = (m: Record<string, number>) =>
   Object.values(m).reduce((a, b) => a + b, 0)
 
 export function buildAnnualSummary(cube: Cube, mostRecentQuarter: Quarter): AnnualSummary {
+  // The clock/pinned quarter is a ceiling, not evidence that data arrived.
+  // Keep every trailing-year calculation and label on the same available window.
+  const quarterIndex = cube.dimensions.indexOf('quarter')
+  if (quarterIndex === -1) throw new Error('cube missing quarter dimension')
+  const ceiling = mostRecentQuarter.toParamString()
+  let latest = ''
+  for (const row of cube.rows) {
+    const quarter = String(row[quarterIndex])
+    if (quarter <= ceiling && quarter > latest) latest = quarter
+  }
+  if (!latest) throw new Error('snapshot has no data at or before the quarter ceiling')
+  const end = Quarter.fromParamString(latest)
+
   // Trailing four quarters, inclusive.
-  let start = mostRecentQuarter
+  let start = end
   for (let i = 0; i < 3; i += 1) start = start.getPreviousQuarter()
-  const window = { startQuarter: start.toParamString(), endQuarter: mostRecentQuarter.toParamString() }
-  const rangeStr = `${start.getStartString()} through ${mostRecentQuarter.getEndString()}`
-  const rangeStrFull = `${start.getStartString()} through the end of ${mostRecentQuarter.getEndString()}`
+  const window = { startQuarter: start.toParamString(), endQuarter: end.toParamString() }
+  const rangeStr = `${start.getStartString()} through ${end.getEndString()}`
+  const rangeStrFull = `${start.getStartString()} through the end of ${end.getEndString()}`
 
   const total = sumMeasure(cube, 'n_stopped', window)
   // Mirrors get_avg_monthly_value: total / quarters / 3.

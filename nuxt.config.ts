@@ -1,3 +1,17 @@
+import { readFileSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
+import { resolve } from 'node:path'
+import { cubeQuarters } from './utils/reportingPeriods'
+
+// Coverage follows the served cubes, including an older parity-test vintage.
+const cubesDir = process.env.DEO_CUBES_DIR || fileURLToPath(new URL('./public/cubes', import.meta.url))
+const readCube = (name: string) => JSON.parse(readFileSync(resolve(cubesDir, `${name}.json`), 'utf8'))
+const coverage = {
+  stops: cubeQuarters(readCube('stops')),
+  reasons: cubeQuarters(readCube('reasons')),
+  safety: cubeQuarters(readCube('safety').hin),
+}
+
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   plugins: ['~/plugins/mostRecentQuarter.js'],
@@ -55,6 +69,7 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     public: {
+      cubeQuarters: coverage,
       // Public browser key, supplied at build time for the static site.
       cartoBasemapApiKey: '',
       // Set by the e2e parity harness via NUXT_PUBLIC_PINNED_MOST_RECENT_QUARTER

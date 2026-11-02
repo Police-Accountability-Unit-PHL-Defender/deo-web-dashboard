@@ -1,3 +1,5 @@
+import { reportingPeriods } from '~/utils/reportingPeriods'
+
 function getPreviousQuarter() {
     const now = new Date();
     let year = now.getFullYear();
@@ -16,13 +18,13 @@ export default defineNuxtPlugin(() => {
     // an earlier quarter. Never set these in a real deploy.
     const pinned = useRuntimeConfig().public.pinnedMostRecentQuarter;
     const mostRecentQuarter = pinned || getPreviousQuarter();
-    // DEO_YEARS = list(range(2022, current_year)) — full calendar years
-    // since the Driving Equality Ordinance took effect.
-    const currentYear = pinned
-        ? Number(pinned.split('-Q')[0])
-        : new Date().getFullYear();
-    const deoYears = [];
-    for (let y = 2022; y < currentYear; y += 1) deoYears.push(y);
+    // Keep the calendar/pin as a ceiling. Defaults and selectable periods
+    // come from the data, including when a refresh is missed.
+    const coverage = useRuntimeConfig().public.cubeQuarters;
+    const stops = reportingPeriods(coverage.stops, mostRecentQuarter);
+    const reasons = reportingPeriods(coverage.reasons, mostRecentQuarter);
     useState('mostRecentQuarter', () => mostRecentQuarter);
-    useState('deoYears', () => deoYears);
+    useState('stopsQuarters', () => stops.available);
+    useState('latestStopsQuarter', () => stops.latest);
+    useState('deoYears', () => reasons.completeYears.filter(year => year >= 2022));
 });

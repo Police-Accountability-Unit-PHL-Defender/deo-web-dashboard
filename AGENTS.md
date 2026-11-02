@@ -182,6 +182,14 @@ half-populated year and the point must appear dashed rather than solid. Do not
 years: the dashed point is the requested design, the flag is what makes it
 honest.
 
+The quarter selectors and Stops/Neighborhoods defaults use `latestStopsQuarter`
+and `stopsQuarters`, derived from a small coverage index built from the shipped
+cubes in `nuxt.config.ts`. Reasons' year options use complete years in its own
+cube, and Graph's annual partial styling uses the same data-derived completeness
+rule. Keep the calendar state as a ceiling; never use it as proof data arrived.
+The parity harness passes `--cubes` into the build as `DEO_CUBES_DIR` so coverage
+metadata follows the comparison vintage too.
+
 `mostRecentQuarter` remains the ceiling. Pinning back with `--quarter` drops
 later years outright rather than dashing them, and quarters past the pin are not
 counted inside the trailing year either — otherwise a pinned build's last point
