@@ -31,9 +31,9 @@ const factory = (props = {}) =>
   })
 
 describe('CoefficientGraph', () => {
-  it('keeps compact horizontal intervals on a shared scale with zero visible', async () => {
+  it('keeps condensed horizontal intervals on a shared scale with zero visible', async () => {
     const wrapper = factory({ horizontal: true, estimates: [estimates[0], estimates[2]] })
-    expect(Number(wrapper.find('svg').attributes('height'))).toBeLessThan(180)
+    expect(Number(wrapper.find('svg').attributes('height'))).toBe(190)
     const whiskers = wrapper.findAll('.ci-whisker')
     expect(whiskers).toHaveLength(2)
     for (const whisker of whiskers) {
@@ -46,9 +46,9 @@ describe('CoefficientGraph', () => {
     expect(wrapper.findAll('[tabindex="0"]')).toHaveLength(2)
     await wrapper.find('[tabindex="0"]').trigger('focus')
     const tooltip = wrapper.find('.compact-tooltip')
-    expect(tooltip.findAll('br')).toHaveLength(1)
-    expect(tooltip.text()).toContain('−0.19 pp')
-    expect(tooltip.text()).toContain('95% interval: −0.27 to −0.10')
+    expect(tooltip.findAll('p')).toHaveLength(2)
+    expect(tooltip.text()).toContain('−0.19 percentage points')
+    expect(tooltip.text()).toContain('95% confidence interval: −0.27 to −0.10')
     expect(tooltip.attributes('style')).toContain('visibility: visible')
   })
 

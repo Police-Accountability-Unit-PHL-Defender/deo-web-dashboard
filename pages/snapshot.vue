@@ -36,12 +36,6 @@
                 How did traffic stops change after Driving Equality?
               </a>
             </li>
-            <li>
-              <a href="#veil-of-darkness" class="deo_scroll text-hyperlink flex">
-                <IconsChevron class="fill-black -rotate-90"/>
-                Did the daylight-darkness difference change after Driving Equality?
-              </a>
-            </li>
           </ul>
         </nav>
         <section>
@@ -95,9 +89,9 @@
               <h4>{{ q1A.figures.barplot3.properties.title }}</h4>
             </Graph>
           </Answer>
+          <HorizontalLine class="my-4 md:my-12"/>
+          <VeilSummary/>
         </section>
-        <HorizontalLine class="my-12" :color="true"/>
-        <VeilSummary/>
       </div>
     </div>
   </main>

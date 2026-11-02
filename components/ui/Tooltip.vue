@@ -31,6 +31,7 @@ import { computed, ref, onBeforeUnmount } from "vue"
 import TooltipIcon from "../icons/TooltipIcon.vue"
 const props = defineProps({
   term: { type: String, required: false },
+  definition: { type: String, required: false },
 })
 const dictionary = {
   "Contraband": "Any item that police consider to be evidence of a crime, including drugs and some weapons.",
@@ -58,6 +59,7 @@ const dictionary = {
   "Year after": "April 1, 2022 - March 31, 2023"
 }
 const definition = computed(() => {
+  if (props.definition) return props.definition
   if (!props.term) return
   return dictionary[props.term]
 })

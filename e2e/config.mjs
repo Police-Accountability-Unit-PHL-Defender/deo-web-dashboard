@@ -308,19 +308,18 @@ export const CHECKS = [
     },
   },
   {
-    name: 'veil main result follows the fitted pre/post difference and selected definition',
+    name: 'snapshot veil explanation and pre/post chart render',
     pages: ['snapshot'],
     assert: ({ text }) => {
       text = text.replace(/\s+/g, ' ')
       for (const phrase of [
-        'Percentage of stopped drivers who were Black: darkness vs. daylight',
-        'About this comparison', '95% confidence interval',
+        'Do Philadelphia police stop Black drivers more often when officers can see a driver’s race?',
+        'Both before and after Driving Equality, Black drivers made up a larger share of traffic stops when a driver’s race was visible.',
+        'In the graph below, negative values indicate that Black drivers made up a smaller share of PPD traffic stops when it was dark outside.',
+        'Percent of Drivers Stopped by the PPD Who Were Black: Traffic Stops in Darkness vs. Daylight',
+        'Before Driving Equality', 'After Driving Equality', 'Percentage-Point Difference',
       ]) if (!text.includes(phrase)) return `main veil result lost: ${phrase}`
-      const cube = JSON.parse(readFileSync(new URL('../.output/public/cubes/veil-comparison.json', import.meta.url), 'utf8'))
-      const r = cube.main
-      const significant = r.converged && (r.difference_ci_lo_pp > 0 || r.difference_ci_hi_pp < 0)
-      const answer = significant ? 'A statistically significant change.' : 'No statistically significant change.'
-      if (!text.includes(answer)) return `headline disagrees with the direct difference interval: expected ${answer}`
+      if (text.includes('About this comparison')) return 'Snapshot still shows the removed comparison details'
       if (text.includes('Methods and sensitivity checks')) return 'Snapshot still links to the methods page'
       return true
     },

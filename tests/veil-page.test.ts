@@ -37,45 +37,25 @@ describe('Main veil page', () => {
     expect(charts).toHaveLength(1)
     const result = comparison.main
     expect(charts[0].props('estimates').map(e => [e.x, e.value, e.ciLo, e.ciHi])).toEqual([
-      ['Before', result.effects.reference.effect_pp, result.effects.reference.effect_ci_lo_pp, result.effects.reference.effect_ci_hi_pp],
-      ['After', result.effects.group.effect_pp, result.effects.group.effect_ci_lo_pp, result.effects.group.effect_ci_hi_pp],
+      ['Before Driving Equality', result.effects.reference.effect_pp, result.effects.reference.effect_ci_lo_pp, result.effects.reference.effect_ci_hi_pp],
+      ['After Driving Equality', result.effects.group.effect_pp, result.effects.group.effect_ci_lo_pp, result.effects.group.effect_ci_hi_pp],
     ])
     expect(charts[0].findAll('circle')).toHaveLength(2)
     expect(charts[0].findAll('.ci-whisker')).toHaveLength(2)
-    expect(wrapper.text()).toContain('No statistically significant change.')
-    expect(wrapper.text()).toContain('statistically significant both before and after Driving Equality')
-    expect(wrapper.text()).toContain('483,531 evening vehicle stops')
-    expect(wrapper.text()).toContain('No recorded violation code is required')
+    expect(wrapper.text()).toContain('Both before and after Driving Equality, Black drivers made up a larger share of traffic stops when a driver’s race was visible.')
     expect(wrapper.find('a[href="/veil-sensitivity"]').exists()).toBe(false)
     expect(wrapper.text()).not.toContain('by Year')
     expect(wrapper.text()).not.toContain('Among men ages 18–29')
   })
 
-  it('updates period significance independently of the pre/post change', async () => {
+  it('updates the plotted estimate when the cube changes', async () => {
     const wrapper = factory()
     bundle.value.cube.main.effects.reference.effect_pp = -2.345
-    bundle.value.cube.main.effects.group.effect_ci_hi_pp = 0
     await nextTick()
-    expect(wrapper.text()).toContain('statistically significant before Driving Equality, but not after.')
-    expect(wrapper.text()).toContain('No statistically significant change.')
-    bundle.value.cube.main.effects.reference.effect_ci_hi_pp = 0.5
-    await nextTick()
-    expect(wrapper.text()).toContain('not statistically significant in either period.')
+    expect(wrapper.findComponent(CoefficientGraph).props('estimates')[0].value).toBe(-2.345)
   })
 
-  it.each([[0.01, 0.5], [-0.5, -0.01]])('changes the answer when the direct difference interval is [%s, %s]', async (lo, hi) => {
-    const wrapper = factory()
-    // Both period intervals already exclude zero on today's data. They must
-    // not control the pre/post answer; only the difference interval does.
-    expect(wrapper.text()).toContain('No statistically significant change.')
-    bundle.value.cube.main.difference_ci_lo_pp = lo
-    bundle.value.cube.main.difference_ci_hi_pp = hi
-    await nextTick()
-    expect(wrapper.text()).toContain('A statistically significant change.')
-    expect(wrapper.text()).not.toContain('No statistically significant change.')
-  })
-
-  it.each([VeilPage, SensitivityPage])('derives visible dates and chart hover dates from the current cube', async (page) => {
+  it.each([SensitivityPage])('derives visible dates and chart hover dates from the current cube', async (page) => {
     const wrapper = factory(page)
     const dates = () => wrapper.find('[aria-label="Pre and post analysis dates"]').text()
     expect(dates()).toContain('January 1, 2014 through March 2, 2022')

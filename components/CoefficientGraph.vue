@@ -1,6 +1,6 @@
 <template>
-  <div class="my-6 p-4 bg-[#FCFCFC] rounded-xl shadow-graph" :class="{ 'max-w-[640px] mx-auto': props.horizontal }">
-    <div class="w-full text-center mt-1 font-semibold text-primary-800 max-w-[630px] mx-auto" :class="props.horizontal ? 'text-body-4' : 'text-body-2'">
+  <div class="my-6 p-4 bg-[#FCFCFC] rounded-xl shadow-graph">
+    <div class="w-full text-center mt-1 text-body-2 font-semibold text-primary-800 max-w-[630px] mx-auto">
       <slot></slot>
     </div>
     <div ref="container" class="relative overflow-x-auto">
@@ -52,7 +52,7 @@ const props = defineProps({
     type: Array,
     required: true
   },
-  /** Compact forest plot: one labeled row per estimate on a shared scale. */
+  /** Horizontal forest plot: one labeled row per estimate on a shared scale. */
   horizontal: {
     type: Boolean,
     default: false
@@ -158,12 +158,13 @@ const classesFor = (group, prefix) => {
 }
 
 const drawHorizontalGraph = (svg, estimates) => {
-  const width = Math.max(container.value.clientWidth, 260)
-  const top = 24
-  const rowHeight = 42
-  const axisY = top + estimates.length * rowHeight
-  const height = axisY + 48
-  const left = 64
+  const width = Math.max(container.value.clientWidth, props.minimumContainerWidth)
+  const height = 190
+  const top = 20
+  const axisY = height - 52
+  const rowHeight = (axisY - top) / estimates.length
+  const longestLabelWidth = d3.max(estimates, d => String(d.x).length) * 10 + 12
+  const left = estimates.some(d => d.x.length > 10) ? Math.min(longestLabelWidth, width * 0.43) : 64
   const right = width - 12
   const lo = d3.min(estimates, d => d.ciLo)
   const hi = d3.max(estimates, d => d.ciHi)
@@ -181,9 +182,9 @@ const drawHorizontalGraph = (svg, estimates) => {
   svg.append('g').attr('transform', `translate(0,${axisY})`)
     .attr('class', 'text-caption')
     .call(d3.axisBottom(scale).ticks(width < 400 ? 3 : 5).tickSizeOuter(0))
-  svg.append('text').attr('x', (left + right) / 2).attr('y', height - 4)
+  svg.append('text').attr('x', width / 2).attr('y', height - 4)
     .attr('text-anchor', 'middle').attr('fill', 'currentColor')
-    .attr('class', 'text-caption').text(props.axisProperties.y)
+    .attr('class', 'text-body-4 font-semibold').text(props.axisProperties.y)
   svg.append('line').attr('class', 'zero-line stroke-neutral-600')
     .attr('x1', scale(0)).attr('x2', scale(0))
     .attr('y1', top - 12).attr('y2', axisY)
@@ -191,10 +192,18 @@ const drawHorizontalGraph = (svg, estimates) => {
 
   const tip = createTooltip(d3.select(container.value).select('.tooltip').node(), { width, height })
   estimates.forEach((d, i) => {
-    const cy = top + i * rowHeight
-    svg.append('text').attr('x', 0).attr('y', cy)
+    const cy = top + (i + 0.5) * rowHeight
+    const labelLines = ['']
+    const maxLabelLength = Math.floor((left - 12) / 10)
+    for (const word of String(d.x).split(' ')) {
+      const last = labelLines.length - 1
+      if (labelLines[last] && `${labelLines[last]} ${word}`.length > maxLabelLength) labelLines.push(word)
+      else labelLines[last] = [labelLines[last], word].filter(Boolean).join(' ')
+    }
+    const label = svg.append('text').attr('x', 0).attr('y', cy - (labelLines.length - 1) * 11)
       .attr('dominant-baseline', 'middle').attr('fill', 'currentColor')
-      .attr('class', 'text-caption font-semibold').text(d.x)
+      .attr('class', 'text-body-4 font-semibold')
+    labelLines.forEach((line, index) => label.append('tspan').attr('x', 0).attr('dy', index ? 22 : 0).text(line))
     const row = svg.append('g')
     row.append('line').attr('class', `ci-whisker ${classesFor(d.group, 'stroke-')}`)
       .attr('x1', scale(d.ciLo)).attr('x2', scale(d.ciHi))
@@ -204,7 +213,7 @@ const drawHorizontalGraph = (svg, estimates) => {
       .attr('stroke', '#ffffff').attr('stroke-width', 1.5)
     const description = d.hoverText?.join('\n') ?? `${d.x}: ${d.value}, 95% interval ${d.ciLo} to ${d.ciHi}`
     const signed = value => `${value < 0 ? '−' : value > 0 ? '+' : ''}${Math.abs(value).toFixed(2)}`
-    const summary = `${signed(d.value)} pp<br>95% interval: ${signed(d.ciLo)} to ${signed(d.ciHi)}`
+    const summary = `<p>${signed(d.value)} percentage points</p><p>95% confidence interval: ${signed(d.ciLo)} to ${signed(d.ciHi)}</p>`
     point.append('title').text(description)
     row.append('rect').attr('x', left).attr('y', cy - 16)
       .attr('width', right - left).attr('height', 32).attr('fill', 'transparent')
@@ -447,8 +456,7 @@ const drawGraph = (estimates) => {
   @apply flex flex-col gap-1 absolute z-[1] p-2 bg-white border border-neutral-400 pointer-events-none box-border shadow-dropdown;
 }
 .compact-tooltip {
-  max-width: 240px;
-  font-size: 13px;
-  line-height: 1.4;
+  width: max-content;
+  max-width: min(400px, 100%);
 }
 </style>
