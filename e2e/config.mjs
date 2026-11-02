@@ -373,7 +373,7 @@ export const CHECKS = [
         'Both before and after Driving Equality, Black drivers made up a larger share of traffic stops when a driver’s race was visible.',
         'In the graph below, negative values indicate that Black drivers made up a smaller share of PPD traffic stops when it was dark outside.',
         'Percent of Drivers Stopped by the PPD Who Were Black: Traffic Stops in Darkness vs. Daylight',
-        'Before Driving Equality', 'After Driving Equality', 'Percentage-Point Difference',
+        'Before Driving Equality', 'After Driving Equality', 'Difference (percentage points)',
       ]) if (!text.includes(phrase)) return `main veil result lost: ${phrase}`
       if (text.includes('About this comparison')) return 'Snapshot still shows the removed comparison details'
       if (text.includes('Methods and sensitivity checks')) return 'Snapshot still links to the methods page'

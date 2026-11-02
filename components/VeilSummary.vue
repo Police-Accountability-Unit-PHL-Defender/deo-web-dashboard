@@ -29,6 +29,6 @@ const periods = computed(() => cube.value ? veilComparisonPeriods(cube.value) : 
 const points = computed(() => result.value && cube.value
   ? veilPeriodPoints(result.value, cube.value).map(point => ({ ...point, x: `${point.x} Driving Equality` }))
   : [])
-const axes = { x: 'Driving Equality', y: 'Percentage-Point Difference' }
+const axes = { x: 'Driving Equality', y: 'Difference (percentage points)' }
 const classes = { Estimate: 'stroke-purple fill-purple bg-purple' }
 </script>
